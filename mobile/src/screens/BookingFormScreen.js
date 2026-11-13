@@ -21,27 +21,31 @@ export default function BookingFormScreen({ route, navigation }) {
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [reservationDate, setReservationDate] = useState("2026-11-20");
-  const [sessionTime, setSessionTime] = useState("Sesi Malam (18.00 - 21.00)");
+  const [sessionTime, setSessionTime] = useState("Sesi Siang (13.00 - 16.00)");
   const [guestCount, setGuestCount] = useState("4");
   const [loading, setLoading] = useState(false);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   // State untuk Board Game yang dipilih
   const [chosenGame, setChosenGame] = useState(selectedGame || null);
   const [allGames, setAllGames] = useState([]);
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
 
+  // Data reservasi aktif dari database untuk validasi slot & bentrok
+  const [activeReservations, setActiveReservations] = useState([]);
+
   const sessionOptions = [
-    "Sesi Siang (13.00 - 16.00)",
-    "Sesi Sore (16.00 - 19.00)",
-    "Sesi Malam (19.00 - 22.00)"
+    { id: "siang", label: "Sesi Siang (13.00 - 16.00)", keyword: "Siang" },
+    { id: "sore", label: "Sesi Sore (16.00 - 19.00)", keyword: "Sore" },
+    { id: "malam", label: "Sesi Malam (19.00 - 22.00)", keyword: "Malam" }
   ];
 
+  // 1. Load daftar game untuk opsi ganti game
   useEffect(() => {
     async function loadAllGames() {
       try {
         const games = await ApiService.getGames();
         setAllGames(games || []);
-        // Jika belum ada game terpilih, default ke game pertama
         if (!chosenGame && games && games.length > 0) {
           setChosenGame(games[0]);
         }
@@ -52,6 +56,103 @@ export default function BookingFormScreen({ route, navigation }) {
     loadAllGames();
   }, []);
 
+  // 2. Ambil seluruh data reservasi dari database untuk cek bentrok jam & stok
+  const refreshAvailability = async () => {
+    try {
+      setCheckingAvailability(true);
+      const resData = await ApiService.getReservations();
+      setActiveReservations(resData || []);
+    } catch (err) {
+      console.warn("Gagal mengecek reservasi aktif:", err);
+    } finally {
+      setCheckingAvailability(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshAvailability();
+  }, [reservationDate, tableId, chosenGame]);
+
+  // Fungsi pengecekan ketersediaan per sesi
+  const getSessionStatus = (sessionObj) => {
+    const matchingDateReservations = activeReservations.filter(
+      (r) => r.reservation_date === reservationDate && r.status !== "Cancelled"
+    );
+
+    // Cek apakah meja ini sudah dibooking orang pada sesi tersebut
+    const isTableOccupied = matchingDateReservations.some((r) => {
+      const matchSession =
+        r.session_time?.toLowerCase().includes(sessionObj.keyword.toLowerCase()) ||
+        r.session_time === sessionObj.label;
+      return r.table_id === tableId && matchSession;
+    });
+
+    if (isTableOccupied) {
+      return {
+        available: false,
+        reason: "Meja Sudah Dipesan",
+        detail: "Meja ini telah direservasi oleh pelanggan lain pada jam ini."
+      };
+    }
+
+    // Cek apakah stok game ini sudah habis / dipinjam di meja lain pada sesi tersebut
+    if (chosenGame) {
+      const gameBookedCount = matchingDateReservations.filter((r) => {
+        const matchSession =
+          r.session_time?.toLowerCase().includes(sessionObj.keyword.toLowerCase()) ||
+          r.session_time === sessionObj.label;
+
+        const matchGame =
+          (r.game_title && r.game_title.toLowerCase() === chosenGame.title.toLowerCase()) ||
+          (r.customer_name && r.customer_name.toLowerCase().includes(chosenGame.title.toLowerCase()));
+
+        return matchGame && matchSession;
+      }).length;
+
+      const gameStock = chosenGame.stock || 2; // Default stok fisik kafe
+      if (gameBookedCount >= gameStock) {
+        return {
+          available: false,
+          reason: "Stok Game Habis",
+          detail: `Semua ${gameStock} box game "${chosenGame.title}" sedang dipinjam meja lain pada sesi ini.`
+        };
+      }
+    }
+
+    return {
+      available: true,
+      reason: "Tersedia",
+      detail: "Slot jam ini siap dipesan."
+    };
+  };
+
+  // Otomatis arahkan sesi terpilih ke sesi yang masih tersedia jika sesi saat ini penuh
+  useEffect(() => {
+    if (activeReservations.length > 0) {
+      const currentStatus = getSessionStatus(
+        sessionOptions.find((s) => s.label === sessionTime) || sessionOptions[0]
+      );
+      if (!currentStatus.available) {
+        const firstAvailable = sessionOptions.find((s) => getSessionStatus(s).available);
+        if (firstAvailable) {
+          setSessionTime(firstAvailable.label);
+        }
+      }
+    }
+  }, [activeReservations, reservationDate, tableId, chosenGame]);
+
+  const handleSelectSession = (sessionObj, status) => {
+    if (!status.available) {
+      Alert.alert(
+        "Slot Tidak Tersedia ❌",
+        `${status.detail}\n\nSilakan pilih sesi jam berikutnya atau pilih tanggal/meja lain!`,
+        [{ text: "Mengerti" }]
+      );
+      return;
+    }
+    setSessionTime(sessionObj.label);
+  };
+
   const handleSubmit = async () => {
     if (!customerName.trim() || !customerPhone.trim()) {
       Alert.alert("Perhatian", "Silakan isi nama dan nomor telepon Anda.");
@@ -61,6 +162,18 @@ export default function BookingFormScreen({ route, navigation }) {
     const count = parseInt(guestCount, 10);
     if (isNaN(count) || count < 1 || count > capacity) {
       Alert.alert("Perhatian", `Jumlah pemain harus antara 1 sampai ${capacity} orang.`);
+      return;
+    }
+
+    // Validasi akhir ketersediaan slot sebelum kirim
+    const currentSessionObj =
+      sessionOptions.find((s) => s.label === sessionTime) || sessionOptions[0];
+    const status = getSessionStatus(currentSessionObj);
+    if (!status.available) {
+      Alert.alert(
+        "Slot Penuh ❌",
+        `${status.detail}\n\nMohon pilih sesi jam berikutnya sebelum konfirmasi.`
+      );
       return;
     }
 
@@ -84,12 +197,11 @@ export default function BookingFormScreen({ route, navigation }) {
 
       Alert.alert(
         "Reservasi Berhasil! 🎉",
-        `Kode Booking Anda: ${result.booking_code}\n\n🎲 Game: ${gameTitle}\n🪑 Meja: ${tableType} (${tableNumber})\n\nTiket telah diterbitkan, silakan cek di menu Tiket Saya.`,
+        `Kode Booking Anda: ${result.booking_code}\n\n🎲 Game: ${gameTitle}\n🪑 Meja: ${tableType} (${tableNumber})\n⏱️ Waktu: ${sessionTime}\n\nTiket telah diterbitkan, silakan cek di menu Tiket Saya.`,
         [
           {
             text: "Lihat Tiket Saya",
             onPress: () => {
-              // Reset stack meja ke daftar meja dan buka Tab Tiket
               navigation.popToTop();
               navigation.navigate("TicketsTab");
             }
@@ -97,7 +209,11 @@ export default function BookingFormScreen({ route, navigation }) {
         ]
       );
     } catch (err) {
-      Alert.alert("Error Reservasi", err.message || "Gagal membuat reservasi.");
+      Alert.alert(
+        "Reservasi Gagal",
+        err.message || "Slot pada sesi ini baru saja dipesan orang lain. Silakan pilih sesi berikutnya."
+      );
+      refreshAvailability();
     } finally {
       setLoading(false);
     }
@@ -108,7 +224,7 @@ export default function BookingFormScreen({ route, navigation }) {
       {/* 1. Paket Reservasi Card (Meja + Game) */}
       <View style={styles.summaryCard}>
         <Text style={styles.summaryHeader}>Ringkasan Paket Reservasi</Text>
-        
+
         {/* Game Terpilih */}
         <View style={styles.summaryItem}>
           <Ionicons name="cube" size={20} color={colors.primary} />
@@ -116,6 +232,9 @@ export default function BookingFormScreen({ route, navigation }) {
             <Text style={styles.summaryItemLabel}>Board Game yang Dipesan:</Text>
             <Text style={styles.summaryItemValue}>
               {chosenGame ? chosenGame.title : "Belum memilih game"}
+            </Text>
+            <Text style={styles.stockSubText}>
+              📦 Stok Fisik Kafe: {chosenGame?.stock || 2} Box Original
             </Text>
           </View>
           <TouchableOpacity
@@ -177,30 +296,81 @@ export default function BookingFormScreen({ route, navigation }) {
         />
       </View>
 
-      {/* Pilihan Sesi Jam */}
+      {/* Pilihan Sesi Jam dengan Pengecekan Slot Terintegrasi Database */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Pilih Sesi Waktu Main *</Text>
-        {sessionOptions.map((opt) => {
-          const selected = sessionTime === opt;
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>Pilih Sesi Waktu Main *</Text>
+          {checkingAvailability && (
+            <Text style={styles.checkingText}>Memeriksa ketersediaan...</Text>
+          )}
+        </View>
+
+        {sessionOptions.map((s) => {
+          const status = getSessionStatus(s);
+          const isSelected = sessionTime === s.label && status.available;
+
           return (
             <TouchableOpacity
-              key={opt}
-              style={[styles.sessionOption, selected && styles.sessionOptionActive]}
-              onPress={() => setSessionTime(opt)}
+              key={s.id}
+              activeOpacity={0.8}
+              style={[
+                styles.sessionCard,
+                isSelected && styles.sessionCardSelected,
+                !status.available && styles.sessionCardDisabled
+              ]}
+              onPress={() => handleSelectSession(s, status)}
             >
-              <Ionicons
-                name={selected ? "radio-button-on" : "radio-button-off"}
-                size={18}
-                color={selected ? colors.primary : colors.textMuted}
-              />
-              <Text
+              <View style={styles.sessionCardLeft}>
+                <Ionicons
+                  name={
+                    !status.available
+                      ? "close-circle"
+                      : isSelected
+                      ? "radio-button-on"
+                      : "radio-button-off"
+                  }
+                  size={20}
+                  color={
+                    !status.available
+                      ? colors.accent
+                      : isSelected
+                      ? colors.primary
+                      : colors.textMuted
+                  }
+                />
+                <View style={{ marginLeft: 10 }}>
+                  <Text
+                    style={[
+                      styles.sessionLabelText,
+                      isSelected && styles.sessionLabelTextActive,
+                      !status.available && styles.sessionLabelTextDisabled
+                    ]}
+                  >
+                    {s.label}
+                  </Text>
+                  {!status.available && (
+                    <Text style={styles.sessionReasonText}>
+                      ⚠️ {status.reason} (Harus pilih sesi lain)
+                    </Text>
+                  )}
+                </View>
+              </View>
+
+              <View
                 style={[
-                  styles.sessionOptionText,
-                  selected && styles.sessionOptionTextActive
+                  styles.statusBadgeSmall,
+                  status.available ? styles.badgeAvailable : styles.badgeBooked
                 ]}
               >
-                {opt}
-              </Text>
+                <Text
+                  style={[
+                    styles.statusBadgeSmallText,
+                    status.available ? styles.textAvailable : styles.textBooked
+                  ]}
+                >
+                  {status.available ? "Tersedia ✓" : "Penuh ❌"}
+                </Text>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -269,7 +439,7 @@ export default function BookingFormScreen({ route, navigation }) {
                   <View style={{ marginLeft: 10, flex: 1 }}>
                     <Text style={styles.gamePickerTitle}>{item.title}</Text>
                     <Text style={styles.gamePickerSub}>
-                      {item.min_players}-{item.max_players} Pemain • {item.difficulty}
+                      {item.min_players}-{item.max_players} Pemain • Stok: {item.stock || 2} Box
                     </Text>
                   </View>
                   {chosenGame?.id === item.id && (
@@ -337,6 +507,12 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginTop: 2
   },
+  stockSubText: {
+    fontSize: 11,
+    color: colors.primaryDark,
+    marginTop: 2,
+    fontWeight: "600"
+  },
   changeGameBtn: {
     backgroundColor: colors.primaryLight,
     paddingHorizontal: 12,
@@ -357,11 +533,21 @@ const styles = StyleSheet.create({
   inputGroup: {
     marginBottom: 16
   },
+  labelRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6
+  },
   label: {
     fontSize: 13,
     fontWeight: "600",
-    color: colors.text,
-    marginBottom: 6
+    color: colors.text
+  },
+  checkingText: {
+    fontSize: 11,
+    color: colors.primaryDark,
+    fontStyle: "italic"
   },
   input: {
     backgroundColor: colors.card,
@@ -373,28 +559,70 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text
   },
-  sessionOption: {
+  sessionCard: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: colors.card,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 12,
-    marginBottom: 8
+    marginBottom: 10
   },
-  sessionOptionActive: {
+  sessionCardSelected: {
     borderColor: colors.primary,
     backgroundColor: colors.primaryLight
   },
-  sessionOptionText: {
-    fontSize: 13,
-    color: colors.text,
-    marginLeft: 10
+  sessionCardDisabled: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    opacity: 0.8
   },
-  sessionOptionTextActive: {
+  sessionCardLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1
+  },
+  sessionLabelText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.text
+  },
+  sessionLabelTextActive: {
     fontWeight: "bold",
     color: colors.primaryDark
+  },
+  sessionLabelTextDisabled: {
+    color: colors.textMuted
+  },
+  sessionReasonText: {
+    fontSize: 11,
+    color: colors.accent,
+    fontWeight: "600",
+    marginTop: 2
+  },
+  statusBadgeSmall: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginLeft: 8
+  },
+  badgeAvailable: {
+    backgroundColor: "#DCFCE7"
+  },
+  badgeBooked: {
+    backgroundColor: "#FEE2E2"
+  },
+  statusBadgeSmallText: {
+    fontSize: 10,
+    fontWeight: "bold"
+  },
+  textAvailable: {
+    color: "#166534"
+  },
+  textBooked: {
+    color: "#991B1B"
   },
   submitButton: {
     backgroundColor: colors.primary,

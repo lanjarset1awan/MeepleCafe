@@ -36,7 +36,7 @@ export default function GameDetailScreen({ route, navigation }) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Memuat detail permainan & tutorial...</Text>
+        <Text style={styles.loadingText}>Memuat detail permainan & stok...</Text>
       </View>
     );
   }
@@ -49,8 +49,9 @@ export default function GameDetailScreen({ route, navigation }) {
     );
   }
 
+  const stockCount = game.stock || 2; // Default 2 box fisik di kafe
+
   const handleSelectGameAndChooseTable = () => {
-    // Alur baru: Membawa game yang dipilih ke halaman Meja!
     navigation.navigate("TableTab", {
       screen: "TableList",
       params: {
@@ -61,6 +62,7 @@ export default function GameDetailScreen({ route, navigation }) {
           min_players: game.min_players,
           max_players: game.max_players,
           difficulty: game.difficulty,
+          stock: stockCount,
           category: game.game_categories?.name || "General"
         }
       }
@@ -124,18 +126,53 @@ export default function GameDetailScreen({ route, navigation }) {
             </View>
 
             <View style={styles.statBox}>
+              <Ionicons name="cube" size={20} color={colors.primaryDark} />
+              <Text style={styles.statValue}>{stockCount} Box</Text>
+              <Text style={styles.statLabel}>Stok Kafe</Text>
+            </View>
+
+            <View style={styles.statBox}>
               <Ionicons name="bar-chart" size={20} color={colors.accent} />
               <Text style={styles.statValue}>{game.difficulty}</Text>
               <Text style={styles.statLabel}>Tingkat</Text>
             </View>
           </View>
 
-          {/* Sinopsis / Deskripsi */}
+          {/* Card Khusus Info Stok & Inventaris Rak */}
+          <View style={styles.stockCard}>
+            <View style={styles.stockCardHeader}>
+              <Ionicons name="file-tray-full" size={18} color={colors.primaryDark} />
+              <Text style={styles.stockCardTitle}>Informasi Stok Fisik & Rak Kafe</Text>
+            </View>
+            <View style={styles.stockGrid}>
+              <View style={styles.stockItem}>
+                <Text style={styles.stockItemLabel}>Jumlah Fisik:</Text>
+                <Text style={styles.stockItemValue}>{stockCount} Box Tersedia</Text>
+              </View>
+              <View style={styles.stockItem}>
+                <Text style={styles.stockItemLabel}>Status Pinjam:</Text>
+                <Text style={[styles.stockItemValue, { color: colors.success }]}>
+                  Siap Dimainkan
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.stockNote}>
+              💡 Catatan Reservasi: Jika pada sesi waktu tertentu stok game ini sedang dipesan meja lain, Anda dapat memilih sesi jam berikutnya.
+            </Text>
+          </View>
+
+          {/* Sinopsis & Deskripsi dengan Info Stok Terintegrasi */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Sinopsis & Tema</Text>
+            <Text style={styles.sectionTitle}>Deskripsi Permainan</Text>
             <Text style={styles.sectionBody}>
               {game.description || "Tidak ada deskripsi khusus untuk game ini."}
             </Text>
+            <View style={styles.descStockBox}>
+              <Ionicons name="information-circle" size={16} color={colors.secondary} />
+              <Text style={styles.descStockText}>
+                Stok tersedia di MeepleCafe: {stockCount} set box lengkap siap dimainkan bersama teman atau keluarga.
+              </Text>
+            </View>
           </View>
 
           {/* Tutorial / Rangkuman Aturan Main */}
@@ -167,7 +204,7 @@ export default function GameDetailScreen({ route, navigation }) {
           activeOpacity={0.88}
           onPress={handleSelectGameAndChooseTable}
         >
-          <Ionicons name="restaurant-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Ionicons name="calendar-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
           <Text style={styles.ctaText}>Pilih Game Ini & Lanjut Reservasi Meja</Text>
         </TouchableOpacity>
       </View>
@@ -244,9 +281,9 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 16,
     paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     backgroundColor: colors.background,
     borderRadius: 12,
     borderWidth: 1,
@@ -257,15 +294,60 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   statValue: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "bold",
     color: colors.text,
     marginTop: 4
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: colors.textMuted,
     marginTop: 2
+  },
+  stockCard: {
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 18
+  },
+  stockCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8
+  },
+  stockCardTitle: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: colors.primaryDark,
+    marginLeft: 6
+  },
+  stockGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderColor: "#FCD34D"
+  },
+  stockItem: {
+    flex: 1
+  },
+  stockItemLabel: {
+    fontSize: 11,
+    color: "#78350F"
+  },
+  stockItemValue: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#92400E",
+    marginTop: 2
+  },
+  stockNote: {
+    fontSize: 11,
+    color: "#78350F",
+    marginTop: 8,
+    lineHeight: 16
   },
   section: {
     marginBottom: 20
@@ -284,6 +366,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
     lineHeight: 22
+  },
+  descStockBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F0FDFA",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 10
+  },
+  descStockText: {
+    fontSize: 12,
+    color: "#0F766E",
+    marginLeft: 6,
+    fontWeight: "500",
+    flex: 1
   },
   rulesBox: {
     flexDirection: "row",

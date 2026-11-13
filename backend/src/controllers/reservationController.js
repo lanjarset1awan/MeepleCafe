@@ -20,6 +20,19 @@ export const ReservationController = {
     }
   },
 
+  async checkAvailability(req, res) {
+    try {
+      const { date, table_id, game_title } = req.query;
+      if (!date) {
+        return res.status(400).json({ error: "Date parameter is required" });
+      }
+      const availability = await ReservationModel.checkAvailability(date, table_id, game_title);
+      res.json(availability);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
+
   async create(req, res) {
     try {
       const { customer_name, customer_phone, table_id, reservation_date, session_time, guest_count } = req.body;
@@ -31,7 +44,7 @@ export const ReservationController = {
       const reservation = await ReservationModel.create(req.body);
       res.status(201).json(reservation);
     } catch (err) {
-      res.status(400).json({ error: err.message });
+      res.status(err.status || 400).json({ error: err.message });
     }
   },
 
@@ -57,4 +70,3 @@ export const ReservationController = {
     }
   }
 };
-
