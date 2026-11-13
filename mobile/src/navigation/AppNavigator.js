@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import GameListScreen from "../screens/GameListScreen";
 import GameDetailScreen from "../screens/GameDetailScreen";
+import GameInventoryScreen from "../screens/GameInventoryScreen";
 import TableListScreen from "../screens/TableListScreen";
 import TableDetailScreen from "../screens/TableDetailScreen";
 import BookingFormScreen from "../screens/BookingFormScreen";
@@ -15,11 +16,12 @@ import { colors } from "../theme/colors";
 
 const Tab = createBottomTabNavigator();
 const GameStack = createNativeStackNavigator();
+const InventoryStack = createNativeStackNavigator();
 const TableStack = createNativeStackNavigator();
 const TicketStack = createNativeStackNavigator();
 const ProfileStack = createNativeStackNavigator();
 
-// 1. Stack Katalog Game
+// 1. Stack Katalog Game (Visual Cards & Tutorial)
 function GameStackNavigator() {
   return (
     <GameStack.Navigator
@@ -45,7 +47,33 @@ function GameStackNavigator() {
   );
 }
 
-// 2. Stack Reservasi Meja
+// 2. Stack Daftar Game (Compact Inventory Rak Kafe & Stok)
+function InventoryStackNavigator() {
+  return (
+    <InventoryStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.darkBg },
+        headerTintColor: "#FFFFFF",
+        headerTitleStyle: { fontWeight: "bold" }
+      }}
+    >
+      <InventoryStack.Screen
+        name="GameInventory"
+        component={GameInventoryScreen}
+        options={{ headerShown: false }}
+      />
+      <InventoryStack.Screen
+        name="GameDetail"
+        component={GameDetailScreen}
+        options={({ route }) => ({
+          title: route.params?.title || "Detail Permainan"
+        })}
+      />
+    </InventoryStack.Navigator>
+  );
+}
+
+// 3. Stack Reservasi Meja
 function TableStackNavigator() {
   return (
     <TableStack.Navigator
@@ -78,7 +106,7 @@ function TableStackNavigator() {
   );
 }
 
-// 3. Stack Tiket
+// 4. Stack Tiket
 function TicketStackNavigator() {
   return (
     <TicketStack.Navigator
@@ -97,7 +125,7 @@ function TicketStackNavigator() {
   );
 }
 
-// 4. Stack Profile
+// 5. Stack Profile
 function ProfileStackNavigator() {
   return (
     <ProfileStack.Navigator
@@ -116,7 +144,7 @@ function ProfileStackNavigator() {
   );
 }
 
-// Main Bottom Tab Navigator (Modul 6)
+// Main Bottom Tab Navigator (5 Tab Sesuai Kebutuhan)
 export default function AppNavigator() {
   return (
     <Tab.Navigator
@@ -128,19 +156,21 @@ export default function AppNavigator() {
           backgroundColor: colors.card,
           borderTopWidth: 1,
           borderColor: colors.border,
-          height: 60,
+          height: 62,
           paddingBottom: 8,
           paddingTop: 6
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: "600"
         },
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
           if (route.name === "GameTab") {
-            iconName = focused ? "cube" : "cube-outline";
+            iconName = focused ? "albums" : "albums-outline";
+          } else if (route.name === "InventoryTab") {
+            iconName = focused ? "list" : "list-outline";
           } else if (route.name === "TableTab") {
             iconName = focused ? "restaurant" : "restaurant-outline";
           } else if (route.name === "TicketsTab") {
@@ -149,14 +179,19 @@ export default function AppNavigator() {
             iconName = focused ? "person" : "person-outline";
           }
 
-          return <Ionicons name={iconName} size={22} color={color} />;
+          return <Ionicons name={iconName} size={20} color={color} />;
         }
       })}
     >
       <Tab.Screen
         name="GameTab"
         component={GameStackNavigator}
-        options={{ tabBarLabel: "Katalog Game" }}
+        options={{ tabBarLabel: "Katalog" }}
+      />
+      <Tab.Screen
+        name="InventoryTab"
+        component={InventoryStackNavigator}
+        options={{ tabBarLabel: "Daftar Game" }}
       />
       <Tab.Screen
         name="TableTab"
@@ -176,4 +211,3 @@ export default function AppNavigator() {
     </Tab.Navigator>
   );
 }
-

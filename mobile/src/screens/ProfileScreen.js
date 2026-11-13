@@ -113,11 +113,11 @@ export default function ProfileScreen() {
         </View>
         <View style={styles.specRow}>
           <Text style={styles.specKey}>Navigasi</Text>
-          <Text style={styles.specVal}>Bottom Tabs & Native Stack</Text>
+          <Text style={styles.specVal}>5 Tab Bottom Bar & Native Stack</Text>
         </View>
         <View style={styles.specRow}>
           <Text style={styles.specKey}>Total Halaman</Text>
-          <Text style={styles.specVal}>7 Halaman Aktif</Text>
+          <Text style={styles.specVal}>8 Halaman Terintegrasi</Text>
         </View>
 
         <TouchableOpacity style={styles.githubButton} onPress={openGitHub} activeOpacity={0.85}>
