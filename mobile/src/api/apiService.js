@@ -146,5 +146,11 @@ export const ApiService = {
       }
       throw err;
     }
+  },
+
+  async deleteReservation(id) {
+    return fetchWithFallback(`/api/reservations/${id}`, `reservations?id=eq.${id}`, {
+      method: "DELETE"
+    });
   }
 };

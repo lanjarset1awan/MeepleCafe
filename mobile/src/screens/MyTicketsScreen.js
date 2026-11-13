@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -6,16 +6,54 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 
+/**
+ * Memeriksa apakah waktu sesi reservasi sudah lewat dibandingkan waktu saat ini.
+ * Format tanggal: YYYY-MM-DD
+ * Format sesi: "Sesi Siang (13.00 - 16.00)", "Sesi Sore (16.00 - 19.00)", "Sesi Malam (19.00 - 22.00)", dll.
+ */
+export function isReservationExpired(reservationDateStr, sessionTimeStr) {
+  if (!reservationDateStr) return false;
+
+  const dateParts = reservationDateStr.split("-").map(Number);
+  if (dateParts.length !== 3) return false;
+  const [year, month, day] = dateParts;
+
+  let endHour = 23;
+  let endMinute = 59;
+
+  if (sessionTimeStr) {
+    // Ambil jam selesai di belakang tanda minus: "- 16.00" atau "- 19:00"
+    const endMatch = sessionTimeStr.match(/-\s*(\d{1,2})[.:](\d{2})/);
+    if (endMatch) {
+      endHour = parseInt(endMatch[1], 10);
+      endMinute = parseInt(endMatch[2], 10);
+    } else {
+      const anyMatch = sessionTimeStr.match(/(\d{1,2})[.:](\d{2})/);
+      if (anyMatch) {
+        endHour = Math.min(23, parseInt(anyMatch[1], 10) + 3);
+        endMinute = parseInt(anyMatch[2], 10);
+      }
+    }
+  }
+
+  const sessionEndTime = new Date(year, month - 1, day, endHour, endMinute, 0);
+  const now = new Date();
+
+  return now.getTime() > sessionEndTime.getTime();
+}
+
 export default function MyTicketsScreen({ navigation }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState("active"); // 'active' atau 'expired'
 
   const loadTickets = async () => {
     try {
@@ -43,10 +81,51 @@ export default function MyTicketsScreen({ navigation }) {
     loadTickets();
   };
 
+  // Pisahkan tiket aktif (belum lewat) dan tiket yang sudah kedaluwarsa (lewat jamnya)
+  const { activeTickets, expiredTickets } = useMemo(() => {
+    const active = [];
+    const expired = [];
+
+    (tickets || []).forEach((t) => {
+      if (isReservationExpired(t.reservation_date, t.session_time)) {
+        expired.push(t);
+      } else {
+        active.push(t);
+      }
+    });
+
+    return { activeTickets: active, expiredTickets: expired };
+  }, [tickets]);
+
+  const displayedTickets = activeTab === "active" ? activeTickets : expiredTickets;
+
+  const handleDeleteTicket = (ticketId, bookingCode) => {
+    Alert.alert(
+      "Hapus Tiket",
+      `Apakah Anda yakin ingin menghapus tiket ${bookingCode}?`,
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Hapus",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await ApiService.deleteReservation(ticketId);
+              setTickets((prev) => prev.filter((item) => item.id !== ticketId));
+            } catch (err) {
+              Alert.alert("Gagal", "Tidak dapat menghapus tiket saat ini.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const renderTicketCard = ({ item }) => {
     const tableInfo = item.cafe_tables || {};
+    const isExpired = isReservationExpired(item.reservation_date, item.session_time);
 
-    // Ambil judul game dari field game_title atau parsing dari customer_name jika sebelumnya disimpan di sana
+    // Ambil judul game
     let displayGame = item.game_title;
     let displayName = item.customer_name;
 
@@ -63,15 +142,43 @@ export default function MyTicketsScreen({ navigation }) {
     }
 
     return (
-      <View style={styles.ticketCard}>
+      <View style={[styles.ticketCard, isExpired && styles.ticketCardExpired]}>
         {/* Ticket Header */}
-        <View style={styles.ticketHeader}>
+        <View style={[styles.ticketHeader, isExpired && styles.ticketHeaderExpired]}>
           <View>
-            <Text style={styles.ticketBrand}>MEEPLECAFE PASS</Text>
-            <Text style={styles.bookingCode}>{item.booking_code}</Text>
+            <Text style={[styles.ticketBrand, isExpired && styles.ticketBrandExpired]}>
+              {isExpired ? "MEEPLECAFE (EXPIRED)" : "MEEPLECAFE PASS"}
+            </Text>
+            <Text style={[styles.bookingCode, isExpired && styles.bookingCodeExpired]}>
+              {item.booking_code}
+            </Text>
           </View>
-          <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>{item.status || "Confirmed"}</Text>
+
+          <View style={styles.headerRightActions}>
+            <View
+              style={[
+                styles.statusBadge,
+                isExpired ? styles.statusBadgeExpired : styles.statusBadgeActive
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusText,
+                  isExpired ? styles.statusTextExpired : styles.statusTextActive
+                ]}
+              >
+                {isExpired ? "● Kedaluwarsa" : "● Aktif"}
+              </Text>
+            </View>
+
+            {isExpired && (
+              <TouchableOpacity
+                style={styles.btnDelete}
+                onPress={() => handleDeleteTicket(item.id, item.booking_code)}
+              >
+                <Ionicons name="trash-outline" size={16} color={colors.accent} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -85,11 +192,34 @@ export default function MyTicketsScreen({ navigation }) {
         {/* Ticket Body */}
         <View style={styles.ticketBody}>
           {/* Highlight Game Banner */}
-          <View style={styles.gameBanner}>
-            <Ionicons name="cube" size={20} color={colors.primaryDark} />
+          <View
+            style={[
+              styles.gameBanner,
+              isExpired && { backgroundColor: "#F1F5F9" }
+            ]}
+          >
+            <Ionicons
+              name="cube"
+              size={20}
+              color={isExpired ? colors.textMuted : colors.primaryDark}
+            />
             <View style={{ marginLeft: 8, flex: 1 }}>
-              <Text style={styles.gameBannerLabel}>Board Game Dipesan</Text>
-              <Text style={styles.gameBannerTitle}>{displayGame}</Text>
+              <Text
+                style={[
+                  styles.gameBannerLabel,
+                  isExpired && { color: colors.textMuted }
+                ]}
+              >
+                Board Game Dipesan
+              </Text>
+              <Text
+                style={[
+                  styles.gameBannerTitle,
+                  isExpired && { color: colors.textMuted }
+                ]}
+              >
+                {displayGame}
+              </Text>
             </View>
           </View>
 
@@ -108,7 +238,7 @@ export default function MyTicketsScreen({ navigation }) {
             <View style={styles.infoCol}>
               <Text style={styles.infoLabel}>Meja Bermain</Text>
               <Text style={styles.infoValue}>
-                {tableInfo.table_type || "Reguler Table"} ({tableInfo.table_number || "T-01"})
+                {tableInfo.table_type || "Meja Kafe"} ({tableInfo.table_number || "T-01"})
               </Text>
             </View>
             <View style={styles.infoColRight}>
@@ -117,9 +247,26 @@ export default function MyTicketsScreen({ navigation }) {
             </View>
           </View>
 
-          <View style={styles.sessionBanner}>
-            <Ionicons name="time" size={16} color={colors.secondary} />
-            <Text style={styles.sessionBannerText}>{item.session_time}</Text>
+          {/* Session Banner */}
+          <View
+            style={[
+              styles.sessionBanner,
+              isExpired && styles.sessionBannerExpired
+            ]}
+          >
+            <Ionicons
+              name={isExpired ? "hourglass-outline" : "time"}
+              size={16}
+              color={isExpired ? colors.textMuted : colors.secondary}
+            />
+            <Text
+              style={[
+                styles.sessionBannerText,
+                isExpired && styles.sessionBannerTextExpired
+              ]}
+            >
+              {item.session_time} {isExpired ? "(Waktu Reservasi Telah Selesai)" : ""}
+            </Text>
           </View>
         </View>
       </View>
@@ -128,19 +275,64 @@ export default function MyTicketsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerSubtitle}>Booking History</Text>
+        <Text style={styles.headerSubtitle}>Booking Management</Text>
         <Text style={styles.headerTitle}>Tiket Reservasi Saya</Text>
       </View>
 
+      {/* Segmented Filter Tab: Tiket Aktif vs Riwayat Kedaluwarsa */}
+      <View style={styles.tabsRow}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === "active" && styles.tabButtonActive]}
+          onPress={() => setActiveTab("active")}
+        >
+          <Ionicons
+            name="ticket"
+            size={16}
+            color={activeTab === "active" ? "#FFFFFF" : colors.textMuted}
+            style={{ marginRight: 6 }}
+          />
+          <Text
+            style={[
+              styles.tabButtonText,
+              activeTab === "active" && styles.tabButtonTextActive
+            ]}
+          >
+            Tiket Aktif ({activeTickets.length})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === "expired" && styles.tabButtonActive]}
+          onPress={() => setActiveTab("expired")}
+        >
+          <Ionicons
+            name="time-outline"
+            size={16}
+            color={activeTab === "expired" ? "#FFFFFF" : colors.textMuted}
+            style={{ marginRight: 6 }}
+          />
+          <Text
+            style={[
+              styles.tabButtonText,
+              activeTab === "expired" && styles.tabButtonTextActive
+            ]}
+          >
+            Sudah Lewat ({expiredTickets.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Main List */}
       {loading && !refreshing ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Memuat tiket reservasi...</Text>
+          <Text style={styles.loadingText}>Memeriksa status tiket reservasi...</Text>
         </View>
       ) : (
         <FlatList
-          data={tickets}
+          data={displayedTickets}
           keyExtractor={(item) => item.id}
           renderItem={renderTicketCard}
           contentContainerStyle={styles.listContainer}
@@ -153,17 +345,29 @@ export default function MyTicketsScreen({ navigation }) {
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="ticket-outline" size={60} color={colors.textMuted} />
-              <Text style={styles.emptyTitle}>Belum Ada Tiket Reservasi</Text>
-              <Text style={styles.emptySubtitle}>
-                Pilih game dari Katalog Game, lalu pilih meja bermain untuk mendapatkan tiket reservasi Anda!
+              <Ionicons
+                name={activeTab === "active" ? "ticket-outline" : "archive-outline"}
+                size={54}
+                color={colors.textMuted}
+              />
+              <Text style={styles.emptyTitle}>
+                {activeTab === "active"
+                  ? "Tidak Ada Tiket Aktif"
+                  : "Belum Ada Riwayat Kedaluwarsa"}
               </Text>
-              <TouchableOpacity
-                style={styles.browseButton}
-                onPress={() => navigation.navigate("GameTab")}
-              >
-                <Text style={styles.browseButtonText}>Mulai dari Katalog Game</Text>
-              </TouchableOpacity>
+              <Text style={styles.emptySubtitle}>
+                {activeTab === "active"
+                  ? "Tiket yang sudah lewat jam reservasinya otomatis dipindahkan ke tab 'Sudah Lewat' agar daftar Anda tetap rapi."
+                  : "Semua tiket reservasi Anda saat ini masih aktif dan belum melewati batas jam sesi."}
+              </Text>
+              {activeTab === "active" && (
+                <TouchableOpacity
+                  style={styles.browseButton}
+                  onPress={() => navigation.navigate("GameTab")}
+                >
+                  <Text style={styles.browseButtonText}>Reservasi Tiket Baru</Text>
+                </TouchableOpacity>
+              )}
             </View>
           }
         />
@@ -196,14 +400,50 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     marginTop: 4
   },
+  tabsRow: {
+    flexDirection: "row",
+    backgroundColor: colors.card,
+    marginHorizontal: 16,
+    marginTop: -14,
+    padding: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 }
+  },
+  tabButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 9,
+    borderRadius: 8
+  },
+  tabButtonActive: {
+    backgroundColor: colors.primary
+  },
+  tabButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.textMuted
+  },
+  tabButtonTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "bold"
+  },
   listContainer: {
     padding: 16,
+    paddingTop: 12,
     paddingBottom: 30
   },
   ticketCard: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    marginBottom: 20,
+    marginBottom: 18,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 3,
@@ -211,6 +451,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 }
+  },
+  ticketCardExpired: {
+    opacity: 0.72,
+    borderColor: "#E2E8F0"
   },
   ticketHeader: {
     flexDirection: "row",
@@ -221,11 +465,17 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16
   },
+  ticketHeaderExpired: {
+    backgroundColor: "#F1F5F9"
+  },
   ticketBrand: {
     fontSize: 11,
     fontWeight: "700",
     color: colors.primary,
     letterSpacing: 1.5
+  },
+  ticketBrandExpired: {
+    color: colors.textMuted
   },
   bookingCode: {
     fontSize: 20,
@@ -233,16 +483,40 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginTop: 2
   },
+  bookingCodeExpired: {
+    color: colors.textMuted,
+    textDecorationLine: "line-through"
+  },
+  headerRightActions: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
   statusBadge: {
-    backgroundColor: "#DCFCE7",
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 20
   },
+  statusBadgeActive: {
+    backgroundColor: "#DCFCE7"
+  },
+  statusBadgeExpired: {
+    backgroundColor: "#F1F5F9"
+  },
   statusText: {
-    fontSize: 12,
-    fontWeight: "bold",
+    fontSize: 11,
+    fontWeight: "bold"
+  },
+  statusTextActive: {
     color: "#166534"
+  },
+  statusTextExpired: {
+    color: colors.textMuted
+  },
+  btnDelete: {
+    marginLeft: 8,
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: "#FEE2E2"
   },
   dividerRow: {
     flexDirection: "row",
@@ -328,11 +602,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 6
   },
+  sessionBannerExpired: {
+    backgroundColor: "#F8FAFC"
+  },
   sessionBannerText: {
     fontSize: 12,
     fontWeight: "700",
     color: colors.secondary,
     marginLeft: 6
+  },
+  sessionBannerTextExpired: {
+    color: colors.textMuted
   },
   centerContainer: {
     flex: 1,
@@ -345,7 +625,7 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     alignItems: "center",
-    marginTop: 60,
+    marginTop: 50,
     paddingHorizontal: 24
   },
   emptyTitle: {
