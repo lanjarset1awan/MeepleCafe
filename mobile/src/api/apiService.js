@@ -1,4 +1,4 @@
-import { DEFAULT_BACKEND_URL, SUPABASE_URL, SUPABASE_KEY } from "./config";
+import { DEFAULT_BACKEND_URL, SUPABASE_URL, SUPABASE_KEY } from "./config.js";
 
 /**
  * Helper fetch dengan pembersihan header & auto-fallback ke Supabase Cloud
