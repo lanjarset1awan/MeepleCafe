@@ -1,48 +1,73 @@
 import { DEFAULT_BACKEND_URL, SUPABASE_URL, SUPABASE_KEY } from "./config";
 
 /**
- * Helper fetch dengan timeout dan auto-fallback ke Supabase Cloud
+ * Helper fetch dengan pembersihan header & auto-fallback ke Supabase Cloud
  */
 async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
   const backendUrl = `${DEFAULT_BACKEND_URL}${endpoint}`;
 
+  // 1. Coba hubungi backend local terlebih dahulu jika bukan localhost di HP
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-    const response = await fetch(backendUrl, {
-      ...options,
-      signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {})
+    const cleanHeaders = {
+      "Content-Type": "application/json"
+    };
+    if (options.headers) {
+      for (const [k, v] of Object.entries(options.headers)) {
+        if (v !== undefined && v !== null) {
+          cleanHeaders[k] = String(v);
+        }
       }
-    });
-    clearTimeout(timeoutId);
+    }
 
+    const fetchOptions = {
+      method: options.method || "GET",
+      headers: cleanHeaders
+    };
+    if (options.body) {
+      fetchOptions.body = options.body;
+    }
+
+    const response = await fetch(backendUrl, fetchOptions);
     if (response.ok) {
       return await response.json();
     }
   } catch (err) {
-    console.warn(`Backend local tidak merespons (${backendUrl}), beralih ke Supabase Cloud...`);
+    // Abaikan jika server lokal belum aktif, lanjutkan ke Supabase Cloud
   }
 
-  // Fallback: Langsung akses Supabase Cloud
+  // 2. Fallback: Langsung akses Supabase Cloud
   const supabaseUrl = `${SUPABASE_URL}/rest/v1/${supabaseTable}`;
-  const response = await fetch(supabaseUrl, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`,
-      Prefer: options.method === "POST" ? "return=representation" : undefined,
-      ...(options.headers || {})
+  const supabaseHeaders = {
+    "Content-Type": "application/json",
+    "apikey": SUPABASE_KEY,
+    "Authorization": `Bearer ${SUPABASE_KEY}`
+  };
+
+  if (options.method === "POST") {
+    supabaseHeaders["Prefer"] = "return=representation";
+  }
+
+  if (options.headers) {
+    for (const [k, v] of Object.entries(options.headers)) {
+      if (v !== undefined && v !== null) {
+        supabaseHeaders[k] = String(v);
+      }
     }
-  });
+  }
+
+  const supabaseOptions = {
+    method: options.method || "GET",
+    headers: supabaseHeaders
+  };
+  if (options.body) {
+    supabaseOptions.body = options.body;
+  }
+
+  const response = await fetch(supabaseUrl, supabaseOptions);
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Gagal memuat data: ${errText}`);
+    throw new Error(`Gagal memuat data dari Supabase: ${errText}`);
   }
 
   const result = await response.json();
@@ -63,7 +88,10 @@ export const ApiService = {
   },
 
   async getGameById(id) {
-    return fetchWithFallback(`/api/games/${id}`, `board_games?id=eq.${id}&select=*,game_categories(id,name)&single=true`);
+    return fetchWithFallback(
+      `/api/games/${id}`,
+      `board_games?id=eq.${id}&select=*,game_categories(id,name)&single=true`
+    );
   },
 
   // 2. Meja Kafe (List Utama 2 & Detail)
@@ -77,11 +105,13 @@ export const ApiService = {
 
   // 3. Reservasi / Booking Meja
   async getReservations() {
-    return fetchWithFallback("/api/reservations", "reservations?select=*,cafe_tables(*)&order=created_at.desc");
+    return fetchWithFallback(
+      "/api/reservations",
+      "reservations?select=*,cafe_tables(*)&order=created_at.desc"
+    );
   },
 
   async createReservation(payload) {
-    // Generate booking code if missing
     if (!payload.booking_code) {
       const code = Math.floor(1000 + Math.random() * 9000);
       payload.booking_code = `MC-${code}`;
