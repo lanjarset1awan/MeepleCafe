@@ -125,20 +125,37 @@ export default function MyTicketsScreen({ navigation }) {
     const tableInfo = item.cafe_tables || {};
     const isExpired = isReservationExpired(item.reservation_date, item.session_time);
 
-    // Ambil judul game
+    // Ambil judul game, total bayar, dan metode pembayaran
     let displayGame = item.game_title;
-    let displayName = item.customer_name;
+    let displayName = item.customer_name || "";
+    let displayTotal = null;
+    let displayMethod = null;
 
-    if (!displayGame && displayName && displayName.includes("[Game:")) {
+    if (displayName.includes("[Game:")) {
       const match = displayName.match(/\[Game:\s*(.+?)\]/);
-      if (match) {
-        displayGame = match[1];
-        displayName = displayName.replace(/\[Game:\s*.+?\]/, "").trim();
-      }
+      if (match) displayGame = match[1];
     }
+    if (displayName.includes("[Total:")) {
+      const match = displayName.match(/\[Total:\s*(.+?)\]/);
+      if (match) displayTotal = match[1];
+    }
+    if (displayName.includes("[Metode:")) {
+      const match = displayName.match(/\[Metode:\s*(.+?)\]/);
+      if (match) displayMethod = match[1];
+    }
+
+    displayName = displayName.replace(/\[.+?\]/g, "").trim();
 
     if (!displayGame) {
       displayGame = "Board Game Bebas Pilih di Rak";
+    }
+    if (!displayMethod) {
+      displayMethod = "Transfer Bank";
+    }
+    if (!displayTotal) {
+      displayTotal = tableInfo.price_per_hour
+        ? `Rp ${Number(tableInfo.price_per_hour).toLocaleString("id-ID")}`
+        : "Rp 30.000";
     }
 
     return (
@@ -267,6 +284,18 @@ export default function MyTicketsScreen({ navigation }) {
             >
               {item.session_time} {isExpired ? "(Waktu Reservasi Telah Selesai)" : ""}
             </Text>
+          </View>
+
+          {/* Payment & Total Info Row */}
+          <View style={styles.paymentInfoRow}>
+            <View style={styles.paymentTagTotal}>
+              <Ionicons name="wallet-outline" size={14} color={colors.primaryDark} />
+              <Text style={styles.paymentTagTotalText}>Total: {displayTotal}</Text>
+            </View>
+            <View style={styles.paymentTagMethod}>
+              <Ionicons name="checkmark-circle" size={14} color="#166534" />
+              <Text style={styles.paymentTagMethodText}>{displayMethod} (Lunas)</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -613,6 +642,43 @@ const styles = StyleSheet.create({
   },
   sessionBannerTextExpired: {
     color: colors.textMuted
+  },
+  paymentInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderColor: colors.border
+  },
+  paymentTagTotal: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  paymentTagTotalText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.primaryDark,
+    marginLeft: 5
+  },
+  paymentTagMethod: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  paymentTagMethodText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#166534",
+    marginLeft: 5
   },
   centerContainer: {
     flex: 1,

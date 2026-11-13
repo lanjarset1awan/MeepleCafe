@@ -1,5 +1,25 @@
 import { supabase } from "../config/supabaseClient.js";
 
+function parseHours(sessionStr) {
+  if (!sessionStr) return { start: 0, end: 0 };
+  const match = sessionStr.match(/(\d{1,2})[.:](\d{2})\s*-\s*(\d{1,2})[.:](\d{2})/);
+  if (match) {
+    return {
+      start: parseInt(match[1], 10) + parseInt(match[2], 10) / 60,
+      end: parseInt(match[3], 10) + parseInt(match[4], 10) / 60
+    };
+  }
+  return { start: 0, end: 0 };
+}
+
+function doOverlap(s1, s2) {
+  const h1 = parseHours(s1);
+  const h2 = parseHours(s2);
+  if (h1.start === 0 && h1.end === 0) return s1 === s2;
+  if (h2.start === 0 && h2.end === 0) return s1 === s2;
+  return h1.start < h2.end && h2.start < h1.end;
+}
+
 export const ReservationModel = {
   async getAll() {
     // Select standard columns first to guarantee compatibility with or without new columns
@@ -70,35 +90,36 @@ export const ReservationModel = {
   },
 
   async create(payload) {
-    // 1. VALIDASI KONFLIK JADWAL (Mencegah double booking meja & game)
+    // 1. VALIDASI KONFLIK JADWAL (Mencegah double booking meja & game dengan pengecekan interval overlap)
     const { data: existingBookings, error: checkError } = await supabase
       .from("reservations")
       .select("id, booking_code, table_id, session_time, customer_name")
-      .eq("reservation_date", payload.reservation_date)
-      .eq("session_time", payload.session_time);
+      .eq("reservation_date", payload.reservation_date);
 
     if (existingBookings && existingBookings.length > 0) {
-      // Cek apakah meja ini sudah dibooking orang pada sesi tersebut
-      const tableConflict = existingBookings.find((b) => b.table_id === payload.table_id);
+      // Cek apakah meja ini sudah dibooking orang pada rentang jam tersebut
+      const tableConflict = existingBookings.find(
+        (b) => b.table_id === payload.table_id && doOverlap(b.session_time, payload.session_time)
+      );
       if (tableConflict) {
         const err = new Error(
-          `Meja ini sudah direservasi pelanggan lain pada ${payload.session_time}. Silakan pilih sesi jam lain atau meja lain!`
+          `Meja ini sudah direservasi pelanggan lain pada rentang jam ${payload.session_time}. Silakan pilih jam lain!`
         );
         err.status = 409;
         throw err;
       }
 
-      // Cek apakah game ini sudah dipinjam di meja lain pada sesi yang sama (stok habis)
+      // Cek apakah game ini sudah dipinjam di meja lain pada rentang jam yang sama (stok habis)
       if (payload.game_title) {
         const gameConflict = existingBookings.filter((b) => {
-          return (
-            b.customer_name && b.customer_name.toLowerCase().includes(payload.game_title.toLowerCase())
-          );
+          const isSameGame =
+            b.customer_name && b.customer_name.toLowerCase().includes(payload.game_title.toLowerCase());
+          return isSameGame && doOverlap(b.session_time, payload.session_time);
         });
 
         if (gameConflict.length >= 1) {
           const err = new Error(
-            `Stok game "${payload.game_title}" sedang habis/dipinjam pada ${payload.session_time}. Silakan pilih sesi jam berikutnya!`
+            `Stok game "${payload.game_title}" sedang habis/dipinjam pada rentang jam ${payload.session_time}. Silakan pilih jam berikutnya!`
           );
           err.status = 409;
           throw err;
