@@ -13,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
+import GameImage from "../components/GameImage";
 
 export default function GameInventoryScreen({ navigation }) {
   const [games, setGames] = useState([]);
@@ -93,14 +94,7 @@ export default function GameInventoryScreen({ navigation }) {
         }
       >
         {/* Thumbnail Small */}
-        <Image
-          source={{
-            uri:
-              item.image_url ||
-              "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=200"
-          }}
-          style={styles.thumbImage}
-        />
+        <GameImage uri={item.image_url} style={styles.thumbImage} />
 
         {/* Info Tengah */}
         <View style={styles.centerInfo}>

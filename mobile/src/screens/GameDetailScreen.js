@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  Image,
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity
@@ -11,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
+import GameImage from "../components/GameImage";
 
 export default function GameDetailScreen({ route, navigation }) {
   const { gameId } = route.params;
@@ -73,14 +73,7 @@ export default function GameDetailScreen({ route, navigation }) {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Banner Image */}
-        <Image
-          source={{
-            uri:
-              game.image_url ||
-              "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=500"
-          }}
-          style={styles.bannerImage}
-        />
+        <GameImage uri={game.image_url} style={styles.bannerImage} />
 
         {/* Floating Header Card */}
         <View style={styles.detailCard}>

@@ -35,6 +35,35 @@ app.use("/api/games", gameRoutes);
 app.use("/api/tables", tableRoutes);
 app.use("/api/reservations", reservationRoutes);
 
+// Image Proxy Endpoint untuk menyajikan gambar CDN secara stabil ke perangkat mobile
+app.get("/api/proxy-image", async (req, res) => {
+  const { url } = req.query;
+  if (!url) {
+    return res.status(400).send("Parameter url diperlukan");
+  }
+
+  try {
+    const upstreamRes = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "Referer": "https://www.gramedia.com/"
+      }
+    });
+
+    if (!upstreamRes.ok) {
+      return res.status(upstreamRes.status).send("Gagal mengambil gambar dari sumber");
+    }
+
+    const contentType = upstreamRes.headers.get("content-type") || "image/jpeg";
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    const arrayBuffer = await upstreamRes.arrayBuffer();
+    return res.send(Buffer.from(arrayBuffer));
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+});
+
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {

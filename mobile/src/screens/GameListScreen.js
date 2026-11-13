@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  Image,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
@@ -13,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
+import GameImage from "../components/GameImage";
 
 export default function GameListScreen({ navigation }) {
   const [games, setGames] = useState([]);
@@ -62,14 +62,7 @@ export default function GameListScreen({ navigation }) {
       activeOpacity={0.88}
       onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title })}
     >
-      <Image
-        source={{
-          uri:
-            item.image_url ||
-            "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=500"
-        }}
-        style={styles.cardImage}
-      />
+      <GameImage uri={item.image_url} style={styles.cardImage} />
       <View style={styles.cardContent}>
         <View style={styles.badgeRow}>
           <View style={styles.categoryBadge}>
