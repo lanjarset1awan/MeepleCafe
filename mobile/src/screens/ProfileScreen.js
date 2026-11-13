@@ -24,7 +24,7 @@ export default function ProfileScreen() {
         <View style={styles.avatarContainer}>
           <Image
             source={{
-              uri: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"
+              uri: "https://mmdrzvvnmoplbdfaiixx.supabase.co/storage/v1/object/public/avatar/2/avatar.png?t=1779476174261"
             }}
             style={styles.avatarImage}
           />
@@ -32,8 +32,8 @@ export default function ProfileScreen() {
         </View>
 
         <Text style={styles.studentName}>Lanjar Setiawan</Text>
-        <Text style={styles.studentNim}>NIM: 211201221XXXXX</Text>
-        <Text style={styles.studentDept}>Teknik Komputer / Elektro</Text>
+        <Text style={styles.studentNim}>NIM: 21120124120023</Text>
+        <Text style={styles.studentDept}>Teknik Komputer</Text>
 
         <View style={styles.tagRow}>
           <View style={styles.tag}>
