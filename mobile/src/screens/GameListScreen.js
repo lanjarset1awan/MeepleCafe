@@ -59,7 +59,7 @@ export default function GameListScreen({ navigation }) {
   const renderGameCard = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
-      activeOpacity={0.85}
+      activeOpacity={0.88}
       onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title })}
     >
       <Image
@@ -106,20 +106,39 @@ export default function GameListScreen({ navigation }) {
             <Ionicons name="time-outline" size={14} color={colors.textMuted} />
             <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
           </View>
+          <View style={styles.metaItem}>
+            <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+            <Text style={[styles.metaText, { color: colors.success, fontWeight: "600" }]}>
+              Siap Main
+            </Text>
+          </View>
         </View>
 
         <Text style={styles.description} numberOfLines={2}>
           {item.description}
         </Text>
+
+        <View style={styles.actionFooter}>
+          <Text style={styles.actionFooterText}>Pelajari Aturan & Pilih Game</Text>
+          <Ionicons name="arrow-forward-circle" size={18} color={colors.primary} />
+        </View>
       </View>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      {/* Header Banner */}
+      {/* Header Banner with Total Count */}
       <View style={styles.header}>
-        <Text style={styles.headerSubtitle}>MeepleCafe Library</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerSubtitle}>MeepleCafe Library</Text>
+          <View style={styles.totalBadge}>
+            <Ionicons name="cube" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <Text style={styles.totalBadgeText}>
+              {games.length} Board Game Tersedia
+            </Text>
+          </View>
+        </View>
         <Text style={styles.headerTitle}>Katalog Koleksi Game</Text>
       </View>
 
@@ -127,7 +146,7 @@ export default function GameListScreen({ navigation }) {
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={20} color={colors.textMuted} />
         <TextInput
-          placeholder="Cari board game..."
+          placeholder="Cari board game (UNO, Monopoly, Catan)..."
           placeholderTextColor={colors.textMuted}
           style={styles.searchInput}
           value={searchQuery}
@@ -173,7 +192,7 @@ export default function GameListScreen({ navigation }) {
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Memuat katalog game...</Text>
+          <Text style={styles.loadingText}>Memuat katalog board game...</Text>
         </View>
       ) : (
         <FlatList
@@ -208,21 +227,39 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 54,
-    paddingBottom: 18,
+    paddingBottom: 22,
     paddingHorizontal: 20
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
   },
   headerSubtitle: {
     fontSize: 12,
     color: colors.primaryLight,
-    fontWeight: "600",
+    fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 1
+  },
+  totalBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryDark,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20
+  },
+  totalBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "bold"
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: "bold",
     color: "#FFFFFF",
-    marginTop: 4
+    marginTop: 6
   },
   searchContainer: {
     flexDirection: "row",
@@ -244,7 +281,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginLeft: 10,
-    fontSize: 15,
+    fontSize: 14,
     color: colors.text
   },
   filterWrapper: {
@@ -344,12 +381,13 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8
   },
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 16
+    marginRight: 14
   },
   metaText: {
     fontSize: 12,
@@ -360,6 +398,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textMuted,
     lineHeight: 18
+  },
+  actionFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderColor: colors.border
+  },
+  actionFooterText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.primary
   },
   centerContainer: {
     flex: 1,

@@ -13,3 +13,4 @@ export const colors = {
   warning: "#EA580C",       // Orange
   darkBg: "#1E293B"         // Deep Slate for Header/Hero
 };
+

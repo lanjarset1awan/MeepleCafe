@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,16 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal,
+  FlatList
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 
 export default function BookingFormScreen({ route, navigation }) {
-  const { tableId, tableNumber, tableType, pricePerHour, capacity } = route.params;
+  const { tableId, tableNumber, tableType, pricePerHour, capacity, selectedGame } = route.params;
 
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -23,11 +25,32 @@ export default function BookingFormScreen({ route, navigation }) {
   const [guestCount, setGuestCount] = useState("4");
   const [loading, setLoading] = useState(false);
 
+  // State untuk Board Game yang dipilih
+  const [chosenGame, setChosenGame] = useState(selectedGame || null);
+  const [allGames, setAllGames] = useState([]);
+  const [gamePickerVisible, setGamePickerVisible] = useState(false);
+
   const sessionOptions = [
     "Sesi Siang (13.00 - 16.00)",
     "Sesi Sore (16.00 - 19.00)",
     "Sesi Malam (19.00 - 22.00)"
   ];
+
+  useEffect(() => {
+    async function loadAllGames() {
+      try {
+        const games = await ApiService.getGames();
+        setAllGames(games || []);
+        // Jika belum ada game terpilih, default ke game pertama
+        if (!chosenGame && games && games.length > 0) {
+          setChosenGame(games[0]);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadAllGames();
+  }, []);
 
   const handleSubmit = async () => {
     if (!customerName.trim() || !customerPhone.trim()) {
@@ -43,25 +66,30 @@ export default function BookingFormScreen({ route, navigation }) {
 
     try {
       setLoading(true);
+      const gameTitle = chosenGame ? chosenGame.title : "General Play";
+      const gameId = chosenGame ? chosenGame.id : null;
+
       const payload = {
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
         table_id: tableId,
         reservation_date: reservationDate,
         session_time: sessionTime,
-        guest_count: count
+        guest_count: count,
+        game_title: gameTitle,
+        game_id: gameId
       };
 
       const result = await ApiService.createReservation(payload);
 
       Alert.alert(
         "Reservasi Berhasil! 🎉",
-        `Kode Booking Anda: ${result.booking_code}\n\nSilakan simpan tiket Anda untuk ditunjukkan kepada kasir kafe.`,
+        `Kode Booking Anda: ${result.booking_code}\n\n🎲 Game: ${gameTitle}\n🪑 Meja: ${tableType} (${tableNumber})\n\nTiket telah diterbitkan, silakan cek di menu Tiket Saya.`,
         [
           {
             text: "Lihat Tiket Saya",
             onPress: () => {
-              // Reset stack meja ke daftar meja dan pindah ke Tab Tiket
+              // Reset stack meja ke daftar meja dan buka Tab Tiket
               navigation.popToTop();
               navigation.navigate("TicketsTab");
             }
@@ -77,13 +105,37 @@ export default function BookingFormScreen({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Table Summary Card */}
+      {/* 1. Paket Reservasi Card (Meja + Game) */}
       <View style={styles.summaryCard}>
-        <View style={styles.summaryBadge}>
-          <Text style={styles.summaryBadgeText}>Meja {tableNumber}</Text>
+        <Text style={styles.summaryHeader}>Ringkasan Paket Reservasi</Text>
+        
+        {/* Game Terpilih */}
+        <View style={styles.summaryItem}>
+          <Ionicons name="cube" size={20} color={colors.primary} />
+          <View style={styles.summaryItemText}>
+            <Text style={styles.summaryItemLabel}>Board Game yang Dipesan:</Text>
+            <Text style={styles.summaryItemValue}>
+              {chosenGame ? chosenGame.title : "Belum memilih game"}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.changeGameBtn}
+            onPress={() => setGamePickerVisible(true)}
+          >
+            <Text style={styles.changeGameBtnText}>Ganti</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.summaryTitle}>{tableType}</Text>
-        <Text style={styles.summarySub}>Kapasitas Meja: Maks. {capacity} Orang</Text>
+
+        {/* Meja Terpilih */}
+        <View style={[styles.summaryItem, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+          <Ionicons name="restaurant" size={20} color={colors.secondary} />
+          <View style={styles.summaryItemText}>
+            <Text style={styles.summaryItemLabel}>Meja / Ruangan Bermain:</Text>
+            <Text style={styles.summaryItemValue}>
+              {tableType} (Meja {tableNumber}) - Maks. {capacity} Orang
+            </Text>
+          </View>
+        </View>
       </View>
 
       <Text style={styles.formHeader}>Lengkapi Informasi Pemesan</Text>
@@ -178,11 +230,57 @@ export default function BookingFormScreen({ route, navigation }) {
           <ActivityIndicator color="#FFFFFF" />
         ) : (
           <>
-            <Ionicons name="checkmark-done" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-            <Text style={styles.submitButtonText}>Konfirmasi & Simpan Reservasi</Text>
+            <Ionicons name="checkmark-done-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text style={styles.submitButtonText}>Konfirmasi & Pesan Meja Sekarang</Text>
           </>
         )}
       </TouchableOpacity>
+
+      {/* Modal Picker untuk Ganti Board Game */}
+      <Modal visible={gamePickerVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Pilih Board Game</Text>
+              <TouchableOpacity onPress={() => setGamePickerVisible(false)}>
+                <Ionicons name="close" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={allGames}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.gamePickerItem,
+                    chosenGame?.id === item.id && styles.gamePickerItemActive
+                  ]}
+                  onPress={() => {
+                    setChosenGame(item);
+                    setGamePickerVisible(false);
+                  }}
+                >
+                  <Ionicons
+                    name="cube-outline"
+                    size={20}
+                    color={chosenGame?.id === item.id ? colors.primary : colors.textMuted}
+                  />
+                  <View style={{ marginLeft: 10, flex: 1 }}>
+                    <Text style={styles.gamePickerTitle}>{item.title}</Text>
+                    <Text style={styles.gamePickerSub}>
+                      {item.min_players}-{item.max_players} Pemain • {item.difficulty}
+                    </Text>
+                  </View>
+                  {chosenGame?.id === item.id && (
+                    <Ionicons name="checkmark" size={20} color={colors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -198,34 +296,57 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     backgroundColor: colors.card,
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
+    borderColor: colors.border,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  summaryHeader: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.primaryDark,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 12
+  },
+  summaryItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingBottom: 12,
+    marginBottom: 12,
+    borderBottomWidth: 1,
     borderColor: colors.border
   },
-  summaryBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 6
+  summaryItemText: {
+    marginLeft: 12,
+    flex: 1
   },
-  summaryBadgeText: {
+  summaryItemLabel: {
     fontSize: 11,
+    color: colors.textMuted
+  },
+  summaryItemValue: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: colors.text,
+    marginTop: 2
+  },
+  changeGameBtn: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  changeGameBtnText: {
+    fontSize: 12,
     fontWeight: "bold",
     color: colors.primaryDark
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.text
-  },
-  summarySub: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 2
   },
   formHeader: {
     fontSize: 16,
@@ -291,6 +412,50 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "bold"
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end"
+  },
+  modalContent: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "75%",
+    padding: 20
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.text
+  },
+  gamePickerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderColor: colors.border
+  },
+  gamePickerItemActive: {
+    backgroundColor: colors.primaryLight,
+    borderRadius: 8
+  },
+  gamePickerTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.text
+  },
+  gamePickerSub: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2
   }
 });
-

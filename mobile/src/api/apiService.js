@@ -125,9 +125,26 @@ export const ApiService = {
       payload.booking_code = `MC-${code}`;
     }
 
-    return fetchWithFallback("/api/reservations", "reservations", {
-      method: "POST",
-      body: JSON.stringify(payload)
-    });
+    try {
+      return await fetchWithFallback("/api/reservations", "reservations", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+    } catch (err) {
+      // Jika kolom game_title belum dibuat di Supabase, fallback simpan di customer_name
+      if (err.message && err.message.includes("PGRST204")) {
+        const sanitized = { ...payload };
+        if (sanitized.game_title && !sanitized.customer_name.includes("[Game:")) {
+          sanitized.customer_name = `${sanitized.customer_name} [Game: ${sanitized.game_title}]`;
+        }
+        delete sanitized.game_title;
+        delete sanitized.game_id;
+        return await fetchWithFallback("/api/reservations", "reservations", {
+          method: "POST",
+          body: JSON.stringify(sanitized)
+        });
+      }
+      throw err;
+    }
   }
 };

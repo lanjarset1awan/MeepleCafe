@@ -13,10 +13,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 
-export default function TableListScreen({ navigation }) {
+export default function TableListScreen({ route, navigation }) {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Menerima game yang dipilih dari alur sebelumnya
+  const selectedGame = route.params?.selectedGame || null;
 
   const loadTables = async () => {
     try {
@@ -48,12 +51,19 @@ export default function TableListScreen({ navigation }) {
     }).format(number);
   };
 
+  const handleSelectTable = (table) => {
+    navigation.navigate("BookingForm", {
+      tableId: table.id,
+      tableNumber: table.table_number,
+      tableType: table.table_type,
+      pricePerHour: table.price_per_hour,
+      capacity: table.capacity,
+      selectedGame: selectedGame // Membawa game yang dipilih ke form booking!
+    });
+  };
+
   const renderTableCard = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.88}
-      onPress={() => navigation.navigate("TableDetail", { tableId: item.id, title: item.table_type })}
-    >
+    <View style={styles.card}>
       <Image
         source={{
           uri:
@@ -67,39 +77,95 @@ export default function TableListScreen({ navigation }) {
           <View style={styles.tableNumberBadge}>
             <Text style={styles.tableNumberText}>Meja {item.table_number}</Text>
           </View>
-          <Text style={styles.priceText}>{formatRupiah(item.price_per_hour)}/jam</Text>
+          <View style={styles.statusPill}>
+            <Text style={styles.statusPillText}>● Tersedia</Text>
+          </View>
         </View>
 
         <Text style={styles.tableType}>{item.table_type}</Text>
 
-        <View style={styles.capacityRow}>
-          <Ionicons name="people" size={16} color={colors.secondary} />
-          <Text style={styles.capacityText}>Kapasitas: Hingga {item.capacity} Orang</Text>
+        <View style={styles.infoMetaRow}>
+          <View style={styles.capacityRow}>
+            <Ionicons name="people" size={16} color={colors.secondary} />
+            <Text style={styles.capacityText}>Kapasitas: Maks. {item.capacity} Orang</Text>
+          </View>
+          <Text style={styles.priceText}>{formatRupiah(item.price_per_hour)}/jam</Text>
         </View>
 
         <Text style={styles.facilitiesText} numberOfLines={2}>
-          Fasilitas: {item.facilities || "Kursi nyaman, papan skor"}
+          Fasilitas: {item.facilities || "Kursi nyaman, pencahayaan khusus board game"}
         </Text>
 
-        <View style={styles.actionRow}>
-          <Text style={styles.viewDetailText}>Lihat Fasilitas & Booking</Text>
-          <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+        <View style={styles.actionButtonsRow}>
+          <TouchableOpacity
+            style={styles.btnDetail}
+            onPress={() => navigation.navigate("TableDetail", { tableId: item.id, title: item.table_type })}
+          >
+            <Text style={styles.btnDetailText}>Info Meja</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.btnSelect}
+            activeOpacity={0.85}
+            onPress={() => handleSelectTable(item)}
+          >
+            <Ionicons name="checkmark-circle-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+            <Text style={styles.btnSelectText}>Pilih Meja Ini</Text>
+          </TouchableOpacity>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   return (
     <View style={styles.container}>
+      {/* Header Banner */}
       <View style={styles.header}>
-        <Text style={styles.headerSubtitle}>Play Area & Seating</Text>
-        <Text style={styles.headerTitle}>Pilihan Meja Bermain</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerSubtitle}>Play Area & Seating</Text>
+          <View style={styles.availableBadge}>
+            <Text style={styles.availableBadgeText}>{tables.length} Tipe Meja Tersedia</Text>
+          </View>
+        </View>
+        <Text style={styles.headerTitle}>Pilih Meja Bermain</Text>
       </View>
+
+      {/* Selected Game Sticky Notification Banner */}
+      {selectedGame ? (
+        <View style={styles.selectedGameBanner}>
+          <View style={styles.gameBannerLeft}>
+            <Ionicons name="cube" size={24} color={colors.primary} />
+            <View style={styles.gameBannerTexts}>
+              <Text style={styles.gameBannerLabel}>Game yang Dipilih:</Text>
+              <Text style={styles.gameBannerTitle}>{selectedGame.title}</Text>
+              <Text style={styles.gameBannerMeta}>
+                {selectedGame.min_players}-{selectedGame.max_players} Pemain ({selectedGame.difficulty})
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.changeGameBtn}
+            onPress={() => navigation.navigate("GameTab")}
+          >
+            <Text style={styles.changeGameBtnText}>Ganti</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={styles.noGameBanner}
+          onPress={() => navigation.navigate("GameTab")}
+        >
+          <Ionicons name="information-circle-outline" size={20} color={colors.primaryDark} />
+          <Text style={styles.noGameBannerText}>
+            Tips: Pilih game terlebih dahulu di menu "Katalog Game" atau pilih meja langsung di bawah.
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Memuat pilihan meja...</Text>
+          <Text style={styles.loadingText}>Memuat pilihan meja kafe...</Text>
         </View>
       ) : (
         <FlatList
@@ -128,24 +194,113 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 54,
-    paddingBottom: 22,
+    paddingBottom: 20,
     paddingHorizontal: 20
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
   },
   headerSubtitle: {
     fontSize: 12,
     color: colors.primaryLight,
-    fontWeight: "600",
+    fontWeight: "700",
     textTransform: "uppercase",
     letterSpacing: 1
+  },
+  availableBadge: {
+    backgroundColor: colors.primaryDark,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20
+  },
+  availableBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "bold"
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: "bold",
     color: "#FFFFFF",
-    marginTop: 4
+    marginTop: 6
+  },
+  selectedGameBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.card,
+    marginHorizontal: 16,
+    marginTop: -14,
+    marginBottom: 10,
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 }
+  },
+  gameBannerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1
+  },
+  gameBannerTexts: {
+    marginLeft: 10,
+    flex: 1
+  },
+  gameBannerLabel: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: "600",
+    textTransform: "uppercase"
+  },
+  gameBannerTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: colors.text
+  },
+  gameBannerMeta: {
+    fontSize: 11,
+    color: colors.primaryDark,
+    marginTop: 2
+  },
+  changeGameBtn: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginLeft: 8
+  },
+  changeGameBtnText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: colors.primaryDark
+  },
+  noGameBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    marginHorizontal: 16,
+    marginTop: -12,
+    marginBottom: 10,
+    padding: 10,
+    borderRadius: 10
+  },
+  noGameBannerText: {
+    fontSize: 12,
+    color: colors.primaryDark,
+    marginLeft: 8,
+    flex: 1,
+    fontWeight: "500"
   },
   listContainer: {
     padding: 16,
+    paddingTop: 8,
     paddingBottom: 24
   },
   card: {
@@ -163,7 +318,7 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: "100%",
-    height: 160,
+    height: 150,
     resizeMode: "cover"
   },
   cardContent: {
@@ -186,10 +341,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 12
   },
-  priceText: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.secondary
+  statusPill: {
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12
+  },
+  statusPillText: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "bold"
   },
   tableType: {
     fontSize: 18,
@@ -197,35 +358,64 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 6
   },
-  capacityRow: {
+  infoMetaRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8
+  },
+  capacityRow: {
+    flexDirection: "row",
+    alignItems: "center"
   },
   capacityText: {
     fontSize: 13,
     color: colors.textMuted,
     marginLeft: 6
   },
+  priceText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.secondary
+  },
   facilitiesText: {
     fontSize: 13,
     color: colors.textMuted,
     lineHeight: 18,
-    marginBottom: 12
+    marginBottom: 14
   },
-  actionRow: {
+  actionButtonsRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "flex-end",
     paddingTop: 10,
     borderTopWidth: 1,
     borderColor: colors.border
   },
-  viewDetailText: {
+  btnDetail: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  btnDetailText: {
     fontSize: 13,
-    fontWeight: "700",
-    color: colors.primary,
-    marginRight: 4
+    fontWeight: "600",
+    color: colors.textMuted
+  },
+  btnSelect: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8
+  },
+  btnSelectText: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#FFFFFF"
   },
   centerContainer: {
     flex: 1,

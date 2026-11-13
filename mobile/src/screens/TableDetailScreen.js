@@ -13,7 +13,7 @@ import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 
 export default function TableDetailScreen({ route, navigation }) {
-  const { tableId } = route.params;
+  const { tableId, selectedGame } = route.params;
   const [table, setTable] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -143,7 +143,8 @@ export default function TableDetailScreen({ route, navigation }) {
               tableNumber: table.table_number,
               tableType: table.table_type,
               pricePerHour: table.price_per_hour,
-              capacity: table.capacity
+              capacity: table.capacity,
+              selectedGame: selectedGame
             })
           }
         >
@@ -330,3 +331,4 @@ const styles = StyleSheet.create({
     fontSize: 15
   }
 });
+

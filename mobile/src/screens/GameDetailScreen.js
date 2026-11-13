@@ -36,7 +36,7 @@ export default function GameDetailScreen({ route, navigation }) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Memuat detail permainan...</Text>
+        <Text style={styles.loadingText}>Memuat detail permainan & tutorial...</Text>
       </View>
     );
   }
@@ -48,6 +48,24 @@ export default function GameDetailScreen({ route, navigation }) {
       </View>
     );
   }
+
+  const handleSelectGameAndChooseTable = () => {
+    // Alur baru: Membawa game yang dipilih ke halaman Meja!
+    navigation.navigate("TableTab", {
+      screen: "TableList",
+      params: {
+        selectedGame: {
+          id: game.id,
+          title: game.title,
+          image_url: game.image_url,
+          min_players: game.min_players,
+          max_players: game.max_players,
+          difficulty: game.difficulty,
+          category: game.game_categories?.name || "General"
+        }
+      }
+    });
+  };
 
   return (
     <View style={styles.container}>
@@ -82,7 +100,7 @@ export default function GameDetailScreen({ route, navigation }) {
                   game.is_available ? styles.statusTextAvailable : styles.statusTextUnavailable
                 ]}
               >
-                {game.is_available ? "● Tersedia di Rak" : "● Sedang Dimainkan"}
+                {game.is_available ? "● Tersedia di Kafe" : "● Sedang Dimainkan"}
               </Text>
             </View>
           </View>
@@ -120,34 +138,37 @@ export default function GameDetailScreen({ route, navigation }) {
             </Text>
           </View>
 
-          {/* Rangkuman Aturan Main */}
+          {/* Tutorial / Rangkuman Aturan Main */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Ringkasan Aturan Main</Text>
+            <View style={styles.sectionTitleRow}>
+              <Ionicons name="book-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+              <Text style={styles.sectionTitle}>Panduan Tutorial & Aturan Bermain</Text>
+            </View>
             <View style={styles.rulesBox}>
               <Ionicons
-                name="information-circle"
+                name="bulb"
                 size={22}
-                color={colors.primary}
-                style={{ marginRight: 8, marginTop: 2 }}
+                color={colors.primaryDark}
+                style={{ marginRight: 10, marginTop: 2 }}
               />
               <Text style={styles.rulesText}>
                 {game.rules_summary ||
-                  "Minta bantuan Game Master kafe untuk panduan tutorial bermain secara langsung."}
+                  "Minta bantuan Game Master kafe kami untuk memandu jalannya permainan langkah demi langkah!"}
               </Text>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      {/* Bottom Floating CTA */}
+      {/* Bottom Floating CTA Button */}
       <View style={styles.bottomBar}>
         <TouchableOpacity
           style={styles.ctaButton}
-          activeOpacity={0.85}
-          onPress={() => navigation.navigate("TableTab")}
+          activeOpacity={0.88}
+          onPress={handleSelectGameAndChooseTable}
         >
-          <Ionicons name="calendar-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-          <Text style={styles.ctaText}>Reservasi Meja Untuk Main Game Ini</Text>
+          <Ionicons name="restaurant-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Text style={styles.ctaText}>Pilih Game Ini & Lanjut Reservasi Meja</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -249,11 +270,15 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 20
   },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: colors.text,
-    marginBottom: 8
+    color: colors.text
   },
   sectionBody: {
     fontSize: 14,
@@ -265,7 +290,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
     padding: 14,
     borderRadius: 12,
-    alignItems: "flex-start"
+    alignItems: "flex-start",
+    marginTop: 4
   },
   rulesText: {
     flex: 1,

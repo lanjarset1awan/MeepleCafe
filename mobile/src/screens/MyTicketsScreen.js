@@ -31,7 +31,6 @@ export default function MyTicketsScreen({ navigation }) {
   };
 
   useEffect(() => {
-    // Re-fetch when screen focuses
     const unsubscribe = navigation.addListener("focus", () => {
       loadTickets();
     });
@@ -46,6 +45,22 @@ export default function MyTicketsScreen({ navigation }) {
 
   const renderTicketCard = ({ item }) => {
     const tableInfo = item.cafe_tables || {};
+
+    // Ambil judul game dari field game_title atau parsing dari customer_name jika sebelumnya disimpan di sana
+    let displayGame = item.game_title;
+    let displayName = item.customer_name;
+
+    if (!displayGame && displayName && displayName.includes("[Game:")) {
+      const match = displayName.match(/\[Game:\s*(.+?)\]/);
+      if (match) {
+        displayGame = match[1];
+        displayName = displayName.replace(/\[Game:\s*.+?\]/, "").trim();
+      }
+    }
+
+    if (!displayGame) {
+      displayGame = "Board Game Bebas Pilih di Rak";
+    }
 
     return (
       <View style={styles.ticketCard}>
@@ -69,10 +84,19 @@ export default function MyTicketsScreen({ navigation }) {
 
         {/* Ticket Body */}
         <View style={styles.ticketBody}>
+          {/* Highlight Game Banner */}
+          <View style={styles.gameBanner}>
+            <Ionicons name="cube" size={20} color={colors.primaryDark} />
+            <View style={{ marginLeft: 8, flex: 1 }}>
+              <Text style={styles.gameBannerLabel}>Board Game Dipesan</Text>
+              <Text style={styles.gameBannerTitle}>{displayGame}</Text>
+            </View>
+          </View>
+
           <View style={styles.infoRow}>
             <View style={styles.infoCol}>
               <Text style={styles.infoLabel}>Nama Pemesan</Text>
-              <Text style={styles.infoValue}>{item.customer_name}</Text>
+              <Text style={styles.infoValue}>{displayName}</Text>
             </View>
             <View style={styles.infoColRight}>
               <Text style={styles.infoLabel}>Pemain</Text>
@@ -82,7 +106,7 @@ export default function MyTicketsScreen({ navigation }) {
 
           <View style={styles.infoRow}>
             <View style={styles.infoCol}>
-              <Text style={styles.infoLabel}>Meja / Ruangan</Text>
+              <Text style={styles.infoLabel}>Meja Bermain</Text>
               <Text style={styles.infoValue}>
                 {tableInfo.table_type || "Reguler Table"} ({tableInfo.table_number || "T-01"})
               </Text>
@@ -94,7 +118,7 @@ export default function MyTicketsScreen({ navigation }) {
           </View>
 
           <View style={styles.sessionBanner}>
-            <Ionicons name="time" size={16} color={colors.primaryDark} />
+            <Ionicons name="time" size={16} color={colors.secondary} />
             <Text style={styles.sessionBannerText}>{item.session_time}</Text>
           </View>
         </View>
@@ -132,13 +156,13 @@ export default function MyTicketsScreen({ navigation }) {
               <Ionicons name="ticket-outline" size={60} color={colors.textMuted} />
               <Text style={styles.emptyTitle}>Belum Ada Tiket Reservasi</Text>
               <Text style={styles.emptySubtitle}>
-                Pilih meja di tab "Meja" dan lakukan pemesanan untuk mulai bermain board game!
+                Pilih game dari Katalog Game, lalu pilih meja bermain untuk mendapatkan tiket reservasi Anda!
               </Text>
               <TouchableOpacity
                 style={styles.browseButton}
-                onPress={() => navigation.navigate("TableTab")}
+                onPress={() => navigation.navigate("GameTab")}
               >
-                <Text style={styles.browseButtonText}>Cari Meja Kafe Sekarang</Text>
+                <Text style={styles.browseButtonText}>Mulai dari Katalog Game</Text>
               </TouchableOpacity>
             </View>
           }
@@ -254,6 +278,26 @@ const styles = StyleSheet.create({
   ticketBody: {
     padding: 16
   },
+  gameBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 14
+  },
+  gameBannerLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: colors.primaryDark,
+    textTransform: "uppercase"
+  },
+  gameBannerTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: colors.primaryDark,
+    marginTop: 1
+  },
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -279,7 +323,7 @@ const styles = StyleSheet.create({
   sessionBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.primaryLight,
+    backgroundColor: "#F0FDFA",
     padding: 10,
     borderRadius: 8,
     marginTop: 6
@@ -287,7 +331,7 @@ const styles = StyleSheet.create({
   sessionBannerText: {
     fontSize: 12,
     fontWeight: "700",
-    color: colors.primaryDark,
+    color: colors.secondary,
     marginLeft: 6
   },
   centerContainer: {

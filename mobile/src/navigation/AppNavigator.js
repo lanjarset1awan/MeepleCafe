@@ -176,3 +176,4 @@ export default function AppNavigator() {
     </Tab.Navigator>
   );
 }
+
