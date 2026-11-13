@@ -1,0 +1,105 @@
+{
+  "info": {
+    "name": "MeepleCafe API - Tugas Akhir PPB",
+    "_postman_id": "meeplecafe-api-collection",
+    "description": "Postman Collection untuk menguji API MeepleCafe (Sesuai Modul 1)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Games",
+      "item": [
+        {
+          "name": "GET All Games",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/games",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "games"]
+            }
+          }
+        },
+        {
+          "name": "GET Game By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/games/fa949de7-fd8e-470e-8e04-98c71e4ff1e3",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "games", "fa949de7-fd8e-470e-8e04-98c71e4ff1e3"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Tables",
+      "item": [
+        {
+          "name": "GET All Tables",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/tables",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "tables"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Reservations",
+      "item": [
+        {
+          "name": "GET All Reservations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/reservations",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "reservations"]
+            }
+          }
+        },
+        {
+          "name": "POST Create Reservation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_name\": \"Lanjar Setiawan\",\n  \"customer_phone\": \"081234567890\",\n  \"table_id\": \"2d688ca5-1dbf-4e9a-bd4c-84d3f0527d2c\",\n  \"reservation_date\": \"2026-11-20\",\n  \"session_time\": \"Malam (18.00 - 21.00)\",\n  \"guest_count\": 4\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/reservations",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "reservations"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+
