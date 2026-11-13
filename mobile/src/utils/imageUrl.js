@@ -32,3 +32,4 @@ export function getBackendProxyUrl(rawUrl) {
 }
 
 export { FALLBACK_BOARDGAME_IMAGE };
+

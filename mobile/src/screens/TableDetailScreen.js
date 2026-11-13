@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
+import GameImage from "../components/GameImage";
 
 export default function TableDetailScreen({ route, navigation }) {
   const { tableId, selectedGame } = route.params;
@@ -65,14 +66,7 @@ export default function TableDetailScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Image
-          source={{
-            uri:
-              table.image_url ||
-              "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500"
-          }}
-          style={styles.bannerImage}
-        />
+        <GameImage uri={table.image_url} style={styles.bannerImage} />
 
         <View style={styles.detailCard}>
           <View style={styles.topRow}>

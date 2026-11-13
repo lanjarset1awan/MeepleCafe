@@ -12,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
+import GameImage from "../components/GameImage";
 
 export default function TableListScreen({ route, navigation }) {
   const [tables, setTables] = useState([]);
@@ -64,14 +65,7 @@ export default function TableListScreen({ route, navigation }) {
 
   const renderTableCard = ({ item }) => (
     <View style={styles.card}>
-      <Image
-        source={{
-          uri:
-            item.image_url ||
-            "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500"
-        }}
-        style={styles.cardImage}
-      />
+      <GameImage uri={item.image_url} style={styles.cardImage} />
       <View style={styles.cardContent}>
         <View style={styles.cardTopRow}>
           <View style={styles.tableNumberBadge}>
