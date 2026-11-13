@@ -6,7 +6,7 @@ import { DEFAULT_BACKEND_URL, SUPABASE_URL, SUPABASE_KEY } from "./config";
 async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
   const backendUrl = `${DEFAULT_BACKEND_URL}${endpoint}`;
 
-  // 1. Coba hubungi backend local terlebih dahulu jika bukan localhost di HP
+  // 1. Coba hubungi backend local terlebih dahulu
   try {
     const cleanHeaders = {
       "Content-Type": "application/json"
@@ -71,8 +71,15 @@ async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
   }
 
   const result = await response.json();
-  if (options.method === "POST" && Array.isArray(result)) {
-    return result[0];
+
+  // Jika hasil berupa array dan yang diminta adalah single item
+  if (Array.isArray(result)) {
+    if (options.method === "POST") {
+      return result[0];
+    }
+    if (options.single) {
+      return result.length > 0 ? result[0] : null;
+    }
   }
   return result;
 }
@@ -90,7 +97,8 @@ export const ApiService = {
   async getGameById(id) {
     return fetchWithFallback(
       `/api/games/${id}`,
-      `board_games?id=eq.${id}&select=*,game_categories(id,name)&single=true`
+      `board_games?id=eq.${id}&select=*,game_categories(id,name)`,
+      { single: true }
     );
   },
 
@@ -100,7 +108,7 @@ export const ApiService = {
   },
 
   async getTableById(id) {
-    return fetchWithFallback(`/api/tables/${id}`, `cafe_tables?id=eq.${id}&single=true`);
+    return fetchWithFallback(`/api/tables/${id}`, `cafe_tables?id=eq.${id}`, { single: true });
   },
 
   // 3. Reservasi / Booking Meja
