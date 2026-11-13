@@ -1,0 +1,314 @@
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { ApiService } from "../api/apiService";
+import { colors } from "../theme/colors";
+
+export default function GameDetailScreen({ route, navigation }) {
+  const { gameId } = route.params;
+  const [game, setGame] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchDetail() {
+      try {
+        setLoading(true);
+        const data = await ApiService.getGameById(gameId);
+        setGame(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDetail();
+  }, [gameId]);
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Memuat detail permainan...</Text>
+      </View>
+    );
+  }
+
+  if (!game) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>Data game tidak ditemukan.</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Banner Image */}
+        <Image
+          source={{
+            uri:
+              game.image_url ||
+              "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=500"
+          }}
+          style={styles.bannerImage}
+        />
+
+        {/* Floating Header Card */}
+        <View style={styles.detailCard}>
+          <View style={styles.badgeRow}>
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryBadgeText}>
+                {game.game_categories?.name || "General"}
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.statusBadge,
+                game.is_available ? styles.statusAvailable : styles.statusUnavailable
+              ]}
+            >
+              <Text
+                style={[
+                  styles.statusText,
+                  game.is_available ? styles.statusTextAvailable : styles.statusTextUnavailable
+                ]}
+              >
+                {game.is_available ? "● Tersedia di Rak" : "● Sedang Dimainkan"}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.title}>{game.title}</Text>
+
+          {/* Quick Stats Grid */}
+          <View style={styles.statsGrid}>
+            <View style={styles.statBox}>
+              <Ionicons name="people" size={20} color={colors.primary} />
+              <Text style={styles.statValue}>
+                {game.min_players}-{game.max_players}
+              </Text>
+              <Text style={styles.statLabel}>Pemain</Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Ionicons name="time" size={20} color={colors.secondary} />
+              <Text style={styles.statValue}>{game.duration_minutes} Mnt</Text>
+              <Text style={styles.statLabel}>Durasi</Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Ionicons name="bar-chart" size={20} color={colors.accent} />
+              <Text style={styles.statValue}>{game.difficulty}</Text>
+              <Text style={styles.statLabel}>Tingkat</Text>
+            </View>
+          </View>
+
+          {/* Sinopsis / Deskripsi */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Sinopsis & Tema</Text>
+            <Text style={styles.sectionBody}>
+              {game.description || "Tidak ada deskripsi khusus untuk game ini."}
+            </Text>
+          </View>
+
+          {/* Rangkuman Aturan Main */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Ringkasan Aturan Main</Text>
+            <View style={styles.rulesBox}>
+              <Ionicons
+                name="information-circle"
+                size={22}
+                color={colors.primary}
+                style={{ marginRight: 8, marginTop: 2 }}
+              />
+              <Text style={styles.rulesText}>
+                {game.rules_summary ||
+                  "Minta bantuan Game Master kafe untuk panduan tutorial bermain secara langsung."}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Bottom Floating CTA */}
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={styles.ctaButton}
+          activeOpacity={0.85}
+          onPress={() => navigation.navigate("TableTab")}
+        >
+          <Ionicons name="calendar-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Text style={styles.ctaText}>Reservasi Meja Untuk Main Game Ini</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background
+  },
+  scrollContent: {
+    paddingBottom: 90
+  },
+  bannerImage: {
+    width: "100%",
+    height: 240,
+    resizeMode: "cover"
+  },
+  detailCard: {
+    marginTop: -20,
+    backgroundColor: colors.card,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  badgeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10
+  },
+  categoryBadge: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  categoryBadgeText: {
+    color: colors.primaryDark,
+    fontWeight: "700",
+    fontSize: 12
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  statusAvailable: {
+    backgroundColor: "#DCFCE7"
+  },
+  statusUnavailable: {
+    backgroundColor: "#FEE2E2"
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: "700"
+  },
+  statusTextAvailable: {
+    color: "#166534"
+  },
+  statusTextUnavailable: {
+    color: "#991B1B"
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: 16
+  },
+  statsGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  statBox: {
+    flex: 1,
+    alignItems: "center"
+  },
+  statValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.text,
+    marginTop: 4
+  },
+  statLabel: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  section: {
+    marginBottom: 20
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: 8
+  },
+  sectionBody: {
+    fontSize: 14,
+    color: colors.textMuted,
+    lineHeight: 22
+  },
+  rulesBox: {
+    flexDirection: "row",
+    backgroundColor: colors.primaryLight,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "flex-start"
+  },
+  rulesText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.primaryDark,
+    lineHeight: 20,
+    fontWeight: "500"
+  },
+  bottomBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.card,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderColor: colors.border
+  },
+  ctaButton: {
+    backgroundColor: colors.primary,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 12
+  },
+  ctaText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold"
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  loadingText: {
+    marginTop: 10,
+    color: colors.textMuted
+  },
+  errorText: {
+    color: colors.accent,
+    fontSize: 15
+  }
+});
