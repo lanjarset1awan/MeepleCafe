@@ -61,11 +61,9 @@ export default function BookingFormScreen({ route, navigation }) {
           {
             text: "Lihat Tiket Saya",
             onPress: () => {
-              // Navigasi ke Tab Tiket
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "MainTabs", params: { screen: "TicketsTab" } }]
-              });
+              // Reset stack meja ke daftar meja dan pindah ke Tab Tiket
+              navigation.popToTop();
+              navigation.navigate("TicketsTab");
             }
           }
         ]
@@ -295,3 +293,4 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   }
 });
+
