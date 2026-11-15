@@ -87,7 +87,7 @@ export default function ProfileScreen() {
           <View style={styles.infoContent}>
             <Text style={styles.infoHeading}>Alamat Kafe</Text>
             <Text style={styles.infoDesc}>
-              Jl. Prof. Sudarto, Tembalang, Semarang (Dekat Kampus UNDIP)
+              Jl. Graha Prasetya IV No.65, Pedalangan, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50268
             </Text>
           </View>
         </View>
