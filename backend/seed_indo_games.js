@@ -20,7 +20,7 @@ const games = [
     max_players: 6,
     duration_minutes: 90,
     difficulty: "Medium",
-    image_url: "https://images.unsplash.com/photo-1563089145-599997674d42?w=500",
+    image_url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8Ae6I467lJ25MZ19twZ11NIpemioePCAs-GeIGuqOsQ&s=10",
     description: "Permainan papan transaksi properti paling legendaris. Beli petak kota-kota besar di Indonesia, bangun rumah dan hotel, serta buat lawan bangkrut dengan biaya sewa.",
     rules_summary: "Lempar dadu untuk berkeliling papan. Beli tanah yang kosong, tarik uang sewa jika pemain lain singgah di propertimu. Hindari masuk penjara!",
     is_available: true
