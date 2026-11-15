@@ -237,36 +237,39 @@ export default function MyTicketsScreen({ navigation }) {
 
         {/* Ticket Body */}
         <View style={styles.ticketBody}>
-          {/* Highlight Game Banner */}
+          {/* Label Board Game Dipesan (di atas kotakan judul agar mudah & jelas dibaca) */}
+          <Text
+            style={[
+              styles.gameSectionLabel,
+              isExpired && styles.gameSectionLabelExpired
+            ]}
+          >
+            Board Game Dipesan
+          </Text>
+
+          {/* Kotakan Khusus Judul Game */}
           <View
             style={[
               styles.gameBanner,
-              isExpired && { backgroundColor: "#F1F5F9" }
+              isExpired && styles.gameBannerExpired
             ]}
           >
-            <Ionicons
-              name="cube"
-              size={20}
-              color={isExpired ? colors.textMuted : colors.primaryDark}
-            />
-            <View style={{ marginLeft: 8, flex: 1 }}>
-              <Text
-                style={[
-                  styles.gameBannerLabel,
-                  isExpired && { color: colors.textMuted }
-                ]}
-              >
-                Board Game Dipesan
-              </Text>
-              <Text
-                style={[
-                  styles.gameBannerTitle,
-                  isExpired && { color: colors.textMuted }
-                ]}
-              >
-                {displayGame}
-              </Text>
+            <View style={[styles.gameIconBadge, isExpired && styles.gameIconBadgeExpired]}>
+              <Ionicons
+                name="cube"
+                size={18}
+                color={isExpired ? colors.textMuted : colors.primary}
+              />
             </View>
+            <Text
+              style={[
+                styles.gameBannerTitle,
+                isExpired && styles.gameBannerTitleExpired
+              ]}
+              numberOfLines={2}
+            >
+              {displayGame}
+            </Text>
           </View>
 
           <View style={styles.infoRow}>
@@ -623,25 +626,52 @@ const styles = StyleSheet.create({
   ticketBody: {
     padding: 16
   },
+  gameSectionLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 6
+  },
+  gameSectionLabelExpired: {
+    color: "#94A3B8"
+  },
   gameBanner: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primaryLight,
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 14
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    marginBottom: 16
   },
-  gameBannerLabel: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: colors.primaryDark,
-    textTransform: "uppercase"
+  gameBannerExpired: {
+    backgroundColor: "#F1F5F9",
+    borderColor: "#E2E8F0"
+  },
+  gameIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10
+  },
+  gameIconBadgeExpired: {
+    backgroundColor: "#E2E8F0"
   },
   gameBannerTitle: {
     fontSize: 15,
-    fontWeight: "bold",
-    color: colors.primaryDark,
-    marginTop: 1
+    fontWeight: "700",
+    color: "#78350F",
+    flex: 1
+  },
+  gameBannerTitleExpired: {
+    color: colors.textMuted
   },
   infoRow: {
     flexDirection: "row",
