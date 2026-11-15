@@ -84,6 +84,18 @@ const games = [
     description: "Board game asli karya anak bangsa Indonesia! Berperan sebagai pemilik warung kuliner tradisional yang bersaing membeli bahan baku di pasar dan memasak hidangan khas Nusantara.",
     rules_summary: "Kunjungi pasar tradisional, kumpulkan resep Rendang, Sate, Gado-Gado, layani pelanggan dan raih reputasi warung nomor satu di Indonesia.",
     is_available: true
+  },
+  {
+    title: "Catur Klasik",
+    category_id: "9b7b06eb-e194-443c-a65c-1fa7405d974f", // Strategy
+    min_players: 2,
+    max_players: 2,
+    duration_minutes: 30,
+    difficulty: "Medium",
+    image_url: "https://image.made-in-china.com/202f0j00fULZksbyENcT/High-Quality-Wooden-Chess-Game-Set-Outdoor-Game-Gift.webp",
+    description: "Permainan papan strategi dua pemain paling terkenal dan abadi sepanjang masa. Menggunakan papan kayu 64 petak, pemain mengendalikan 16 buah catur (Raja, Ratu, Benteng, Gajah, Kuda, dan Pion) untuk menyusun taktik dan menyekakmat (checkmate) Raja lawan.",
+    rules_summary: "Setiap buah catur memiliki pola langkah unik (Benteng lurus, Gajah diagonal, Kuda berbentuk L, Ratu ke segala arah). Lindungi Raja sendiri sembari mengancam dan mengunci posisi Raja lawan hingga Skakmat.",
+    is_available: true
   }
 ];
 
