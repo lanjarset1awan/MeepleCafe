@@ -61,12 +61,36 @@ export default function BookingFormScreen({ route, navigation }) {
     selectedGame
   } = route.params;
 
+  const todayStr = useMemo(() => getFormattedDate(0), []);
+  const currentNow = new Date();
+  const currentHourNow = currentNow.getHours();
+
+  // Jika hari ini sudah jam 20.00 ke atas (kafe tutup jam 21.00), default otomatis ke Besok
+  const initialDate = currentHourNow >= 20 ? getFormattedDate(1) : todayStr;
+
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [reservationDate, setReservationDate] = useState(getFormattedDate(0));
+  const [reservationDate, setReservationDate] = useState(initialDate);
 
-  // Pemilihan Jam Mulai (10.00 s/d 20.00) & Durasi (1 - 4 Jam)
-  const [startHour, setStartHour] = useState(14); // default 14:00
+  // Daftar opsi jam mulai (10.00 sampai 20.00 karena kafe tutup jam 21.00)
+  const startHourOptions = useMemo(() => {
+    const hours = [];
+    for (let h = OPENING_HOUR; h < CLOSING_HOUR; h++) {
+      hours.push(h);
+    }
+    return hours;
+  }, []);
+
+  // Hitung jam mulai default yang valid (belum lewat)
+  const initialStartHour = useMemo(() => {
+    if (reservationDate === todayStr) {
+      const nextHour = startHourOptions.find((h) => h > currentHourNow);
+      return nextHour || 14;
+    }
+    return 14;
+  }, [reservationDate, todayStr, currentHourNow, startHourOptions]);
+
+  const [startHour, setStartHour] = useState(initialStartHour);
   const [durationHours, setDurationHours] = useState(2); // default 2 Jam
 
   const [guestCount, setGuestCount] = useState("4");
@@ -85,14 +109,27 @@ export default function BookingFormScreen({ route, navigation }) {
   // Data reservasi aktif dari database untuk validasi slot & bentrok
   const [activeReservations, setActiveReservations] = useState([]);
 
-  // Daftar opsi jam mulai (10.00 sampai 20.00 karena kafe tutup jam 21.00)
-  const startHourOptions = useMemo(() => {
-    const hours = [];
-    for (let h = OPENING_HOUR; h < CLOSING_HOUR; h++) {
-      hours.push(h);
+  // Cek apakah tanggal yang dipilih adalah hari ini
+  const isSelectedDateToday = reservationDate === todayStr;
+
+  // Fungsi pengecekan apakah jam tertentu sudah lewat untuk hari ini
+  const isHourPassed = (hour) => {
+    if (!isSelectedDateToday) return false;
+    const now = new Date();
+    return now.getHours() >= hour;
+  };
+
+  const isAllTodayPassed = isSelectedDateToday && currentHourNow >= 20;
+
+  // Sesuaikan startHour saat tanggal berganti
+  useEffect(() => {
+    if (isSelectedDateToday) {
+      const nextH = startHourOptions.find((h) => !isHourPassed(h));
+      if (nextH) {
+        setStartHour(nextH);
+      }
     }
-    return hours;
-  }, []);
+  }, [reservationDate, isSelectedDateToday]);
 
   // Durasi maksimal yang diizinkan agar tidak melebihi jam 21.00 (tutup kafe)
   const maxAllowedDuration = Math.max(1, CLOSING_HOUR - startHour);
@@ -177,11 +214,20 @@ export default function BookingFormScreen({ route, navigation }) {
 
   // Cek ketersediaan slot untuk rentang jam yang dipilih
   const slotStatus = useMemo(() => {
+    // Validasi 1: Jika jam yang dipilih sudah lewat untuk hari ini
+    if (isHourPassed(startHour)) {
+      return {
+        available: false,
+        reason: "Jam Sudah Terlewati",
+        detail: `Pukul ${startFormatted} sudah lewat untuk hari ini. Silakan pilih jam berikutnya atau pilih tanggal besok.`
+      };
+    }
+
     const matchingDateReservations = activeReservations.filter(
       (r) => r.reservation_date === reservationDate && r.status !== "Cancelled"
     );
 
-    // Cek apakah meja ini sudah dibooking orang pada rentang jam ini
+    // Validasi 2: Cek bentrok meja pada rentang jam ini
     const tableConflict = matchingDateReservations.find(
       (r) => r.table_id === tableId && doOverlap(r.session_time, currentSessionTime)
     );
@@ -194,7 +240,7 @@ export default function BookingFormScreen({ route, navigation }) {
       };
     }
 
-    // Cek apakah stok game ini sudah habis dipinjam di meja lain pada jam yang sama
+    // Validasi 3: Cek stok game pada rentang jam yang sama
     if (chosenGame) {
       const gameBookedCount = matchingDateReservations.filter((r) => {
         const matchGame =
@@ -218,7 +264,17 @@ export default function BookingFormScreen({ route, navigation }) {
       reason: "Slot Tersedia",
       detail: "Jam dan meja ini siap dipesan."
     };
-  }, [activeReservations, reservationDate, tableId, chosenGame, currentSessionTime, tableNumber]);
+  }, [
+    activeReservations,
+    reservationDate,
+    tableId,
+    chosenGame,
+    currentSessionTime,
+    tableNumber,
+    startHour,
+    startFormatted,
+    isSelectedDateToday
+  ]);
 
   // Validasi sebelum membuka modal pembayaran
   const handleProceedToPayment = () => {
@@ -399,7 +455,7 @@ export default function BookingFormScreen({ route, navigation }) {
         </View>
       </View>
 
-      {/* 3. Jadwal & Waktu Main (Bukan Scroll Kanan, Grid ke Bawah, Tutup Jam 21.00) */}
+      {/* 3. Jadwal & Waktu Main */}
       <View style={styles.cardSection}>
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionHeaderLabel}>Jadwal Reservasi</Text>
@@ -432,6 +488,16 @@ export default function BookingFormScreen({ route, navigation }) {
           })}
         </View>
 
+        {/* Notifikasi jika jam operasional hari ini sudah tutup */}
+        {isAllTodayPassed && (
+          <View style={styles.todayClosedNotice}>
+            <Ionicons name="time-outline" size={16} color="#B45309" />
+            <Text style={styles.todayClosedNoticeText}>
+              Jam operasional hari ini sudah lewat (Kafe tutup pukul 21.00). Silakan pilih tanggal Besok.
+            </Text>
+          </View>
+        )}
+
         {/* Input Tanggal Manual */}
         <TextInput
           style={[styles.textInput, { marginTop: 8, marginBottom: 18 }]}
@@ -441,7 +507,7 @@ export default function BookingFormScreen({ route, navigation }) {
           onChangeText={setReservationDate}
         />
 
-        {/* PILIHAN JAM MULAI (GRID KE BAWAH, 3 KOLOM) */}
+        {/* PILIHAN JAM MULAI (GRID 3 KOLOM, FLOW KE BAWAH, DESAIN CENTER) */}
         <View style={styles.labelWithSubRow}>
           <Text style={styles.inputLabel}>Pilih Jam Mulai Bermain</Text>
           <Text style={styles.labelSubText}>Tiap 1 Jam</Text>
@@ -450,59 +516,75 @@ export default function BookingFormScreen({ route, navigation }) {
         <View style={styles.hourGrid}>
           {startHourOptions.map((hour) => {
             const isSelected = startHour === hour;
-            const isBusy = isHourBusyForTable(hour);
+            const isPassed = isHourPassed(hour);
+            const isBusy = !isPassed && isHourBusyForTable(hour);
             const hourLabel = `${String(hour).padStart(2, "0")}.00`;
 
             return (
               <TouchableOpacity
                 key={hour}
                 activeOpacity={0.75}
+                disabled={isPassed}
                 style={[
                   styles.hourGridItem,
                   isSelected && styles.hourGridItemActive,
+                  isPassed && styles.hourGridItemPassed,
                   isBusy && !isSelected && styles.hourGridItemBusy
                 ]}
-                onPress={() => setStartHour(hour)}
+                onPress={() => {
+                  if (isPassed) {
+                    Alert.alert(
+                      "Jam Sudah Terlewati ⏰",
+                      "Jam ini sudah lewat untuk hari ini. Silakan pilih jam lain yang masih buka atau pilih tanggal besok."
+                    );
+                    return;
+                  }
+                  setStartHour(hour);
+                }}
               >
-                <View style={styles.hourItemTop}>
-                  <Text
-                    style={[
-                      styles.hourGridText,
-                      isSelected && styles.hourGridTextActive,
-                      isBusy && !isSelected && styles.hourGridTextBusy
-                    ]}
-                  >
-                    {hourLabel}
-                  </Text>
+                <Text
+                  style={[
+                    styles.hourGridText,
+                    isSelected && styles.hourGridTextActive,
+                    (isPassed || isBusy) && !isSelected && styles.hourGridTextMuted
+                  ]}
+                >
+                  {hourLabel}
+                </Text>
+                <View style={styles.hourStatusRow}>
                   <View
                     style={[
                       styles.dotIndicator,
                       isSelected
                         ? { backgroundColor: "#FFFFFF" }
+                        : isPassed
+                        ? { backgroundColor: "#94A3B8" }
                         : isBusy
                         ? { backgroundColor: colors.accent }
                         : { backgroundColor: colors.success }
                     ]}
                   />
+                  <Text
+                    style={[
+                      styles.hourGridSub,
+                      isSelected
+                        ? { color: "#FFFFFF" }
+                        : isPassed
+                        ? { color: "#94A3B8" }
+                        : isBusy
+                        ? { color: colors.accent }
+                        : { color: colors.textMuted }
+                    ]}
+                  >
+                    {isPassed ? "Lewat" : isBusy ? "Dipesan" : "Tersedia"}
+                  </Text>
                 </View>
-                <Text
-                  style={[
-                    styles.hourGridSub,
-                    isSelected
-                      ? { color: "#FFFFFF" }
-                      : isBusy
-                      ? { color: colors.accent }
-                      : { color: colors.textMuted }
-                  ]}
-                >
-                  {isBusy ? "Dipesan" : "Tersedia"}
-                </Text>
               </TouchableOpacity>
             );
           })}
         </View>
 
-        {/* PILIHAN DURASI BERMAIN (BISA > 1 JAM) */}
+        {/* PILIHAN DURASI BERMAIN */}
         <View style={[styles.labelWithSubRow, { marginTop: 18 }]}>
           <Text style={styles.inputLabel}>Durasi Main</Text>
           <Text style={styles.labelSubText}>Maksimal s/d 21.00 (Tutup)</Text>
@@ -530,7 +612,7 @@ export default function BookingFormScreen({ route, navigation }) {
           })}
         </View>
 
-        {/* RINGKASAN WAKTU BOOKING (DESAIN ELEGAN, BUKAN AI SLOP) */}
+        {/* RINGKASAN WAKTU BOOKING (DESAIN MINIMALIS & BERSIH) */}
         <View style={styles.scheduleCard}>
           <View style={styles.scheduleCardHeader}>
             <View style={styles.scheduleTimeCol}>
@@ -619,7 +701,7 @@ export default function BookingFormScreen({ route, navigation }) {
         <Text style={styles.mainActionBtnText}>
           {slotStatus.available
             ? `Bayar ${formatRupiah(totalPrice)} & Dapatkan Tiket`
-            : "Slot Penuh — Pilih Jam Lain"}
+            : "Slot Tidak Tersedia — Pilih Jam Lain"}
         </Text>
       </TouchableOpacity>
 
@@ -996,54 +1078,81 @@ const styles = StyleSheet.create({
   datePillSubActive: {
     color: colors.primaryDark
   },
+  todayClosedNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 8,
+    marginBottom: 4
+  },
+  todayClosedNoticeText: {
+    fontSize: 11,
+    color: "#92400E",
+    marginLeft: 6,
+    flex: 1,
+    lineHeight: 16
+  },
   hourGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between"
+    justifyContent: "flex-start",
+    columnGap: 8,
+    rowGap: 10
   },
   hourGridItem: {
     width: "31.5%",
     backgroundColor: colors.background,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1.5,
     borderColor: colors.border,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    marginBottom: 10
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    alignItems: "center",
+    justifyContent: "center"
   },
   hourGridItemActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary
   },
   hourGridItemBusy: {
-    backgroundColor: "#F8FAFC",
-    borderColor: "#E2E8F0"
+    backgroundColor: "#FEF2F2",
+    borderColor: "#FECACA"
   },
-  hourItemTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center"
+  hourGridItemPassed: {
+    backgroundColor: "#F1F5F9",
+    borderColor: "#E2E8F0",
+    opacity: 0.55
   },
   hourGridText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "bold",
-    color: colors.text
+    color: colors.text,
+    textAlign: "center"
   },
   hourGridTextActive: {
     color: "#FFFFFF"
   },
-  hourGridTextBusy: {
+  hourGridTextMuted: {
     color: colors.textMuted
+  },
+  hourStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 4
   },
   dotIndicator: {
     width: 6,
     height: 6,
-    borderRadius: 3
+    borderRadius: 3,
+    marginRight: 4
   },
   hourGridSub: {
-    fontSize: 10,
-    marginTop: 4,
-    fontWeight: "500"
+    fontSize: 11,
+    fontWeight: "600",
+    textAlign: "center"
   },
   durationSegmentRow: {
     flexDirection: "row",
