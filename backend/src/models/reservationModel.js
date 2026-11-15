@@ -90,6 +90,33 @@ export const ReservationModel = {
   },
 
   async create(payload) {
+    // 0. VALIDASI TANGGAL & JAM (Tidak boleh memesan tanggal/jam yang sudah lewat)
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const todayStr = `${year}-${month}-${day}`;
+
+    if (payload.reservation_date < todayStr) {
+      const err = new Error(
+        `Tidak dapat memesan untuk tanggal yang telah lewat (${payload.reservation_date}). Silakan pilih tanggal hari ini atau mendatang.`
+      );
+      err.status = 400;
+      throw err;
+    }
+
+    if (payload.reservation_date === todayStr) {
+      const hours = parseHours(payload.session_time);
+      const currentHour = today.getHours() + today.getMinutes() / 60;
+      if (hours.start <= currentHour) {
+        const err = new Error(
+          `Jam mulai reservasi (${payload.session_time}) sudah lewat untuk hari ini. Silakan pilih jam berikutnya!`
+        );
+        err.status = 400;
+        throw err;
+      }
+    }
+
     // 1. VALIDASI KONFLIK JADWAL (Mencegah double booking meja & game dengan pengecekan interval overlap)
     const { data: existingBookings, error: checkError } = await supabase
       .from("reservations")
