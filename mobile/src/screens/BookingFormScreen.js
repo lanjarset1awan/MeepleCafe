@@ -21,7 +21,7 @@ import GameImage from "../components/GameImage";
 // Logo resmi perbankan & QRIS untuk metode pembayaran
 const BANK_LOGOS = {
   bca: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT51BAk8TXeqH2rGF2IDxCx-qnvAIg7ojlj45t7KAZMXw&s=10",
-  mandiri: "https://www.bankmandiri.co.id/documents/20143/44881086/ag-branding-logo-2.png/30f0204c-d3c1-7237-0e97-6d9c137b2866?t=1623309819189",
+  mandiri: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/500px-Bank_Mandiri_logo_2016.svg.png",
   qris: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr-ZUsZr698NnD0cJv0tyPbOfuS2Q6vrf4hy9blxCxBw&s=10"
 };
 
@@ -841,11 +841,11 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("bca")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankLogoBox}>
+                  <View style={[styles.bankLogoBox, styles.bankLogoBoxBca]}>
                     <Image
                       source={{ uri: BANK_LOGOS.bca }}
-                      style={styles.bankLogoImage}
-                      resizeMode="contain"
+                      style={styles.bankLogoImageCover}
+                      resizeMode="cover"
                     />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -872,10 +872,10 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("mandiri")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankLogoBox}>
+                  <View style={[styles.bankLogoBox, styles.bankLogoBoxMandiri]}>
                     <Image
                       source={{ uri: BANK_LOGOS.mandiri }}
-                      style={styles.bankLogoImage}
+                      style={styles.bankLogoImageContain}
                       resizeMode="contain"
                     />
                   </View>
@@ -903,11 +903,11 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("qris")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankLogoBox}>
+                  <View style={[styles.bankLogoBox, styles.bankLogoBoxQris]}>
                     <Image
                       source={{ uri: BANK_LOGOS.qris }}
-                      style={styles.bankLogoImage}
-                      resizeMode="contain"
+                      style={styles.bankLogoImageCover}
+                      resizeMode="cover"
                     />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -922,11 +922,13 @@ export default function BookingFormScreen({ route, navigation }) {
 
               {selectedPaymentMethod === "qris" && (
                 <View style={styles.qrisDisplayCard}>
-                  <Image
-                    source={{ uri: BANK_LOGOS.qris }}
-                    style={styles.qrisHeaderLogo}
-                    resizeMode="contain"
-                  />
+                  <View style={styles.qrisHeaderBox}>
+                    <Image
+                      source={{ uri: BANK_LOGOS.qris }}
+                      style={styles.qrisHeaderLogo}
+                      resizeMode="contain"
+                    />
+                  </View>
                   <Ionicons name="qr-code" size={120} color={colors.secondary} />
                   <Text style={styles.qrisDesc}>
                     Scan kode QRIS ini dari aplikasi m-banking atau e-wallet Anda.
@@ -943,7 +945,7 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("cash")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.cashBadgeBox}>
+                  <View style={[styles.bankLogoBox, styles.bankLogoBoxCash]}>
                     <Ionicons name="cash-outline" size={20} color={colors.primaryDark} />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -1657,34 +1659,54 @@ const styles = StyleSheet.create({
     flex: 1
   },
   bankLogoBox: {
-    width: 60,
+    width: 58,
     height: 38,
     borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden"
+  },
+  bankLogoBoxBca: {
+    backgroundColor: "#0060AF",
+    borderWidth: 1,
+    borderColor: "#005299"
+  },
+  bankLogoBoxMandiri: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: colors.border,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 4
+    paddingHorizontal: 4
   },
-  bankLogoImage: {
+  bankLogoBoxQris: {
+    backgroundColor: "#000000",
+    borderWidth: 1,
+    borderColor: "#000000"
+  },
+  bankLogoBoxCash: {
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: "#FCD34D"
+  },
+  bankLogoImageCover: {
     width: "100%",
     height: "100%"
   },
-  cashBadgeBox: {
-    width: 60,
-    height: 38,
+  bankLogoImageContain: {
+    width: "100%",
+    height: "100%"
+  },
+  qrisHeaderBox: {
+    backgroundColor: "#000000",
     borderRadius: 8,
-    backgroundColor: colors.primaryLight,
-    borderWidth: 1,
-    borderColor: "#FCD34D",
-    justifyContent: "center",
-    alignItems: "center"
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginBottom: 8,
+    alignItems: "center",
+    justifyContent: "center"
   },
   qrisHeaderLogo: {
-    width: 110,
-    height: 38,
-    marginBottom: 8
+    width: 68,
+    height: 30
   },
   bankName: {
     fontSize: 13,
