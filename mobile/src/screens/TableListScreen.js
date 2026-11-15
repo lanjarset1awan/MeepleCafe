@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
+  Modal
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
@@ -19,8 +20,30 @@ export default function TableListScreen({ route, navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Menerima game yang dipilih dari alur sebelumnya
-  const selectedGame = route.params?.selectedGame || null;
+  // Menerima & mengelola game yang dipilih
+  const [selectedGame, setSelectedGame] = useState(route.params?.selectedGame || null);
+  const [allGames, setAllGames] = useState([]);
+  const [gamePickerVisible, setGamePickerVisible] = useState(false);
+
+  // Sync jika route.params.selectedGame berubah dari navigasi luar
+  useEffect(() => {
+    if (route.params?.selectedGame) {
+      setSelectedGame(route.params.selectedGame);
+    }
+  }, [route.params?.selectedGame]);
+
+  // Load daftar board game untuk modal ganti game
+  useEffect(() => {
+    async function loadAllGames() {
+      try {
+        const games = await ApiService.getGames();
+        setAllGames(games || []);
+      } catch (err) {
+        console.error("Gagal memuat list games di TableListScreen:", err);
+      }
+    }
+    loadAllGames();
+  }, []);
 
   const loadTables = async () => {
     try {
@@ -93,7 +116,13 @@ export default function TableListScreen({ route, navigation }) {
         <View style={styles.actionButtonsRow}>
           <TouchableOpacity
             style={styles.btnDetail}
-            onPress={() => navigation.navigate("TableDetail", { tableId: item.id, title: item.table_type })}
+            onPress={() =>
+              navigation.navigate("TableDetail", {
+                tableId: item.id,
+                title: item.table_type,
+                selectedGame: selectedGame
+              })
+            }
           >
             <Text style={styles.btnDetailText}>Info Meja</Text>
           </TouchableOpacity>
@@ -139,7 +168,8 @@ export default function TableListScreen({ route, navigation }) {
           </View>
           <TouchableOpacity
             style={styles.changeGameBtn}
-            onPress={() => navigation.navigate("GameTab")}
+            onPress={() => setGamePickerVisible(true)}
+            activeOpacity={0.8}
           >
             <Text style={styles.changeGameBtnText}>Ganti</Text>
           </TouchableOpacity>
@@ -147,11 +177,12 @@ export default function TableListScreen({ route, navigation }) {
       ) : (
         <TouchableOpacity
           style={styles.noGameBanner}
-          onPress={() => navigation.navigate("GameTab")}
+          onPress={() => setGamePickerVisible(true)}
+          activeOpacity={0.8}
         >
-          <Ionicons name="information-circle-outline" size={20} color={colors.primaryDark} />
+          <Ionicons name="cube-outline" size={20} color={colors.primaryDark} style={{ marginRight: 8 }} />
           <Text style={styles.noGameBannerText}>
-            Tips: Pilih game terlebih dahulu di menu "Katalog Game" atau pilih meja langsung di bawah.
+            Belum memilih game? <Text style={styles.noGameHighlight}>Pilih Game Di Sini</Text> atau langsung pilih meja.
           </Text>
         </TouchableOpacity>
       )}
@@ -176,6 +207,52 @@ export default function TableListScreen({ route, navigation }) {
           }
         />
       )}
+
+      {/* Modal Picker untuk Ganti Board Game */}
+      <Modal visible={gamePickerVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.pickerModalCard}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Pilih Board Game</Text>
+                <Text style={styles.modalSub}>Pilih board game yang ingin Anda mainkan di meja</Text>
+              </View>
+              <TouchableOpacity onPress={() => setGamePickerVisible(false)}>
+                <Ionicons name="close" size={24} color={colors.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={allGames}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.gamePickerRow,
+                    selectedGame?.id === item.id && styles.gamePickerRowActive
+                  ]}
+                  onPress={() => {
+                    setSelectedGame(item);
+                    setGamePickerVisible(false);
+                  }}
+                >
+                  <GameImage uri={item.image_url} style={styles.pickerGameThumb} />
+                  <View style={{ marginLeft: 12, flex: 1 }}>
+                    <Text style={styles.gamePickerName}>{item.title}</Text>
+                    <Text style={styles.gamePickerDesc}>
+                      {item.min_players}-{item.max_players} Pemain • Stok: {item.stock || 2} Box
+                    </Text>
+                  </View>
+                  {selectedGame?.id === item.id && (
+                    <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -425,5 +502,66 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: colors.textMuted
+  },
+  noGameHighlight: {
+    fontWeight: "bold",
+    color: colors.primaryDark,
+    textDecorationLine: "underline"
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(30, 41, 59, 0.65)",
+    justifyContent: "flex-end"
+  },
+  pickerModalCard: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: "75%",
+    padding: 20
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.text
+  },
+  modalSub: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  gamePickerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderColor: colors.border
+  },
+  gamePickerRowActive: {
+    backgroundColor: colors.primaryLight,
+    borderRadius: 8
+  },
+  gamePickerName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.text
+  },
+  gamePickerDesc: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  pickerGameThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: "#F1F5F9"
   }
 });
