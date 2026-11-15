@@ -18,7 +18,11 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Header Banner Konsisten */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
@@ -28,12 +32,11 @@ export default function ProfileScreen() {
             <Text style={styles.totalBadgeText}>Teknik Komputer</Text>
           </View>
         </View>
-        <Text style={styles.headerTitle}>Profil Pengembang</Text>
+        <Text style={styles.headerTitle}>Profil Saya</Text>
       </View>
 
-      <ScrollView style={styles.scrollArea} contentContainerStyle={styles.content}>
-        {/* Header Profile Card */}
-        <View style={styles.profileHeaderCard}>
+      {/* Kotakan Profil (Avatar & Nama) - Melayang Menumpuk di Atas Kotak Biru */}
+      <View style={styles.profileHeaderCard}>
         <View style={styles.avatarContainer}>
           <Image
             source={{
@@ -58,6 +61,7 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <View style={styles.bodyContent}>
       {/* About Application */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -138,8 +142,8 @@ export default function ProfileScreen() {
           <Text style={styles.githubText}>Lihat Source Code di GitHub</Text>
         </TouchableOpacity>
       </View>
+      </View>
     </ScrollView>
-    </View>
   );
 }
 
@@ -148,10 +152,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background
   },
+  scrollContent: {
+    paddingBottom: 40
+  },
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 52,
-    paddingBottom: 28,
+    paddingBottom: 48,
     paddingHorizontal: 20
   },
   headerTop: {
@@ -185,28 +192,25 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     marginTop: 4
   },
-  scrollArea: {
-    flex: 1
-  },
-  content: {
-    padding: 16,
-    paddingTop: 0,
-    paddingBottom: 40
-  },
   profileHeaderCard: {
     backgroundColor: colors.card,
     borderRadius: 20,
     padding: 24,
     alignItems: "center",
-    marginTop: -16,
+    marginHorizontal: 16,
+    marginTop: -32,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    elevation: 3,
+    elevation: 4,
     shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 }
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    zIndex: 10
+  },
+  bodyContent: {
+    paddingHorizontal: 16
   },
   avatarContainer: {
     position: "relative",
