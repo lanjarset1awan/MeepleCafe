@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 52,
-    paddingBottom: 48,
+    paddingBottom: 28,
     paddingHorizontal: 20
   },
   headerTop: {
@@ -194,19 +194,19 @@ const styles = StyleSheet.create({
   },
   profileHeaderCard: {
     backgroundColor: colors.card,
-    borderRadius: 20,
+    borderRadius: 14,
     padding: 24,
     alignItems: "center",
     marginHorizontal: 16,
-    marginTop: -32,
+    marginTop: -16,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    elevation: 4,
+    elevation: 3,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
     zIndex: 10
   },
   bodyContent: {
