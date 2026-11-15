@@ -62,7 +62,7 @@ export default function GameInventoryScreen({ navigation }) {
     const matchesSearch = item.title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    
+
     // Simulate one or two games in-use for realistic cafe inventory demo
     const isInUse = index === 3 || index === 7;
     const isAvailable = !isInUse && item.is_available;
@@ -143,7 +143,15 @@ export default function GameInventoryScreen({ navigation }) {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerSubtitle}>Inventaris & Rak Kafe</Text>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerSubtitle}>Inventaris & Rak Kafe</Text>
+          <View style={styles.totalBadge}>
+            <Ionicons name="file-tray-stacked" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <Text style={styles.totalBadgeText}>
+              {totalTitles} Judul Koleksi
+            </Text>
+          </View>
+        </View>
         <Text style={styles.headerTitle}>Daftar Stok Game</Text>
       </View>
 
@@ -155,14 +163,14 @@ export default function GameInventoryScreen({ navigation }) {
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statCol}>
-          <Text style={[styles.statNum, { color: colors.success }]}>
+          <Text style={[styles.statNum, { color: colors.primary }]}>
             {availableTitles}
           </Text>
           <Text style={styles.statLbl}>Siap di Rak</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statCol}>
-          <Text style={[styles.statNum, { color: colors.accent }]}>2</Text>
+          <Text style={[styles.statNum, { color: colors.secondary }]}>2</Text>
           <Text style={styles.statLbl}>Sedang Main</Text>
         </View>
       </View>
@@ -252,16 +260,34 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.darkBg,
-    paddingTop: 54,
-    paddingBottom: 22,
+    paddingTop: 52,
+    paddingBottom: 28,
     paddingHorizontal: 20
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
   },
   headerSubtitle: {
     fontSize: 11,
     color: colors.primaryLight,
     fontWeight: "700",
     textTransform: "uppercase",
-    letterSpacing: 1
+    letterSpacing: 1.2
+  },
+  totalBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryDark,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20
+  },
+  totalBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "bold"
   },
   headerTitle: {
     fontSize: 22,
@@ -273,7 +299,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: colors.card,
     marginHorizontal: 16,
-    marginTop: -14,
+    marginTop: -16,
     paddingVertical: 12,
     borderRadius: 14,
     borderWidth: 1,
@@ -421,20 +447,20 @@ const styles = StyleSheet.create({
     borderRadius: 6
   },
   stockAvailable: {
-    backgroundColor: "#DCFCE7"
+    backgroundColor: colors.primaryLight
   },
   stockInUse: {
-    backgroundColor: "#FEE2E2"
+    backgroundColor: "#F1F5F9"
   },
   stockText: {
     fontSize: 10,
     fontWeight: "700"
   },
   stockTextAvailable: {
-    color: "#166534"
+    color: colors.primaryDark
   },
   stockTextInUse: {
-    color: "#991B1B"
+    color: colors.textMuted
   },
   centerContainer: {
     flex: 1,

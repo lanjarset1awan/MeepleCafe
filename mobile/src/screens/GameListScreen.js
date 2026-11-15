@@ -76,8 +76,8 @@ export default function GameListScreen({ navigation }) {
               item.difficulty === "Easy"
                 ? styles.badgeEasy
                 : item.difficulty === "Medium"
-                ? styles.badgeMedium
-                : styles.badgeHard
+                  ? styles.badgeMedium
+                  : styles.badgeHard
             ]}
           >
             <Text style={styles.difficultyBadgeText}>{item.difficulty}</Text>
@@ -219,8 +219,8 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.darkBg,
-    paddingTop: 54,
-    paddingBottom: 22,
+    paddingTop: 52,
+    paddingBottom: 28,
     paddingHorizontal: 20
   },
   headerTop: {
@@ -229,11 +229,11 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.primaryLight,
     fontWeight: "700",
     textTransform: "uppercase",
-    letterSpacing: 1
+    letterSpacing: 1.2
   },
   totalBadge: {
     flexDirection: "row",
@@ -252,17 +252,17 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     color: "#FFFFFF",
-    marginTop: 6
+    marginTop: 4
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.card,
     marginHorizontal: 16,
-    marginTop: -14,
+    marginTop: -16,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 3,
@@ -353,18 +353,18 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   badgeEasy: {
-    backgroundColor: "#DCFCE7"
+    backgroundColor: "#F1F5F9"
   },
   badgeMedium: {
-    backgroundColor: "#FEF9C3"
+    backgroundColor: "#F1F5F9"
   },
   badgeHard: {
-    backgroundColor: "#FEE2E2"
+    backgroundColor: "#F1F5F9"
   },
   difficultyBadgeText: {
     fontSize: 11,
     fontWeight: "700",
-    color: colors.text
+    color: colors.secondary
   },
   gameTitle: {
     fontSize: 18,

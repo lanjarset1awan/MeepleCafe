@@ -147,7 +147,8 @@ export default function TableListScreen({ route, navigation }) {
         <View style={styles.headerTop}>
           <Text style={styles.headerSubtitle}>Play Area & Seating</Text>
           <View style={styles.availableBadge}>
-            <Text style={styles.availableBadgeText}>{tables.length} Tipe Meja Tersedia</Text>
+            <Ionicons name="restaurant" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <Text style={styles.availableBadgeText}>{tables.length} Tipe Meja</Text>
           </View>
         </View>
         <Text style={styles.headerTitle}>Pilih Meja Bermain</Text>
@@ -264,8 +265,8 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.darkBg,
-    paddingTop: 54,
-    paddingBottom: 20,
+    paddingTop: 52,
+    paddingBottom: 28,
     paddingHorizontal: 20
   },
   headerTop: {
@@ -274,13 +275,15 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   headerSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.primaryLight,
     fontWeight: "700",
     textTransform: "uppercase",
-    letterSpacing: 1
+    letterSpacing: 1.2
   },
   availableBadge: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.primaryDark,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -295,7 +298,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     color: "#FFFFFF",
-    marginTop: 6
+    marginTop: 4
   },
   selectedGameBanner: {
     flexDirection: "row",
@@ -303,7 +306,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: colors.card,
     marginHorizontal: 16,
-    marginTop: -14,
+    marginTop: -16,
     marginBottom: 10,
     padding: 12,
     borderRadius: 14,
@@ -363,10 +366,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.primaryLight,
     marginHorizontal: 16,
-    marginTop: -12,
+    marginTop: -16,
     marginBottom: 10,
-    padding: 10,
-    borderRadius: 10
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#FCD34D"
   },
   noGameBannerText: {
     fontSize: 12,

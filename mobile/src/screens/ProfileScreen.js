@@ -18,9 +18,22 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header Profile Card */}
-      <View style={styles.profileHeaderCard}>
+    <View style={styles.container}>
+      {/* Header Banner Konsisten */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerSubtitle}>User Profile & Info</Text>
+          <View style={styles.totalBadge}>
+            <Ionicons name="school" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <Text style={styles.totalBadgeText}>Teknik Komputer</Text>
+          </View>
+        </View>
+        <Text style={styles.headerTitle}>Profil Pengembang</Text>
+      </View>
+
+      <ScrollView style={styles.scrollArea} contentContainerStyle={styles.content}>
+        {/* Header Profile Card */}
+        <View style={styles.profileHeaderCard}>
         <View style={styles.avatarContainer}>
           <Image
             source={{
@@ -126,6 +139,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </View>
   );
 }
 
@@ -134,9 +148,49 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background
   },
+  header: {
+    backgroundColor: colors.darkBg,
+    paddingTop: 52,
+    paddingBottom: 28,
+    paddingHorizontal: 20
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    color: colors.primaryLight,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1.2
+  },
+  totalBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryDark,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20
+  },
+  totalBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "bold"
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginTop: 4
+  },
+  scrollArea: {
+    flex: 1
+  },
   content: {
     padding: 16,
-    paddingTop: 54,
+    paddingTop: 0,
     paddingBottom: 40
   },
   profileHeaderCard: {
@@ -144,14 +198,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 24,
     alignItems: "center",
+    marginTop: -16,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.border,
-    elevation: 2,
+    elevation: 3,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.08,
     shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 }
+    shadowOffset: { width: 0, height: 3 }
   },
   avatarContainer: {
     position: "relative",
