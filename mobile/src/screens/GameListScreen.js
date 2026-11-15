@@ -80,7 +80,18 @@ export default function GameListScreen({ navigation }) {
                 : styles.badgeHard
             ]}
           >
-            <Text style={styles.difficultyBadgeText}>{item.difficulty}</Text>
+            <Text
+              style={[
+                styles.difficultyBadgeText,
+                item.difficulty === "Easy"
+                  ? { color: colors.successText }
+                  : item.difficulty === "Medium"
+                  ? { color: colors.warningText }
+                  : { color: colors.dangerText }
+              ]}
+            >
+              {item.difficulty}
+            </Text>
           </View>
         </View>
 
@@ -101,7 +112,7 @@ export default function GameListScreen({ navigation }) {
           </View>
           <View style={styles.metaItem}>
             <Ionicons name="checkmark-circle" size={14} color={colors.success} />
-            <Text style={[styles.metaText, { color: colors.success, fontWeight: "600" }]}>
+            <Text style={[styles.metaText, { color: colors.successText, fontWeight: "600" }]}>
               Siap Main
             </Text>
           </View>
@@ -348,23 +359,28 @@ const styles = StyleSheet.create({
     color: colors.primaryDark
   },
   difficultyBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6
   },
   badgeEasy: {
-    backgroundColor: "#F1F5F9"
+    backgroundColor: colors.successLight,
+    borderWidth: 1,
+    borderColor: colors.successBorder
   },
   badgeMedium: {
-    backgroundColor: "#F1F5F9"
+    backgroundColor: colors.warningLight,
+    borderWidth: 1,
+    borderColor: "#FDE68A"
   },
   badgeHard: {
-    backgroundColor: "#F1F5F9"
+    backgroundColor: colors.dangerLight,
+    borderWidth: 1,
+    borderColor: colors.dangerBorder
   },
   difficultyBadgeText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.secondary
+    fontSize: 10,
+    fontWeight: "700"
   },
   gameTitle: {
     fontSize: 18,

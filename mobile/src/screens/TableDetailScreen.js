@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  Image,
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity
@@ -58,70 +57,86 @@ export default function TableDetailScreen({ route, navigation }) {
     );
   }
 
-  // Parse facilities string into an array
   const facilityList = table.facilities
     ? table.facilities.split(",").map((f) => f.trim())
-    : ["Meja luas khusus board game", "Papan skor & dadu", "Free WiFi Kafe"];
+    : [
+        "Meja luas dengan permukaan khusus alas board game",
+        "Pencahayaan warm focus nyaman untuk membaca kartu & dadu",
+        "Akses bebas colokan listrik & Free High-Speed WiFi Kafe",
+        "Bantuan tutorial langsung dari Game Master kafe"
+      ];
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <GameImage uri={table.image_url} style={styles.bannerImage} />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Banner Cover Image */}
+        <View style={styles.imageWrapper}>
+          <GameImage uri={table.image_url} style={styles.bannerImage} />
+        </View>
 
+        {/* Floating Detail Card */}
         <View style={styles.detailCard}>
+          {/* Top Badges */}
           <View style={styles.topRow}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>Nomor Meja: {table.table_number}</Text>
+            <View style={styles.tableBadge}>
+              <Text style={styles.tableBadgeText}>Meja {table.table_number}</Text>
             </View>
             <View style={styles.activeBadge}>
-              <Text style={styles.activeText}>● Siap Digunakan</Text>
+              <View style={styles.activeDot} />
+              <Text style={styles.activeText}>Siap Dipesan</Text>
             </View>
           </View>
 
+          {/* Table Type Title */}
           <Text style={styles.title}>{table.table_type}</Text>
 
+          {/* Price Card */}
           <View style={styles.priceContainer}>
-            <Text style={styles.priceLabel}>Biaya Sewa Meja:</Text>
-            <Text style={styles.priceValue}>{formatRupiah(table.price_per_hour)} / Jam</Text>
+            <View>
+              <Text style={styles.priceLabel}>Tarif Sewa Meja</Text>
+              <Text style={styles.priceValue}>{formatRupiah(table.price_per_hour)}</Text>
+            </View>
+            <View style={styles.perHourBadge}>
+              <Text style={styles.perHourBadgeText}>per jam</Text>
+            </View>
           </View>
 
+          {/* 3 Quick Highlight Chips */}
           <View style={styles.specsRow}>
             <View style={styles.specBox}>
-              <Ionicons name="people" size={24} color={colors.primary} />
+              <View style={[styles.specIconBox, { backgroundColor: colors.primaryLight }]}>
+                <Ionicons name="people" size={18} color={colors.primary} />
+              </View>
               <Text style={styles.specTitle}>Kapasitas</Text>
-              <Text style={styles.specSub}>Maks. {table.capacity} Orang</Text>
+              <Text style={styles.specSub}>Maks {table.capacity} Orang</Text>
             </View>
 
             <View style={styles.specBox}>
-              <Ionicons name="wifi" size={24} color={colors.secondary} />
-              <Text style={styles.specTitle}>Fasilitas</Text>
-              <Text style={styles.specSub}>High-Speed WiFi</Text>
+              <View style={[styles.specIconBox, { backgroundColor: "#EFF6FF" }]}>
+                <Ionicons name="wifi" size={18} color="#2563EB" />
+              </View>
+              <Text style={styles.specTitle}>Konektivitas</Text>
+              <Text style={styles.specSub}>Free Wi-Fi 5G</Text>
             </View>
 
             <View style={styles.specBox}>
-              <Ionicons name="fast-food" size={24} color={colors.accent} />
-              <Text style={styles.specTitle}>Layanan</Text>
-              <Text style={styles.specSub}>Dine-in Menu</Text>
+              <View style={[styles.specIconBox, { backgroundColor: colors.successLight }]}>
+                <Ionicons name="game-controller" size={18} color={colors.success} />
+              </View>
+              <Text style={styles.specTitle}>Game Master</Text>
+              <Text style={styles.specSub}>Free Panduan</Text>
             </View>
           </View>
 
           {/* List Fasilitas Lengkap */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Fasilitas Meja Termasuk:</Text>
+            <Text style={styles.sectionTitle}>Fasilitas & Keunggulan Meja</Text>
             {facilityList.map((item, idx) => (
               <View key={idx} style={styles.facilityItem}>
                 <Ionicons name="checkmark-circle" size={18} color={colors.success} />
                 <Text style={styles.facilityText}>{item}</Text>
               </View>
             ))}
-          </View>
-
-          {/* Info Tambahan */}
-          <View style={styles.infoBox}>
-            <Ionicons name="shield-checkmark-outline" size={20} color={colors.secondary} />
-            <Text style={styles.infoBoxText}>
-              Setiap pemesanan meja sudah termasuk akses bebas ke seluruh koleksi board game MeepleCafe dan bantuan panduan dari Game Master kafe.
-            </Text>
           </View>
         </View>
       </ScrollView>
@@ -156,107 +171,149 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   },
   scrollContent: {
-    paddingBottom: 90
+    paddingBottom: 100
+  },
+  imageWrapper: {
+    width: "100%",
+    height: 250,
+    backgroundColor: colors.secondary
   },
   bannerImage: {
     width: "100%",
-    height: 240,
+    height: "100%",
     resizeMode: "cover"
   },
   detailCard: {
-    marginTop: -20,
+    marginTop: -24,
     backgroundColor: colors.card,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
     padding: 20,
     borderWidth: 1,
-    borderColor: colors.border
+    borderColor: colors.borderLight,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: -3 }
   },
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8
+    marginBottom: 10
   },
-  badge: {
+  tableBadge: {
     backgroundColor: colors.primaryLight,
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 8
   },
-  badgeText: {
+  tableBadgeText: {
     color: colors.primaryDark,
     fontWeight: "bold",
     fontSize: 12
   },
   activeBadge: {
-    backgroundColor: colors.primaryLight,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.successLight,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8
+    paddingVertical: 5,
+    borderRadius: 20
+  },
+  activeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.success,
+    marginRight: 6
   },
   activeText: {
-    color: colors.primaryDark,
-    fontSize: 12,
+    color: colors.successText,
+    fontSize: 11,
     fontWeight: "bold"
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
     color: colors.text,
-    marginBottom: 12
+    marginBottom: 14
   },
   priceContainer: {
-    backgroundColor: "#F1F5F9",
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 18,
+    backgroundColor: colors.primaryLight,
+    padding: 16,
+    borderRadius: 14,
+    marginBottom: 20,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.primaryBorder
   },
   priceLabel: {
-    fontSize: 13,
-    color: colors.textMuted,
-    fontWeight: "500"
+    fontSize: 12,
+    color: colors.primaryDark,
+    fontWeight: "600"
   },
   priceValue: {
-    fontSize: 16,
+    fontSize: 22,
     fontWeight: "bold",
-    color: colors.secondary
+    color: colors.primaryDark,
+    marginTop: 2
+  },
+  perHourBadge: {
+    backgroundColor: colors.card,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primaryBorder
+  },
+  perHourBadgeText: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: colors.primaryDark
   },
   specsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20
+    marginBottom: 22,
+    gap: 8
   },
   specBox: {
     flex: 1,
     backgroundColor: colors.background,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
-    marginHorizontal: 4,
     borderWidth: 1,
     borderColor: colors.border
   },
+  specIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 6
+  },
   specTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "bold",
-    color: colors.text,
-    marginTop: 6
+    color: colors.text
   },
   specSub: {
-    fontSize: 11,
+    fontSize: 10,
     color: colors.textMuted,
     marginTop: 2,
     textAlign: "center"
   },
   section: {
-    marginBottom: 20
+    marginBottom: 10
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.text,
     marginBottom: 12
@@ -264,28 +321,18 @@ const styles = StyleSheet.create({
   facilityItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8
+    marginBottom: 10,
+    backgroundColor: colors.background,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.borderLight
   },
   facilityText: {
     fontSize: 13,
     color: colors.text,
-    marginLeft: 10
-  },
-  infoBox: {
-    flexDirection: "row",
-    backgroundColor: colors.primaryLight,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 14,
-    borderRadius: 12,
-    alignItems: "flex-start"
-  },
-  infoBoxText: {
-    flex: 1,
-    fontSize: 12,
-    color: colors.primaryDark,
-    marginLeft: 8,
-    lineHeight: 18
+    marginLeft: 10,
+    flex: 1
   },
   bottomBar: {
     position: "absolute",
@@ -294,9 +341,15 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: colors.card,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: 24,
     borderTopWidth: 1,
-    borderColor: colors.border
+    borderColor: colors.border,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: -3 }
   },
   bookButton: {
     backgroundColor: colors.primary,
@@ -304,11 +357,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
-    borderRadius: 12
+    borderRadius: 14,
+    elevation: 3
   },
   bookButtonText: {
     color: "#FFFFFF",
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "bold"
   },
   centerContainer: {
@@ -321,8 +375,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted
   },
   errorText: {
-    color: colors.accent,
+    color: colors.danger,
     fontSize: 15
   }
 });
-

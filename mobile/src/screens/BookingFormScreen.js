@@ -41,7 +41,7 @@ function doOverlap(s1, s2) {
   return h1.start < h2.end && h2.start < h1.end;
 }
 
-// Helper tanggal
+// Helper tanggal YYYY-MM-DD
 function getFormattedDate(daysOffset = 0) {
   const d = new Date();
   d.setDate(d.getDate() + daysOffset);
@@ -72,7 +72,7 @@ export default function BookingFormScreen({ route, navigation }) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [reservationDate, setReservationDate] = useState(initialDate);
 
-  // Daftar opsi jam mulai (10.00 sampai 20.00 karena kafe tutup jam 21.00)
+  // Daftar opsi jam mulai (10.00 sampai 20.00)
   const startHourOptions = useMemo(() => {
     const hours = [];
     for (let h = OPENING_HOUR; h < CLOSING_HOUR; h++) {
@@ -93,14 +93,15 @@ export default function BookingFormScreen({ route, navigation }) {
   const [startHour, setStartHour] = useState(initialStartHour);
   const [durationHours, setDurationHours] = useState(2); // default 2 Jam
 
-  const [guestCount, setGuestCount] = useState("4");
+  const [guestCount, setGuestCount] = useState(String(Math.min(4, capacity)));
   const [loading, setLoading] = useState(false);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
 
-  // State untuk Board Game yang dipilih
+  // State Board Game
   const [chosenGame, setChosenGame] = useState(selectedGame || null);
   const [allGames, setAllGames] = useState([]);
   const [gamePickerVisible, setGamePickerVisible] = useState(false);
+  const [gameSearchQuery, setGameSearchQuery] = useState("");
 
   // Modal Sistem Pembayaran
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
@@ -110,13 +111,13 @@ export default function BookingFormScreen({ route, navigation }) {
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [issuedTicket, setIssuedTicket] = useState(null);
 
-  // Data reservasi aktif dari database untuk validasi slot & bentrok
+  // Data reservasi aktif dari database
   const [activeReservations, setActiveReservations] = useState([]);
 
   // Cek apakah tanggal yang dipilih adalah hari ini
   const isSelectedDateToday = reservationDate === todayStr;
 
-  // Fungsi pengecekan apakah jam tertentu sudah lewat untuk hari ini
+  // Pengecekan apakah jam tertentu sudah lewat untuk hari ini
   const isHourPassed = (hour) => {
     if (!isSelectedDateToday) return false;
     const now = new Date();
@@ -171,7 +172,7 @@ export default function BookingFormScreen({ route, navigation }) {
     }).format(val);
   };
 
-  // 1. Load daftar game untuk opsi ganti game
+  // 1. Load daftar game
   useEffect(() => {
     async function loadAllGames() {
       try {
@@ -187,7 +188,7 @@ export default function BookingFormScreen({ route, navigation }) {
     loadAllGames();
   }, []);
 
-  // 2. Ambil seluruh data reservasi dari database untuk cek bentrok jam & stok
+  // 2. Ambil seluruh data reservasi dari database untuk cek bentrok
   const refreshAvailability = async () => {
     try {
       setCheckingAvailability(true);
@@ -204,7 +205,7 @@ export default function BookingFormScreen({ route, navigation }) {
     refreshAvailability();
   }, [reservationDate, tableId, chosenGame]);
 
-  // Cek ketersediaan untuk setiap slot jam individu (untuk indikator grid)
+  // Cek ketersediaan untuk setiap slot jam individu (indikator grid)
   const isHourBusyForTable = (hour) => {
     const slotString = `${String(hour).padStart(2, "0")}.00 - ${String(hour + 1).padStart(2, "0")}.00 (1 Jam)`;
     return activeReservations.some(
@@ -218,7 +219,6 @@ export default function BookingFormScreen({ route, navigation }) {
 
   // Cek ketersediaan slot untuk rentang jam yang dipilih
   const slotStatus = useMemo(() => {
-    // Validasi 1: Jika jam yang dipilih sudah lewat untuk hari ini
     if (isHourPassed(startHour)) {
       return {
         available: false,
@@ -231,7 +231,7 @@ export default function BookingFormScreen({ route, navigation }) {
       (r) => r.reservation_date === reservationDate && r.status !== "Cancelled"
     );
 
-    // Validasi 2: Cek bentrok meja pada rentang jam ini
+    // Bentrok meja
     const tableConflict = matchingDateReservations.find(
       (r) => r.table_id === tableId && doOverlap(r.session_time, currentSessionTime)
     );
@@ -244,7 +244,7 @@ export default function BookingFormScreen({ route, navigation }) {
       };
     }
 
-    // Validasi 3: Cek stok game pada rentang jam yang sama
+    // Stok game
     if (chosenGame) {
       const gameBookedCount = matchingDateReservations.filter((r) => {
         const matchGame =
@@ -374,14 +374,20 @@ export default function BookingFormScreen({ route, navigation }) {
     }
   };
 
+  // Filter daftar game di modal picker
+  const filteredPickerGames = allGames.filter((g) =>
+    g.title.toLowerCase().includes(gameSearchQuery.toLowerCase())
+  );
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* 1. Paket Meja & Game */}
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      {/* 1. Paket Bermain (Meja + Board Game) */}
       <View style={styles.cardSection}>
         <Text style={styles.sectionHeaderLabel}>Paket Bermain</Text>
 
+        {/* Board Game Row */}
         <View style={styles.packageRow}>
-          <View style={styles.packageIconBox}>
+          <View style={[styles.packageIconBox, { backgroundColor: colors.primaryLight }]}>
             <Ionicons name="cube" size={22} color={colors.primary} />
           </View>
           <View style={styles.packageInfo}>
@@ -394,14 +400,16 @@ export default function BookingFormScreen({ route, navigation }) {
           <TouchableOpacity
             style={styles.packageActionBtn}
             onPress={() => setGamePickerVisible(true)}
+            activeOpacity={0.8}
           >
             <Text style={styles.packageActionBtnText}>Ganti</Text>
           </TouchableOpacity>
         </View>
 
+        {/* Meja Row */}
         <View style={[styles.packageRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
-          <View style={[styles.packageIconBox, { backgroundColor: colors.primaryLight }]}>
-            <Ionicons name="restaurant" size={22} color={colors.secondary} />
+          <View style={[styles.packageIconBox, { backgroundColor: "#EFF6FF" }]}>
+            <Ionicons name="restaurant" size={22} color="#2563EB" />
           </View>
           <View style={styles.packageInfo}>
             <Text style={styles.packageSub}>Meja Kafe</Text>
@@ -491,7 +499,7 @@ export default function BookingFormScreen({ route, navigation }) {
         {/* Notifikasi jika jam operasional hari ini sudah tutup */}
         {isAllTodayPassed && (
           <View style={styles.todayClosedNotice}>
-            <Ionicons name="time-outline" size={16} color={colors.primaryDark} />
+            <Ionicons name="time-outline" size={16} color={colors.warningText} />
             <Text style={styles.todayClosedNoticeText}>
               Jam operasional hari ini sudah lewat (Kafe tutup pukul 21.00). Silakan pilih tanggal Besok.
             </Text>
@@ -507,7 +515,7 @@ export default function BookingFormScreen({ route, navigation }) {
           onChangeText={setReservationDate}
         />
 
-        {/* PILIHAN JAM MULAI (GRID 3 KOLOM, FLOW KE BAWAH, DESAIN CENTER) */}
+        {/* PILIHAN JAM MULAI (GRID 3 KOLOM, CENTER ALIGNED) */}
         <View style={styles.labelWithSubRow}>
           <Text style={styles.inputLabel}>Pilih Jam Mulai Bermain</Text>
           <Text style={styles.labelSubText}>Tiap 1 Jam</Text>
@@ -535,7 +543,7 @@ export default function BookingFormScreen({ route, navigation }) {
                   if (isPassed) {
                     Alert.alert(
                       "Jam Sudah Terlewati",
-                      "Jam ini sudah lewat untuk hari ini. Silakan pilih jam lain yang masih buka atau pilih tanggal besok."
+                      "Jam ini sudah lewat untuk hari ini. Silakan pilih jam berikutnya atau pilih tanggal besok."
                     );
                     return;
                   }
@@ -560,8 +568,8 @@ export default function BookingFormScreen({ route, navigation }) {
                         : isPassed
                         ? { backgroundColor: "#CBD5E1" }
                         : isBusy
-                        ? { backgroundColor: colors.secondary }
-                        : { backgroundColor: colors.primary }
+                        ? { backgroundColor: colors.danger }
+                        : { backgroundColor: colors.success }
                     ]}
                   />
                   <Text
@@ -572,8 +580,8 @@ export default function BookingFormScreen({ route, navigation }) {
                         : isPassed
                         ? { color: "#94A3B8" }
                         : isBusy
-                        ? { color: colors.secondary }
-                        : { color: colors.textMuted }
+                        ? { color: colors.dangerText }
+                        : { color: colors.successText }
                     ]}
                   >
                     {isPassed ? "Lewat" : isBusy ? "Dipesan" : "Tersedia"}
@@ -612,7 +620,7 @@ export default function BookingFormScreen({ route, navigation }) {
           })}
         </View>
 
-        {/* RINGKASAN WAKTU BOOKING (DESAIN MINIMALIS & BERSIH) */}
+        {/* RINGKASAN WAKTU BOOKING */}
         <View style={styles.scheduleCard}>
           <View style={styles.scheduleCardHeader}>
             <View style={styles.scheduleTimeCol}>
@@ -633,13 +641,13 @@ export default function BookingFormScreen({ route, navigation }) {
               <View
                 style={[
                   styles.statusDotClean,
-                  { backgroundColor: slotStatus.available ? colors.primary : colors.secondary }
+                  { backgroundColor: slotStatus.available ? colors.success : colors.danger }
                 ]}
               />
               <Text
                 style={[
                   styles.statusBadgeCleanText,
-                  { color: slotStatus.available ? colors.primaryDark : colors.secondary }
+                  { color: slotStatus.available ? colors.successText : colors.dangerText }
                 ]}
               >
                 {slotStatus.available ? "Tersedia" : "Penuh"}
@@ -649,7 +657,7 @@ export default function BookingFormScreen({ route, navigation }) {
 
           {!slotStatus.available && (
             <View style={styles.conflictNotice}>
-              <Ionicons name="information-circle" size={16} color={colors.primary} />
+              <Ionicons name="information-circle" size={16} color={colors.danger} />
               <Text style={styles.conflictNoticeText}>{slotStatus.detail}</Text>
             </View>
           )}
@@ -669,12 +677,16 @@ export default function BookingFormScreen({ route, navigation }) {
 
         <View style={styles.priceRow}>
           <Text style={styles.priceRowLabel}>Peminjaman {chosenGame?.title || "Board Game"}:</Text>
-          <Text style={[styles.priceRowValue, { color: colors.primaryDark }]}>GRATIS</Text>
+          <Text style={[styles.priceRowValue, { color: colors.successText, fontWeight: "bold" }]}>
+            GRATIS
+          </Text>
         </View>
 
         <View style={styles.priceRow}>
-          <Text style={styles.priceRowLabel}>Fasilitas Wi-Fi & Snack Kafe:</Text>
-          <Text style={[styles.priceRowValue, { color: colors.primaryDark }]}>GRATIS</Text>
+          <Text style={styles.priceRowLabel}>Fasilitas Wi-Fi & Bantuan Game Master:</Text>
+          <Text style={[styles.priceRowValue, { color: colors.successText, fontWeight: "bold" }]}>
+            GRATIS
+          </Text>
         </View>
 
         <View style={styles.priceDivider} />
@@ -705,24 +717,27 @@ export default function BookingFormScreen({ route, navigation }) {
         </Text>
       </TouchableOpacity>
 
-      {/* MODAL SISTEM PEMBAYARAN TRANSFER & QRIS */}
+      {/* MODAL 1: SISTEM PEMBAYARAN TRANSFER & QRIS */}
       <Modal visible={paymentModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.paymentModalCard}>
+            {/* Sheet Handle */}
+            <View style={styles.dragHandle} />
+
             <View style={styles.modalHeader}>
               <View>
-                <Text style={styles.modalTitle}>Pembayaran Reservasi</Text>
-                <Text style={styles.modalSub}>Transfer sesuai nominal untuk mengonfirmasi tiket</Text>
+                <Text style={styles.modalTitle}>Metode Pembayaran</Text>
+                <Text style={styles.modalSub}>Transfer ke rekening resmi kafe atau bayar di kasir</Text>
               </View>
-              <TouchableOpacity onPress={() => setPaymentModalVisible(false)}>
-                <Ionicons name="close-circle" size={26} color={colors.secondary} />
+              <TouchableOpacity onPress={() => setPaymentModalVisible(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close-circle" size={26} color={colors.textMuted} />
               </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
               {/* Total Tagihan Box */}
               <View style={styles.modalBillBox}>
-                <Text style={styles.modalBillLabel}>TOTAL TAGIHAN</Text>
+                <Text style={styles.modalBillLabel}>TOTAL TAGIHAN RESERVASI</Text>
                 <Text style={styles.modalBillAmount}>{formatRupiah(totalPrice)}</Text>
                 <Text style={styles.modalBillSub}>
                   {tableType} ({tableNumber}) • {durationHours} Jam ({currentSessionTime})
@@ -738,9 +753,10 @@ export default function BookingFormScreen({ route, navigation }) {
                   selectedPaymentMethod === "bca" && styles.paymentMethodCardActive
                 ]}
                 onPress={() => setSelectedPaymentMethod("bca")}
+                activeOpacity={0.85}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankBadge}>
+                  <View style={[styles.bankBadge, { backgroundColor: "#005BAA" }]}>
                     <Text style={styles.bankBadgeText}>BCA</Text>
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -765,9 +781,10 @@ export default function BookingFormScreen({ route, navigation }) {
                   selectedPaymentMethod === "mandiri" && styles.paymentMethodCardActive
                 ]}
                 onPress={() => setSelectedPaymentMethod("mandiri")}
+                activeOpacity={0.85}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankBadge}>
+                  <View style={[styles.bankBadge, { backgroundColor: "#002776" }]}>
                     <Text style={styles.bankBadgeText}>MDR</Text>
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -792,9 +809,10 @@ export default function BookingFormScreen({ route, navigation }) {
                   selectedPaymentMethod === "qris" && styles.paymentMethodCardActive
                 ]}
                 onPress={() => setSelectedPaymentMethod("qris")}
+                activeOpacity={0.85}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankBadge}>
+                  <View style={[styles.bankBadge, { backgroundColor: "#ED1C24" }]}>
                     <Text style={styles.bankBadgeText}>QRIS</Text>
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -802,16 +820,21 @@ export default function BookingFormScreen({ route, navigation }) {
                     <Text style={styles.bankHolder}>Gopay / ShopeePay / OVO / Dana / BCA</Text>
                   </View>
                 </View>
-                {selectedPaymentMethod === "qris" && (
-                  <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                {selectedPaymentMethod === "qris" ? (
+                  <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                ) : (
+                  <View style={styles.radioOutline} />
                 )}
               </TouchableOpacity>
 
               {selectedPaymentMethod === "qris" && (
                 <View style={styles.qrisDisplayCard}>
-                  <Ionicons name="qr-code" size={120} color={colors.secondary} />
+                  <View style={styles.qrisHeader}>
+                    <Text style={styles.qrisHeaderTitle}>QRIS PEMBAYARAN MEEPLECAFE</Text>
+                  </View>
+                  <Ionicons name="qr-code" size={130} color={colors.secondary} style={{ marginVertical: 8 }} />
                   <Text style={styles.qrisDesc}>
-                    Scan kode QRIS ini dari aplikasi m-banking atau e-wallet Anda.
+                    Scan kode QRIS ini dari aplikasi m-banking atau e-wallet Anda untuk transfer instan.
                   </Text>
                 </View>
               )}
@@ -823,27 +846,29 @@ export default function BookingFormScreen({ route, navigation }) {
                   selectedPaymentMethod === "cash" && styles.paymentMethodCardActive
                 ]}
                 onPress={() => setSelectedPaymentMethod("cash")}
+                activeOpacity={0.85}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankBadge}>
-                    <Ionicons name="cash-outline" size={16} color="#FFFFFF" />
+                  <View style={[styles.bankBadge, { backgroundColor: "#059669" }]}>
+                    <Ionicons name="cash-outline" size={18} color="#FFFFFF" />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={styles.bankName}>Bayar di Kasir (Cash / Tunai)</Text>
                     <Text style={styles.bankHolder}>Bayar langsung di kasir kafe saat kedatangan</Text>
                   </View>
                 </View>
-                {selectedPaymentMethod === "cash" && (
-                  <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                {selectedPaymentMethod === "cash" ? (
+                  <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                ) : (
+                  <View style={styles.radioOutline} />
                 )}
               </TouchableOpacity>
 
               {/* Petunjuk Konfirmasi */}
               <View style={styles.transferGuideBox}>
-                <Ionicons name="shield-checkmark" size={18} color={colors.secondary} />
+                <Ionicons name="shield-checkmark" size={18} color={colors.primary} />
                 <Text style={styles.transferGuideText}>
-                  Setelah transfer sejumlah {formatRupiah(totalPrice)}, tekan tombol konfirmasi
-                  di bawah untuk langsung menerbitkan tiket Anda.
+                  Setelah melakukan pembayaran sejumlah {formatRupiah(totalPrice)}, tekan tombol di bawah untuk langsung menerbitkan tiket Anda.
                 </Text>
               </View>
 
@@ -860,7 +885,7 @@ export default function BookingFormScreen({ route, navigation }) {
                   <>
                     <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
                     <Text style={styles.confirmPaymentBtnText}>
-                      Saya Sudah Transfer (Konfirmasi Tiket)
+                      Konfirmasi & Terbitkan Tiket
                     </Text>
                   </>
                 )}
@@ -870,19 +895,19 @@ export default function BookingFormScreen({ route, navigation }) {
         </View>
       </Modal>
 
-      {/* POPUP SUKSES PEMBELIAN TIKET (CUSTOM TICKET PASS) */}
+      {/* MODAL 2: POPUP SUKSES PEMBELIAN TIKET (CUSTOM VIP TICKET PASS) */}
       <Modal visible={successModalVisible} animationType="fade" transparent>
         <View style={styles.successModalOverlay}>
           <View style={styles.ticketPassCard}>
-            {/* Ticket Pass Header: Biru Slate (#1E293B) */}
+            {/* Ticket Pass Header: Dark Navy Slate */}
             <View style={styles.passHeader}>
               <View style={styles.passTopBadge}>
-                <Ionicons name="ticket" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-                <Text style={styles.passTopBadgeText}>TIKET RESMI BERHASIL DITERBITKAN</Text>
+                <Ionicons name="ticket" size={13} color={colors.warning} style={{ marginRight: 5 }} />
+                <Text style={styles.passTopBadgeText}>TIKET RESMI BERHASIL TERBIT</Text>
               </View>
 
               <View style={styles.passIconCircle}>
-                <Ionicons name="checkmark-circle" size={32} color={colors.primary} />
+                <Ionicons name="checkmark-circle" size={34} color={colors.primary} />
               </View>
 
               <Text style={styles.passHeading}>Pembayaran Terkonfirmasi</Text>
@@ -897,7 +922,7 @@ export default function BookingFormScreen({ route, navigation }) {
               <View style={styles.passCutoutRight} />
             </View>
 
-            {/* Ticket Pass Body: Putih (#FFFFFF) */}
+            {/* Ticket Pass Body: Crisp White */}
             <View style={styles.passBody}>
               <View style={styles.passDetailRow}>
                 <View style={styles.passCol}>
@@ -926,7 +951,7 @@ export default function BookingFormScreen({ route, navigation }) {
               <View style={styles.passGameBox}>
                 <Ionicons name="cube" size={18} color={colors.primary} />
                 <View style={{ marginLeft: 8, flex: 1 }}>
-                  <Text style={styles.passGameLabel}>Board Game</Text>
+                  <Text style={styles.passGameLabel}>Board Game Pilihan</Text>
                   <Text style={styles.passGameTitle}>{issuedTicket?.gameTitle}</Text>
                 </View>
               </View>
@@ -943,8 +968,8 @@ export default function BookingFormScreen({ route, navigation }) {
               </View>
 
               <View style={styles.passTotalBox}>
-                <Text style={styles.passTotalLabel}>TOTAL LUNAS</Text>
-                <Text style={styles.passTotalValue}>{formatRupiah(issuedTicket?.totalPrice || 0)}</Text>
+                <Text style={styles.passTotalLabel}>STATUS PEMBAYARAN</Text>
+                <Text style={styles.passTotalValue}>LUNAS • {formatRupiah(issuedTicket?.totalPrice || 0)}</Text>
               </View>
 
               {/* Action Buttons */}
@@ -977,20 +1002,40 @@ export default function BookingFormScreen({ route, navigation }) {
         </View>
       </Modal>
 
-      {/* Modal Picker untuk Ganti Board Game */}
+      {/* MODAL 3: PICKER GANTI BOARD GAME (DENGAN SEARCH BAR) */}
       <Modal visible={gamePickerVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.pickerModalCard}>
+            <View style={styles.dragHandle} />
+
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Pilih Board Game</Text>
               <TouchableOpacity onPress={() => setGamePickerVisible(false)}>
-                <Ionicons name="close" size={24} color={colors.secondary} />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
+            {/* Search Input di Picker */}
+            <View style={styles.pickerSearchRow}>
+              <Ionicons name="search" size={18} color={colors.textMuted} />
+              <TextInput
+                placeholder="Cari board game..."
+                placeholderTextColor={colors.textMuted}
+                style={styles.pickerSearchInput}
+                value={gameSearchQuery}
+                onChangeText={setGameSearchQuery}
+              />
+              {gameSearchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setGameSearchQuery("")}>
+                  <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+                </TouchableOpacity>
+              )}
+            </View>
+
             <FlatList
-              data={allGames}
+              data={filteredPickerGames}
               keyExtractor={(item) => item.id}
+              contentContainerStyle={{ paddingBottom: 20 }}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[
@@ -1001,12 +1046,15 @@ export default function BookingFormScreen({ route, navigation }) {
                     setChosenGame(item);
                     setGamePickerVisible(false);
                   }}
+                  activeOpacity={0.75}
                 >
-                  <Ionicons
-                    name="cube-outline"
-                    size={22}
-                    color={chosenGame?.id === item.id ? colors.primary : colors.textMuted}
-                  />
+                  <View style={[styles.pickerIconBox, chosenGame?.id === item.id && { backgroundColor: colors.primaryLight }]}>
+                    <Ionicons
+                      name="cube-outline"
+                      size={22}
+                      color={chosenGame?.id === item.id ? colors.primary : colors.textMuted}
+                    />
+                  </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={styles.gamePickerName}>{item.title}</Text>
                     <Text style={styles.gamePickerDesc}>
@@ -1014,7 +1062,7 @@ export default function BookingFormScreen({ route, navigation }) {
                     </Text>
                   </View>
                   {chosenGame?.id === item.id && (
-                    <Ionicons name="checkmark" size={20} color={colors.primary} />
+                    <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
                   )}
                 </TouchableOpacity>
               )}
@@ -1079,7 +1127,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: colors.primaryLight,
     justifyContent: "center",
     alignItems: "center"
   },
@@ -1105,7 +1152,7 @@ const styles = StyleSheet.create({
   },
   packageRate: {
     fontSize: 11,
-    color: colors.secondary,
+    color: "#2563EB",
     marginTop: 2,
     fontWeight: "600"
   },
@@ -1188,7 +1235,7 @@ const styles = StyleSheet.create({
   todayClosedNotice: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.warningLight,
     padding: 10,
     borderRadius: 8,
     marginTop: 8,
@@ -1196,7 +1243,7 @@ const styles = StyleSheet.create({
   },
   todayClosedNoticeText: {
     fontSize: 11,
-    color: colors.primaryDark,
+    color: colors.warningText,
     marginLeft: 6,
     flex: 1,
     lineHeight: 16
@@ -1322,10 +1369,10 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
   statusBadgeCleanAvailable: {
-    backgroundColor: colors.primaryLight
+    backgroundColor: colors.successLight
   },
   statusBadgeCleanBusy: {
-    backgroundColor: colors.background
+    backgroundColor: colors.dangerLight
   },
   statusDotClean: {
     width: 6,
@@ -1340,14 +1387,14 @@ const styles = StyleSheet.create({
   conflictNotice: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.dangerLight,
     padding: 8,
     borderRadius: 8,
     marginTop: 10
   },
   conflictNoticeText: {
     fontSize: 11,
-    color: colors.primaryDark,
+    color: colors.dangerText,
     marginLeft: 6,
     flex: 1
   },
@@ -1399,7 +1446,7 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   mainActionBtnDisabled: {
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.textMuted,
     opacity: 0.75
   },
   mainActionBtnText: {
@@ -1409,8 +1456,16 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(30, 41, 59, 0.65)",
+    backgroundColor: "rgba(15, 23, 42, 0.65)",
     justifyContent: "flex-end"
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.border,
+    alignSelf: "center",
+    marginBottom: 12
   },
   paymentModalCard: {
     backgroundColor: colors.card,
@@ -1440,7 +1495,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     alignItems: "center",
-    marginBottom: 16
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.primaryBorder
   },
   modalBillLabel: {
     fontSize: 11,
@@ -1488,7 +1545,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 32,
     borderRadius: 6,
-    backgroundColor: colors.secondary,
     justifyContent: "center",
     alignItems: "center"
   },
@@ -1512,6 +1568,13 @@ const styles = StyleSheet.create({
   bankHolder: {
     fontSize: 10,
     color: colors.textMuted
+  },
+  radioOutline: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.border
   },
   copyBtn: {
     flexDirection: "row",
@@ -1538,11 +1601,23 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     marginBottom: 10
   },
+  qrisHeader: {
+    backgroundColor: colors.dangerLight,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginBottom: 6
+  },
+  qrisHeaderTitle: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: colors.dangerText
+  },
   qrisDesc: {
     fontSize: 11,
     color: colors.textMuted,
     textAlign: "center",
-    marginTop: 8
+    marginTop: 4
   },
   transferGuideBox: {
     flexDirection: "row",
@@ -1550,7 +1625,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
     padding: 12,
     borderRadius: 10,
-    marginVertical: 12
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: colors.primaryBorder
   },
   transferGuideText: {
     fontSize: 11,
@@ -1573,40 +1650,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold"
   },
-  pickerModalCard: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: "75%",
-    padding: 20
-  },
-  gamePickerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderBottomWidth: 1,
-    borderColor: colors.border
-  },
-  gamePickerRowActive: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: 8
-  },
-  gamePickerName: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.text
-  },
-  gamePickerDesc: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 2
-  },
 
-  // STYLES CUSTOM POPUP TIKET PASCA PEMBELIAN
+  // STYLES CUSTOM POPUP TIKET PASCA PEMBELIAN (VIP PASS)
   successModalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(30, 41, 59, 0.75)",
+    backgroundColor: "rgba(15, 23, 42, 0.75)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20
@@ -1634,16 +1682,16 @@ const styles = StyleSheet.create({
   passTopBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    marginBottom: 12
+    marginBottom: 10
   },
   passTopBadgeText: {
     fontSize: 10,
     fontWeight: "700",
-    color: colors.primaryLight,
+    color: colors.warning,
     letterSpacing: 0.8
   },
   passIconCircle: {
@@ -1663,7 +1711,7 @@ const styles = StyleSheet.create({
   },
   passBookingLabel: {
     fontSize: 10,
-    color: colors.primaryLight,
+    color: colors.textMuted,
     fontWeight: "600",
     letterSpacing: 1,
     textTransform: "uppercase"
@@ -1687,7 +1735,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
-    backgroundColor: "rgba(30, 41, 59, 0.75)"
+    backgroundColor: "rgba(15, 23, 42, 0.75)"
   },
   passDashedLine: {
     flex: 1,
@@ -1701,7 +1749,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderTopLeftRadius: 10,
     borderBottomLeftRadius: 10,
-    backgroundColor: "rgba(30, 41, 59, 0.75)"
+    backgroundColor: "rgba(15, 23, 42, 0.75)"
   },
   passBody: {
     padding: 16
@@ -1735,7 +1783,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
     padding: 10,
     borderRadius: 8,
-    marginVertical: 6
+    marginVertical: 6,
+    borderWidth: 1,
+    borderColor: colors.primaryBorder
   },
   passGameLabel: {
     fontSize: 9,
@@ -1752,23 +1802,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: colors.background,
+    backgroundColor: colors.successLight,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.successBorder,
     padding: 10,
     borderRadius: 8,
     marginTop: 4,
     marginBottom: 14
   },
   passTotalLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "700",
-    color: colors.secondary
+    color: colors.successText
   },
   passTotalValue: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
-    color: colors.primary
+    color: colors.successText
   },
   passPrimaryBtn: {
     backgroundColor: colors.primary,
@@ -1794,8 +1844,64 @@ const styles = StyleSheet.create({
     borderRadius: 10
   },
   passSecondaryBtnText: {
-    color: colors.secondary,
+    color: colors.text,
     fontSize: 13,
     fontWeight: "600"
+  },
+
+  // STYLES MODAL PICKER GAME
+  pickerModalCard: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "75%",
+    padding: 20
+  },
+  pickerSearchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12
+  },
+  pickerSearchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 13,
+    color: colors.text
+  },
+  gamePickerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderColor: colors.borderLight
+  },
+  gamePickerRowActive: {
+    backgroundColor: colors.primaryLight,
+    borderRadius: 8
+  },
+  pickerIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: colors.background,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  gamePickerName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.text
+  },
+  gamePickerDesc: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2
   }
 });

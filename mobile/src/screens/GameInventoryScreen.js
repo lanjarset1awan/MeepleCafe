@@ -155,14 +155,14 @@ export default function GameInventoryScreen({ navigation }) {
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statCol}>
-          <Text style={[styles.statNum, { color: colors.primary }]}>
+          <Text style={[styles.statNum, { color: colors.success }]}>
             {availableTitles}
           </Text>
           <Text style={styles.statLbl}>Siap di Rak</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statCol}>
-          <Text style={[styles.statNum, { color: colors.secondary }]}>2</Text>
+          <Text style={[styles.statNum, { color: colors.danger }]}>2</Text>
           <Text style={styles.statLbl}>Sedang Main</Text>
         </View>
       </View>
@@ -421,20 +421,24 @@ const styles = StyleSheet.create({
     borderRadius: 6
   },
   stockAvailable: {
-    backgroundColor: colors.primaryLight
+    backgroundColor: colors.successLight,
+    borderWidth: 1,
+    borderColor: colors.successBorder
   },
   stockInUse: {
-    backgroundColor: "#F1F5F9"
+    backgroundColor: colors.dangerLight,
+    borderWidth: 1,
+    borderColor: colors.dangerBorder
   },
   stockText: {
     fontSize: 10,
     fontWeight: "700"
   },
   stockTextAvailable: {
-    color: colors.primaryDark
+    color: colors.successText
   },
   stockTextInUse: {
-    color: colors.textMuted
+    color: colors.dangerText
   },
   centerContainer: {
     flex: 1,
