@@ -39,8 +39,8 @@ export default function ProfileScreen() {
           <View style={styles.tag}>
             <Text style={styles.tagText}>Praktikum PPB 2026</Text>
           </View>
-          <View style={[styles.tag, { backgroundColor: "#DCFCE7" }]}>
-            <Text style={[styles.tagText, { color: "#166534" }]}>React Native + Supabase</Text>
+          <View style={[styles.tag, { backgroundColor: colors.primaryLight }]}>
+            <Text style={[styles.tagText, { color: colors.primaryDark }]}>React Native + Supabase</Text>
           </View>
         </View>
       </View>

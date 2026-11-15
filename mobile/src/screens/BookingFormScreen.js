@@ -106,6 +106,10 @@ export default function BookingFormScreen({ route, navigation }) {
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("bca");
 
+  // Modal Popup Sukses Pasca Pembayaran (Custom Ticket Confirmation)
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [issuedTicket, setIssuedTicket] = useState(null);
+
   // Data reservasi aktif dari database untuk validasi slot & bentrok
   const [activeReservations, setActiveReservations] = useState([]);
 
@@ -296,7 +300,7 @@ export default function BookingFormScreen({ route, navigation }) {
 
     if (!slotStatus.available) {
       Alert.alert(
-        "Jadwal Tidak Tersedia ❌",
+        "Jadwal Tidak Tersedia",
         `${slotStatus.detail}\n\nSilakan pilih jam mulai atau durasi lain yang masih kosong.`
       );
       return;
@@ -308,8 +312,8 @@ export default function BookingFormScreen({ route, navigation }) {
 
   const handleCopyAccount = (bankName, accountNum) => {
     Alert.alert(
-      "Nomor Rekening Disalin ✓",
-      `Nomor rekening ${bankName} (${accountNum}) a.n. MeepleCafe / Lanjar Setiawan berhasil disalin!`
+      "Nomor Rekening Disalin",
+      `Nomor rekening ${bankName} (${accountNum}) a.n. MeepleCafe / Lanjar Setiawan berhasil disalin.`
     );
   };
 
@@ -345,24 +349,20 @@ export default function BookingFormScreen({ route, navigation }) {
       const result = await ApiService.createReservation(payload);
       setPaymentModalVisible(false);
 
-      Alert.alert(
-        "Pembayaran Dikonfirmasi & Tiket Terbit! 🎉",
-        `Kode Booking: ${result.booking_code}\n\n` +
-          `🎲 Board Game: ${gameTitle}\n` +
-          `🪑 Meja: ${tableType} (Meja ${tableNumber})\n` +
-          `⏱️ Jadwal: ${currentSessionTime}\n` +
-          `💳 Total: ${formatRupiah(totalPrice)} (${paymentMethodName})\n\n` +
-          `Tiket Anda telah terbit dan aktif di menu Tiket Saya!`,
-        [
-          {
-            text: "Buka Tiket Saya",
-            onPress: () => {
-              navigation.popToTop();
-              navigation.navigate("TicketsTab");
-            }
-          }
-        ]
-      );
+      // Simpan data tiket untuk ditampilkan di Popup Custom Tiket
+      setIssuedTicket({
+        bookingCode: result.booking_code,
+        customerName: customerName.trim(),
+        guestCount: count,
+        gameTitle: gameTitle,
+        tableType: tableType,
+        tableNumber: tableNumber,
+        reservationDate: reservationDate,
+        sessionTime: currentSessionTime,
+        totalPrice: totalPrice,
+        paymentMethod: paymentMethodName
+      });
+      setSuccessModalVisible(true);
     } catch (err) {
       Alert.alert(
         "Gagal Memproses Reservasi",
@@ -400,7 +400,7 @@ export default function BookingFormScreen({ route, navigation }) {
         </View>
 
         <View style={[styles.packageRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
-          <View style={[styles.packageIconBox, { backgroundColor: "#FEF3C7" }]}>
+          <View style={[styles.packageIconBox, { backgroundColor: colors.primaryLight }]}>
             <Ionicons name="restaurant" size={22} color={colors.secondary} />
           </View>
           <View style={styles.packageInfo}>
@@ -491,7 +491,7 @@ export default function BookingFormScreen({ route, navigation }) {
         {/* Notifikasi jika jam operasional hari ini sudah tutup */}
         {isAllTodayPassed && (
           <View style={styles.todayClosedNotice}>
-            <Ionicons name="time-outline" size={16} color="#B45309" />
+            <Ionicons name="time-outline" size={16} color={colors.primaryDark} />
             <Text style={styles.todayClosedNoticeText}>
               Jam operasional hari ini sudah lewat (Kafe tutup pukul 21.00). Silakan pilih tanggal Besok.
             </Text>
@@ -534,7 +534,7 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => {
                   if (isPassed) {
                     Alert.alert(
-                      "Jam Sudah Terlewati ⏰",
+                      "Jam Sudah Terlewati",
                       "Jam ini sudah lewat untuk hari ini. Silakan pilih jam lain yang masih buka atau pilih tanggal besok."
                     );
                     return;
@@ -558,10 +558,10 @@ export default function BookingFormScreen({ route, navigation }) {
                       isSelected
                         ? { backgroundColor: "#FFFFFF" }
                         : isPassed
-                        ? { backgroundColor: "#94A3B8" }
+                        ? { backgroundColor: "#CBD5E1" }
                         : isBusy
-                        ? { backgroundColor: colors.accent }
-                        : { backgroundColor: colors.success }
+                        ? { backgroundColor: colors.secondary }
+                        : { backgroundColor: colors.primary }
                     ]}
                   />
                   <Text
@@ -572,7 +572,7 @@ export default function BookingFormScreen({ route, navigation }) {
                         : isPassed
                         ? { color: "#94A3B8" }
                         : isBusy
-                        ? { color: colors.accent }
+                        ? { color: colors.secondary }
                         : { color: colors.textMuted }
                     ]}
                   >
@@ -633,13 +633,13 @@ export default function BookingFormScreen({ route, navigation }) {
               <View
                 style={[
                   styles.statusDotClean,
-                  { backgroundColor: slotStatus.available ? colors.success : colors.accent }
+                  { backgroundColor: slotStatus.available ? colors.primary : colors.secondary }
                 ]}
               />
               <Text
                 style={[
                   styles.statusBadgeCleanText,
-                  { color: slotStatus.available ? "#166534" : "#991B1B" }
+                  { color: slotStatus.available ? colors.primaryDark : colors.secondary }
                 ]}
               >
                 {slotStatus.available ? "Tersedia" : "Penuh"}
@@ -649,7 +649,7 @@ export default function BookingFormScreen({ route, navigation }) {
 
           {!slotStatus.available && (
             <View style={styles.conflictNotice}>
-              <Ionicons name="information-circle" size={16} color="#DC2626" />
+              <Ionicons name="information-circle" size={16} color={colors.primary} />
               <Text style={styles.conflictNoticeText}>{slotStatus.detail}</Text>
             </View>
           )}
@@ -669,12 +669,12 @@ export default function BookingFormScreen({ route, navigation }) {
 
         <View style={styles.priceRow}>
           <Text style={styles.priceRowLabel}>Peminjaman {chosenGame?.title || "Board Game"}:</Text>
-          <Text style={[styles.priceRowValue, { color: colors.success }]}>GRATIS</Text>
+          <Text style={[styles.priceRowValue, { color: colors.primaryDark }]}>GRATIS</Text>
         </View>
 
         <View style={styles.priceRow}>
           <Text style={styles.priceRowLabel}>Fasilitas Wi-Fi & Snack Kafe:</Text>
-          <Text style={[styles.priceRowValue, { color: colors.success }]}>GRATIS</Text>
+          <Text style={[styles.priceRowValue, { color: colors.primaryDark }]}>GRATIS</Text>
         </View>
 
         <View style={styles.priceDivider} />
@@ -692,7 +692,7 @@ export default function BookingFormScreen({ route, navigation }) {
       <TouchableOpacity
         style={[
           styles.mainActionBtn,
-          !slotStatus.available && styles.mainActionBtnWarning
+          !slotStatus.available && styles.mainActionBtnDisabled
         ]}
         onPress={handleProceedToPayment}
         activeOpacity={0.88}
@@ -715,7 +715,7 @@ export default function BookingFormScreen({ route, navigation }) {
                 <Text style={styles.modalSub}>Transfer sesuai nominal untuk mengonfirmasi tiket</Text>
               </View>
               <TouchableOpacity onPress={() => setPaymentModalVisible(false)}>
-                <Ionicons name="close-circle" size={26} color={colors.textMuted} />
+                <Ionicons name="close-circle" size={26} color={colors.secondary} />
               </TouchableOpacity>
             </View>
 
@@ -740,7 +740,7 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("bca")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={[styles.bankBadge, { backgroundColor: "#005BAA" }]}>
+                  <View style={styles.bankBadge}>
                     <Text style={styles.bankBadgeText}>BCA</Text>
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -767,7 +767,7 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("mandiri")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={[styles.bankBadge, { backgroundColor: "#002776" }]}>
+                  <View style={styles.bankBadge}>
                     <Text style={styles.bankBadgeText}>MDR</Text>
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -794,7 +794,7 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("qris")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={[styles.bankBadge, { backgroundColor: "#ED1C24" }]}>
+                  <View style={styles.bankBadge}>
                     <Text style={styles.bankBadgeText}>QRIS</Text>
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -809,9 +809,9 @@ export default function BookingFormScreen({ route, navigation }) {
 
               {selectedPaymentMethod === "qris" && (
                 <View style={styles.qrisDisplayCard}>
-                  <Ionicons name="qr-code" size={130} color={colors.text} />
+                  <Ionicons name="qr-code" size={120} color={colors.secondary} />
                   <Text style={styles.qrisDesc}>
-                    Scan kode QRIS ini dari aplikasi e-wallet Anda untuk transfer instan.
+                    Scan kode QRIS ini dari aplikasi m-banking atau e-wallet Anda.
                   </Text>
                 </View>
               )}
@@ -825,7 +825,7 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("cash")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={[styles.bankBadge, { backgroundColor: "#059669" }]}>
+                  <View style={styles.bankBadge}>
                     <Ionicons name="cash-outline" size={16} color="#FFFFFF" />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -842,7 +842,7 @@ export default function BookingFormScreen({ route, navigation }) {
               <View style={styles.transferGuideBox}>
                 <Ionicons name="shield-checkmark" size={18} color={colors.secondary} />
                 <Text style={styles.transferGuideText}>
-                  Setelah melakukan transfer sejumlah {formatRupiah(totalPrice)}, tekan tombol konfirmasi
+                  Setelah transfer sejumlah {formatRupiah(totalPrice)}, tekan tombol konfirmasi
                   di bawah untuk langsung menerbitkan tiket Anda.
                 </Text>
               </View>
@@ -870,6 +870,113 @@ export default function BookingFormScreen({ route, navigation }) {
         </View>
       </Modal>
 
+      {/* POPUP SUKSES PEMBELIAN TIKET (CUSTOM TICKET PASS) */}
+      <Modal visible={successModalVisible} animationType="fade" transparent>
+        <View style={styles.successModalOverlay}>
+          <View style={styles.ticketPassCard}>
+            {/* Ticket Pass Header: Biru Slate (#1E293B) */}
+            <View style={styles.passHeader}>
+              <View style={styles.passTopBadge}>
+                <Ionicons name="ticket" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                <Text style={styles.passTopBadgeText}>TIKET RESMI BERHASIL DITERBITKAN</Text>
+              </View>
+
+              <View style={styles.passIconCircle}>
+                <Ionicons name="checkmark-circle" size={32} color={colors.primary} />
+              </View>
+
+              <Text style={styles.passHeading}>Pembayaran Terkonfirmasi</Text>
+              <Text style={styles.passBookingLabel}>KODE BOOKING</Text>
+              <Text style={styles.passBookingCode}>{issuedTicket?.bookingCode}</Text>
+            </View>
+
+            {/* Perforated Divider */}
+            <View style={styles.passDividerRow}>
+              <View style={styles.passCutoutLeft} />
+              <View style={styles.passDashedLine} />
+              <View style={styles.passCutoutRight} />
+            </View>
+
+            {/* Ticket Pass Body: Putih (#FFFFFF) */}
+            <View style={styles.passBody}>
+              <View style={styles.passDetailRow}>
+                <View style={styles.passCol}>
+                  <Text style={styles.passMetaLabel}>Nama Pemesan</Text>
+                  <Text style={styles.passMetaValue}>{issuedTicket?.customerName}</Text>
+                </View>
+                <View style={styles.passColRight}>
+                  <Text style={styles.passMetaLabel}>Pemain</Text>
+                  <Text style={styles.passMetaValue}>{issuedTicket?.guestCount} Orang</Text>
+                </View>
+              </View>
+
+              <View style={styles.passDetailRow}>
+                <View style={styles.passCol}>
+                  <Text style={styles.passMetaLabel}>Meja Kafe</Text>
+                  <Text style={styles.passMetaValue}>
+                    {issuedTicket?.tableType} ({issuedTicket?.tableNumber})
+                  </Text>
+                </View>
+                <View style={styles.passColRight}>
+                  <Text style={styles.passMetaLabel}>Tanggal</Text>
+                  <Text style={styles.passMetaValue}>{issuedTicket?.reservationDate}</Text>
+                </View>
+              </View>
+
+              <View style={styles.passGameBox}>
+                <Ionicons name="cube" size={18} color={colors.primary} />
+                <View style={{ marginLeft: 8, flex: 1 }}>
+                  <Text style={styles.passGameLabel}>Board Game</Text>
+                  <Text style={styles.passGameTitle}>{issuedTicket?.gameTitle}</Text>
+                </View>
+              </View>
+
+              <View style={styles.passDetailRow}>
+                <View style={styles.passCol}>
+                  <Text style={styles.passMetaLabel}>Jadwal Sesi</Text>
+                  <Text style={styles.passMetaValue}>{issuedTicket?.sessionTime}</Text>
+                </View>
+                <View style={styles.passColRight}>
+                  <Text style={styles.passMetaLabel}>Metode Bayar</Text>
+                  <Text style={styles.passMetaValue}>{issuedTicket?.paymentMethod}</Text>
+                </View>
+              </View>
+
+              <View style={styles.passTotalBox}>
+                <Text style={styles.passTotalLabel}>TOTAL LUNAS</Text>
+                <Text style={styles.passTotalValue}>{formatRupiah(issuedTicket?.totalPrice || 0)}</Text>
+              </View>
+
+              {/* Action Buttons */}
+              <TouchableOpacity
+                style={styles.passPrimaryBtn}
+                activeOpacity={0.88}
+                onPress={() => {
+                  setSuccessModalVisible(false);
+                  navigation.popToTop();
+                  navigation.navigate("TicketsTab");
+                }}
+              >
+                <Ionicons name="ticket-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.passPrimaryBtnText}>Buka Tiket Saya</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.passSecondaryBtn}
+                activeOpacity={0.85}
+                onPress={() => {
+                  setSuccessModalVisible(false);
+                  navigation.popToTop();
+                  navigation.navigate("GameTab");
+                }}
+              >
+                <Text style={styles.passSecondaryBtnText}>Kembali ke Beranda</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Modal Picker untuk Ganti Board Game */}
       <Modal visible={gamePickerVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
@@ -877,7 +984,7 @@ export default function BookingFormScreen({ route, navigation }) {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Pilih Board Game</Text>
               <TouchableOpacity onPress={() => setGamePickerVisible(false)}>
-                <Ionicons name="close" size={24} color={colors.text} />
+                <Ionicons name="close" size={24} color={colors.secondary} />
               </TouchableOpacity>
             </View>
 
@@ -1081,7 +1188,7 @@ const styles = StyleSheet.create({
   todayClosedNotice: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FEF3C7",
+    backgroundColor: colors.primaryLight,
     padding: 10,
     borderRadius: 8,
     marginTop: 8,
@@ -1089,7 +1196,7 @@ const styles = StyleSheet.create({
   },
   todayClosedNoticeText: {
     fontSize: 11,
-    color: "#92400E",
+    color: colors.primaryDark,
     marginLeft: 6,
     flex: 1,
     lineHeight: 16
@@ -1103,7 +1210,7 @@ const styles = StyleSheet.create({
   },
   hourGridItem: {
     width: "31.5%",
-    backgroundColor: colors.background,
+    backgroundColor: colors.card,
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: colors.border,
@@ -1117,13 +1224,13 @@ const styles = StyleSheet.create({
     borderColor: colors.primary
   },
   hourGridItemBusy: {
-    backgroundColor: "#FEF2F2",
-    borderColor: "#FECACA"
+    backgroundColor: colors.background,
+    borderColor: colors.border
   },
   hourGridItemPassed: {
-    backgroundColor: "#F1F5F9",
-    borderColor: "#E2E8F0",
-    opacity: 0.55
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    opacity: 0.5
   },
   hourGridText: {
     fontSize: 15,
@@ -1215,10 +1322,10 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
   statusBadgeCleanAvailable: {
-    backgroundColor: "#DCFCE7"
+    backgroundColor: colors.primaryLight
   },
   statusBadgeCleanBusy: {
-    backgroundColor: "#FEE2E2"
+    backgroundColor: colors.background
   },
   statusDotClean: {
     width: 6,
@@ -1233,14 +1340,14 @@ const styles = StyleSheet.create({
   conflictNotice: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FEF2F2",
+    backgroundColor: colors.primaryLight,
     padding: 8,
     borderRadius: 8,
     marginTop: 10
   },
   conflictNoticeText: {
     fontSize: 11,
-    color: "#991B1B",
+    color: colors.primaryDark,
     marginLeft: 6,
     flex: 1
   },
@@ -1291,8 +1398,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     elevation: 3
   },
-  mainActionBtnWarning: {
-    backgroundColor: colors.accent
+  mainActionBtnDisabled: {
+    backgroundColor: colors.secondary,
+    opacity: 0.75
   },
   mainActionBtnText: {
     color: "#FFFFFF",
@@ -1301,7 +1409,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(30, 41, 59, 0.65)",
     justifyContent: "flex-end"
   },
   paymentModalCard: {
@@ -1360,7 +1468,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: colors.background,
+    backgroundColor: colors.card,
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: 12,
@@ -1369,7 +1477,7 @@ const styles = StyleSheet.create({
   },
   paymentMethodCardActive: {
     borderColor: colors.primary,
-    backgroundColor: "#F8FAFC"
+    backgroundColor: colors.primaryLight
   },
   paymentMethodLeft: {
     flexDirection: "row",
@@ -1380,6 +1488,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 32,
     borderRadius: 6,
+    backgroundColor: colors.secondary,
     justifyContent: "center",
     alignItems: "center"
   },
@@ -1407,7 +1516,9 @@ const styles = StyleSheet.create({
   copyBtn: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.primary,
     paddingHorizontal: 8,
     paddingVertical: 5,
     borderRadius: 6
@@ -1436,20 +1547,20 @@ const styles = StyleSheet.create({
   transferGuideBox: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#F0FDFA",
+    backgroundColor: colors.primaryLight,
     padding: 12,
     borderRadius: 10,
     marginVertical: 12
   },
   transferGuideText: {
     fontSize: 11,
-    color: "#0F766E",
+    color: colors.primaryDark,
     marginLeft: 8,
     flex: 1,
     lineHeight: 16
   },
   confirmPaymentBtn: {
-    backgroundColor: colors.success,
+    backgroundColor: colors.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -1490,5 +1601,201 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textMuted,
     marginTop: 2
+  },
+
+  // STYLES CUSTOM POPUP TIKET PASCA PEMBELIAN
+  successModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(30, 41, 59, 0.75)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20
+  },
+  ticketPassCard: {
+    width: "100%",
+    maxWidth: 360,
+    backgroundColor: colors.card,
+    borderRadius: 20,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: colors.border,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 }
+  },
+  passHeader: {
+    backgroundColor: colors.darkBg,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    alignItems: "center"
+  },
+  passTopBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 12
+  },
+  passTopBadgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: colors.primaryLight,
+    letterSpacing: 0.8
+  },
+  passIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.primaryLight,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8
+  },
+  passHeading: {
+    fontSize: 17,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginBottom: 6
+  },
+  passBookingLabel: {
+    fontSize: 10,
+    color: colors.primaryLight,
+    fontWeight: "600",
+    letterSpacing: 1,
+    textTransform: "uppercase"
+  },
+  passBookingCode: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.primary,
+    letterSpacing: 1.5,
+    marginTop: 2
+  },
+  passDividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 20,
+    backgroundColor: colors.card,
+    overflow: "hidden"
+  },
+  passCutoutLeft: {
+    width: 14,
+    height: 20,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: "rgba(30, 41, 59, 0.75)"
+  },
+  passDashedLine: {
+    flex: 1,
+    height: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderStyle: "dashed"
+  },
+  passCutoutRight: {
+    width: 14,
+    height: 20,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    backgroundColor: "rgba(30, 41, 59, 0.75)"
+  },
+  passBody: {
+    padding: 16
+  },
+  passDetailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+  passCol: {
+    flex: 1
+  },
+  passColRight: {
+    alignItems: "flex-end"
+  },
+  passMetaLabel: {
+    fontSize: 10,
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    fontWeight: "600"
+  },
+  passMetaValue: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: colors.text,
+    marginTop: 2
+  },
+  passGameBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 6
+  },
+  passGameLabel: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: colors.primaryDark,
+    textTransform: "uppercase"
+  },
+  passGameTitle: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: colors.primaryDark
+  },
+  passTotalBox: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 4,
+    marginBottom: 14
+  },
+  passTotalLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.secondary
+  },
+  passTotalValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.primary
+  },
+  passPrimaryBtn: {
+    backgroundColor: colors.primary,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginBottom: 8
+  },
+  passPrimaryBtnText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold"
+  },
+  passSecondaryBtn: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    borderRadius: 10
+  },
+  passSecondaryBtnText: {
+    color: colors.secondary,
+    fontSize: 13,
+    fontWeight: "600"
   }
 });

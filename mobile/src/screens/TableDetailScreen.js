@@ -190,13 +190,13 @@ const styles = StyleSheet.create({
     fontSize: 12
   },
   activeBadge: {
-    backgroundColor: "#DCFCE7",
+    backgroundColor: colors.primaryLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8
   },
   activeText: {
-    color: "#166534",
+    color: colors.primaryDark,
     fontSize: 12,
     fontWeight: "bold"
   },
@@ -273,9 +273,9 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     flexDirection: "row",
-    backgroundColor: "#F0FDFA",
+    backgroundColor: colors.primaryLight,
     borderWidth: 1,
-    borderColor: "#99F6E4",
+    borderColor: colors.border,
     padding: 14,
     borderRadius: 12,
     alignItems: "flex-start"
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   infoBoxText: {
     flex: 1,
     fontSize: 12,
-    color: "#0F766E",
+    color: colors.primaryDark,
     marginLeft: 8,
     lineHeight: 18
   },

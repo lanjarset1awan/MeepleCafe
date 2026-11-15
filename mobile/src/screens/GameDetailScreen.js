@@ -250,20 +250,20 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   statusAvailable: {
-    backgroundColor: "#DCFCE7"
+    backgroundColor: colors.primaryLight
   },
   statusUnavailable: {
-    backgroundColor: "#FEE2E2"
+    backgroundColor: "#F1F5F9"
   },
   statusText: {
     fontSize: 12,
     fontWeight: "700"
   },
   statusTextAvailable: {
-    color: "#166534"
+    color: colors.primaryDark
   },
   statusTextUnavailable: {
-    color: "#991B1B"
+    color: colors.textMuted
   },
   title: {
     fontSize: 24,
@@ -298,9 +298,9 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   stockCard: {
-    backgroundColor: "#FEF3C7",
+    backgroundColor: colors.primaryLight,
     borderWidth: 1,
-    borderColor: "#FDE68A",
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 14,
     marginBottom: 18
@@ -321,24 +321,24 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderColor: "#FCD34D"
+    borderColor: colors.border
   },
   stockItem: {
     flex: 1
   },
   stockItemLabel: {
     fontSize: 11,
-    color: "#78350F"
+    color: colors.textMuted
   },
   stockItemValue: {
     fontSize: 13,
     fontWeight: "bold",
-    color: "#92400E",
+    color: colors.primaryDark,
     marginTop: 2
   },
   stockNote: {
     fontSize: 11,
-    color: "#78350F",
+    color: colors.primaryDark,
     marginTop: 8,
     lineHeight: 16
   },
@@ -363,14 +363,14 @@ const styles = StyleSheet.create({
   descStockBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F0FDFA",
+    backgroundColor: colors.primaryLight,
     padding: 10,
     borderRadius: 8,
     marginTop: 10
   },
   descStockText: {
     fontSize: 12,
-    color: "#0F766E",
+    color: colors.primaryDark,
     marginLeft: 6,
     fontWeight: "500",
     flex: 1

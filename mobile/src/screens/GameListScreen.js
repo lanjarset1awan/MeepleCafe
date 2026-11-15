@@ -353,18 +353,18 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   badgeEasy: {
-    backgroundColor: "#DCFCE7"
+    backgroundColor: "#F1F5F9"
   },
   badgeMedium: {
-    backgroundColor: "#FEF9C3"
+    backgroundColor: "#F1F5F9"
   },
   badgeHard: {
-    backgroundColor: "#FEE2E2"
+    backgroundColor: "#F1F5F9"
   },
   difficultyBadgeText: {
     fontSize: 11,
     fontWeight: "700",
-    color: colors.text
+    color: colors.secondary
   },
   gameTitle: {
     fontSize: 18,

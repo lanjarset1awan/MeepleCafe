@@ -193,7 +193,7 @@ export default function MyTicketsScreen({ navigation }) {
                 style={styles.btnDelete}
                 onPress={() => handleDeleteTicket(item.id, item.booking_code)}
               >
-                <Ionicons name="trash-outline" size={16} color={colors.accent} />
+                <Ionicons name="trash-outline" size={16} color={colors.secondary} />
               </TouchableOpacity>
             )}
           </View>
@@ -293,7 +293,7 @@ export default function MyTicketsScreen({ navigation }) {
               <Text style={styles.paymentTagTotalText}>Total: {displayTotal}</Text>
             </View>
             <View style={styles.paymentTagMethod}>
-              <Ionicons name="checkmark-circle" size={14} color="#166534" />
+              <Ionicons name="checkmark-circle" size={14} color={colors.primary} />
               <Text style={styles.paymentTagMethodText}>{displayMethod} (Lunas)</Text>
             </View>
           </View>
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
   statusBadgeActive: {
-    backgroundColor: "#DCFCE7"
+    backgroundColor: colors.primaryLight
   },
   statusBadgeExpired: {
     backgroundColor: "#F1F5F9"
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   statusTextActive: {
-    color: "#166534"
+    color: colors.primaryDark
   },
   statusTextExpired: {
     color: colors.textMuted
@@ -545,7 +545,9 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     padding: 6,
     borderRadius: 8,
-    backgroundColor: "#FEE2E2"
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border
   },
   dividerRow: {
     flexDirection: "row",
@@ -626,7 +628,9 @@ const styles = StyleSheet.create({
   sessionBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F0FDFA",
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: 10,
     borderRadius: 8,
     marginTop: 6
@@ -669,7 +673,9 @@ const styles = StyleSheet.create({
   paymentTagMethod: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#DCFCE7",
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8
@@ -677,7 +683,7 @@ const styles = StyleSheet.create({
   paymentTagMethodText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#166534",
+    color: colors.secondary,
     marginLeft: 5
   },
   centerContainer: {
