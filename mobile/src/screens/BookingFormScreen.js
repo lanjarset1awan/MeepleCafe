@@ -25,10 +25,9 @@ const BANK_LOGOS = {
   qris: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr-ZUsZr698NnD0cJv0tyPbOfuS2Q6vrf4hy9blxCxBw&s=10"
 };
 
-// Jam operasional kafe: Buka jam 10.00, Tutup jam 21.00 (Sesi mulai jam 10.00 s/d 20.00)
+// Jam operasional kafe: Buka jam 10.00, Tutup jam 21.00 (9 malam)
 const OPENING_HOUR = 10;
 const CLOSING_HOUR = 21;
-const ALL_START_HOURS = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 // Helper konversi jam format string ke number
 function parseHours(sessionStr) {
@@ -83,31 +82,23 @@ export default function BookingFormScreen({ route, navigation }) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [reservationDate, setReservationDate] = useState(initialDate);
 
-  // Cek apakah tanggal yang dipilih adalah hari kemarin / lampau atau hari ini
-  const isPastDate = reservationDate < todayStr;
-  const isSelectedDateToday = reservationDate === todayStr;
+  // Daftar opsi jam mulai (10.00 sampai 20.00 karena kafe tutup jam 21.00)
+  const startHourOptions = useMemo(() => {
+    const hours = [];
+    for (let h = OPENING_HOUR; h < CLOSING_HOUR; h++) {
+      hours.push(h);
+    }
+    return hours;
+  }, []);
 
-  // Daftar opsi jam mulai (10.00 sampai 20.00, Kafe buka 10.00 & tutup 21.00)
-  const startHourOptions = useMemo(() => ALL_START_HOURS, []);
-
-  // Fungsi pengecekan apakah jam tertentu sudah lewat untuk hari ini
-  const isHourPassed = (hour) => {
-    if (isPastDate) return true; // Semua jam pada tanggal yang telah lewat otomatis tidak berlaku
-    if (!isSelectedDateToday) return false;
-    const now = new Date();
-    return now.getHours() >= hour;
-  };
-
-  const isAllTodayPassed = isSelectedDateToday && currentHourNow >= 20;
-
-  // Hitung jam mulai default yang valid (belum lewat), mulai dari jam 10.00
+  // Hitung jam mulai default yang valid (belum lewat)
   const initialStartHour = useMemo(() => {
     if (reservationDate === todayStr) {
-      const nextHour = startHourOptions.find((h) => !isHourPassed(h));
-      return nextHour || 10;
+      const nextHour = startHourOptions.find((h) => h > currentHourNow);
+      return nextHour || 14;
     }
-    return 10; // Default ke jam 10.00 (jam buka kafe) untuk tanggal besok atau mendatang
-  }, [reservationDate, todayStr, isSelectedDateToday, startHourOptions]);
+    return 14;
+  }, [reservationDate, todayStr, currentHourNow, startHourOptions]);
 
   const [startHour, setStartHour] = useState(initialStartHour);
   const [durationHours, setDurationHours] = useState(2); // default 2 Jam
@@ -131,6 +122,20 @@ export default function BookingFormScreen({ route, navigation }) {
 
   // Data reservasi aktif dari database untuk validasi slot & bentrok
   const [activeReservations, setActiveReservations] = useState([]);
+
+  // Cek apakah tanggal yang dipilih adalah hari kemarin / lampau atau hari ini
+  const isPastDate = reservationDate < todayStr;
+  const isSelectedDateToday = reservationDate === todayStr;
+
+  // Fungsi pengecekan apakah jam tertentu sudah lewat
+  const isHourPassed = (hour) => {
+    if (isPastDate) return true; // Semua jam pada tanggal yang telah lewat otomatis tidak berlaku
+    if (!isSelectedDateToday) return false;
+    const now = new Date();
+    return now.getHours() >= hour;
+  };
+
+  const isAllTodayPassed = isSelectedDateToday && currentHourNow >= 20;
 
   // State untuk CustomDialog (menggantikan generic Alert.alert)
   const [dialogConfig, setDialogConfig] = useState({
@@ -180,12 +185,7 @@ export default function BookingFormScreen({ route, navigation }) {
       const nextH = startHourOptions.find((h) => !isHourPassed(h));
       if (nextH) {
         setStartHour(nextH);
-      } else {
-        setStartHour(10);
       }
-    } else {
-      // Untuk tanggal besok atau mendatang, set default ke jam 10.00 jika belum terset
-      setStartHour((prev) => (prev ? prev : 10));
     }
   }, [reservationDate, isSelectedDateToday]);
 
@@ -608,13 +608,14 @@ export default function BookingFormScreen({ route, navigation }) {
         {/* PILIHAN JAM MULAI (GRID 3 KOLOM, FLOW KE BAWAH, DESAIN CENTER) */}
         <View style={styles.labelWithSubRow}>
           <Text style={styles.inputLabel}>Pilih Jam Mulai Bermain</Text>
-          <Text style={styles.labelSubText}>Tiap 1 Jam (Mulai 10.00)</Text>
+          <Text style={styles.labelSubText}>Tiap 1 Jam</Text>
         </View>
 
         <View style={styles.hourGrid}>
           {startHourOptions.map((hour) => {
-            const isSelected = startHour === hour;
             const isPassed = isHourPassed(hour);
+            const isSelected = startHour === hour;
+            const isActive = isSelected && !isPassed;
             const isBusy = !isPassed && isHourBusyForTable(hour);
             const hourLabel = `${String(hour).padStart(2, "0")}.00`;
 
@@ -622,12 +623,11 @@ export default function BookingFormScreen({ route, navigation }) {
               <TouchableOpacity
                 key={hour}
                 activeOpacity={0.75}
-                disabled={isPassed}
                 style={[
                   styles.hourGridItem,
-                  isSelected && styles.hourGridItemActive,
+                  isActive && styles.hourGridItemActive,
                   isPassed && styles.hourGridItemPassed,
-                  isBusy && !isSelected && styles.hourGridItemBusy
+                  isBusy && !isActive && styles.hourGridItemBusy
                 ]}
                 onPress={() => {
                   if (isPassed) {
@@ -646,9 +646,9 @@ export default function BookingFormScreen({ route, navigation }) {
                 <Text
                   style={[
                     styles.hourGridText,
-                    isSelected && styles.hourGridTextActive,
-                    isPassed && !isSelected && styles.hourGridTextPassed,
-                    isBusy && !isSelected && styles.hourGridTextBusy
+                    isActive && styles.hourGridTextActive,
+                    isPassed && styles.hourGridTextPassed,
+                    isBusy && !isActive && styles.hourGridTextMuted
                   ]}
                 >
                   {hourLabel}
@@ -657,10 +657,10 @@ export default function BookingFormScreen({ route, navigation }) {
                   <View
                     style={[
                       styles.dotIndicator,
-                      isSelected
+                      isActive
                         ? { backgroundColor: "#FFFFFF" }
                         : isPassed
-                          ? { backgroundColor: "#94A3B8" }
+                          ? { backgroundColor: "#CBD5E1" }
                           : isBusy
                             ? { backgroundColor: colors.secondary }
                             : { backgroundColor: colors.primary }
@@ -669,10 +669,10 @@ export default function BookingFormScreen({ route, navigation }) {
                   <Text
                     style={[
                       styles.hourGridSub,
-                      isSelected
+                      isActive
                         ? { color: "#FFFFFF" }
                         : isPassed
-                          ? { color: "#64748B" }
+                          ? { color: "#94A3B8" }
                           : isBusy
                             ? { color: colors.secondary }
                             : { color: colors.textMuted }
@@ -729,30 +729,66 @@ export default function BookingFormScreen({ route, navigation }) {
             <View
               style={[
                 styles.statusBadgeClean,
-                slotStatus.available ? styles.statusBadgeCleanAvailable : styles.statusBadgeCleanBusy
+                slotStatus.available
+                  ? styles.statusBadgeCleanAvailable
+                  : isPastDate || isHourPassed(startHour)
+                  ? styles.statusBadgeCleanPassed
+                  : styles.statusBadgeCleanBusy
               ]}
             >
               <View
                 style={[
                   styles.statusDotClean,
-                  { backgroundColor: slotStatus.available ? colors.primary : colors.secondary }
+                  {
+                    backgroundColor: slotStatus.available
+                      ? colors.primary
+                      : isPastDate || isHourPassed(startHour)
+                      ? "#94A3B8"
+                      : colors.secondary
+                  }
                 ]}
               />
               <Text
                 style={[
                   styles.statusBadgeCleanText,
-                  { color: slotStatus.available ? colors.primaryDark : colors.secondary }
+                  {
+                    color: slotStatus.available
+                      ? colors.primaryDark
+                      : isPastDate || isHourPassed(startHour)
+                      ? "#64748B"
+                      : colors.secondary
+                  }
                 ]}
               >
-                {slotStatus.available ? "Tersedia" : "Penuh"}
+                {slotStatus.available
+                  ? "Tersedia"
+                  : isPastDate || isHourPassed(startHour)
+                  ? "Lewat"
+                  : "Penuh"}
               </Text>
             </View>
           </View>
 
           {!slotStatus.available && (
-            <View style={styles.conflictNotice}>
-              <Ionicons name="information-circle" size={16} color={colors.primary} />
-              <Text style={styles.conflictNoticeText}>{slotStatus.detail}</Text>
+            <View
+              style={[
+                styles.conflictNotice,
+                (isPastDate || isHourPassed(startHour)) && styles.conflictNoticePassed
+              ]}
+            >
+              <Ionicons
+                name={isPastDate || isHourPassed(startHour) ? "time-outline" : "information-circle"}
+                size={16}
+                color={isPastDate || isHourPassed(startHour) ? "#DC2626" : colors.secondary}
+              />
+              <Text
+                style={[
+                  styles.conflictNoticeText,
+                  (isPastDate || isHourPassed(startHour)) && styles.conflictNoticeTextPassed
+                ]}
+              >
+                {slotStatus.detail}
+              </Text>
             </View>
           )}
         </View>
@@ -1399,13 +1435,13 @@ const styles = StyleSheet.create({
     borderColor: colors.primary
   },
   hourGridItemBusy: {
-    backgroundColor: "#FEF2F2",
-    borderColor: "#FECACA"
+    backgroundColor: colors.background,
+    borderColor: colors.border
   },
   hourGridItemPassed: {
-    backgroundColor: "#F1F5F9",
-    borderColor: "#CBD5E1",
-    opacity: 0.75
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    opacity: 0.65
   },
   hourGridText: {
     fontSize: 15,
@@ -1416,14 +1452,11 @@ const styles = StyleSheet.create({
   hourGridTextActive: {
     color: "#FFFFFF"
   },
+  hourGridTextPassed: {
+    color: "#94A3B8"
+  },
   hourGridTextMuted: {
     color: colors.textMuted
-  },
-  hourGridTextPassed: {
-    color: "#64748B"
-  },
-  hourGridTextBusy: {
-    color: "#DC2626"
   },
   hourStatusRow: {
     flexDirection: "row",
@@ -1508,6 +1541,9 @@ const styles = StyleSheet.create({
   statusBadgeCleanBusy: {
     backgroundColor: colors.background
   },
+  statusBadgeCleanPassed: {
+    backgroundColor: "#F1F5F9"
+  },
   statusDotClean: {
     width: 6,
     height: 6,
@@ -1526,11 +1562,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 10
   },
+  conflictNoticePassed: {
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA"
+  },
   conflictNoticeText: {
     fontSize: 11,
     color: colors.primaryDark,
     marginLeft: 6,
     flex: 1
+  },
+  conflictNoticeTextPassed: {
+    color: "#DC2626"
   },
   priceRow: {
     flexDirection: "row",
