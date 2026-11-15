@@ -8,11 +8,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
+import GameImage from "./GameImage";
 
 export default function SuccessPaymentModal({
   visible,
   bookingCode,
   gameTitle,
+  gameImage,
   tableType,
   tableNumber,
   reservationDate,
@@ -61,9 +63,16 @@ export default function SuccessPaymentModal({
             <View style={styles.ticketDetails}>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Board Game:</Text>
-                <Text style={styles.detailValue} numberOfLines={1}>
-                  {gameTitle || "General Play"}
-                </Text>
+                <View style={styles.gameValueRow}>
+                  {gameImage ? (
+                    <GameImage uri={gameImage} style={styles.modalGameThumb} />
+                  ) : (
+                    <Ionicons name="cube" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                  )}
+                  <Text style={styles.detailValue} numberOfLines={1}>
+                    {gameTitle || "General Play"}
+                  </Text>
+                </View>
               </View>
 
               <View style={styles.detailRow}>
@@ -257,6 +266,19 @@ const styles = StyleSheet.create({
     color: colors.text,
     maxWidth: "60%",
     textAlign: "right"
+  },
+  gameValueRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    flex: 1
+  },
+  modalGameThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    marginRight: 6,
+    backgroundColor: "#F1F5F9"
   },
   detailValueHighlight: {
     fontSize: 12,

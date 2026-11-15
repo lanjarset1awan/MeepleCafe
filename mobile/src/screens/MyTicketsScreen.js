@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import CustomDialog from "../components/CustomDialog";
+import GameImage from "../components/GameImage";
 
 /**
  * Memeriksa apakah waktu sesi reservasi sudah lewat dibandingkan waktu saat ini.
@@ -51,9 +52,27 @@ export function isReservationExpired(reservationDateStr, sessionTimeStr) {
 
 export default function MyTicketsScreen({ navigation }) {
   const [tickets, setTickets] = useState([]);
+  const [gamesLookup, setGamesLookup] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("active"); // 'active' atau 'expired'
+
+  const loadGamesLookup = async () => {
+    try {
+      const all = await ApiService.getGames();
+      if (all && Array.isArray(all)) {
+        const map = {};
+        all.forEach((g) => {
+          if (g.title) {
+            map[g.title.trim().toLowerCase()] = g.image_url;
+          }
+        });
+        setGamesLookup(map);
+      }
+    } catch (err) {
+      console.warn("Gagal memuat lookup gambar game:", err);
+    }
+  };
 
   const loadTickets = async () => {
     try {
@@ -71,14 +90,17 @@ export default function MyTicketsScreen({ navigation }) {
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       loadTickets();
+      loadGamesLookup();
     });
     loadTickets();
+    loadGamesLookup();
     return unsubscribe;
   }, [navigation]);
 
   const onRefresh = () => {
     setRefreshing(true);
     loadTickets();
+    loadGamesLookup();
   };
 
   // State untuk CustomDialog
@@ -187,6 +209,22 @@ export default function MyTicketsScreen({ navigation }) {
         : "Rp 30.000";
     }
 
+    // Ambil gambar board game sesuai judul di katalog
+    let gameImage =
+      (item.board_games && item.board_games.image_url) ||
+      (displayGame && gamesLookup[displayGame.trim().toLowerCase()]) ||
+      null;
+
+    if (!gameImage && displayGame) {
+      const lower = displayGame.trim().toLowerCase();
+      const foundKey = Object.keys(gamesLookup).find(
+        (k) => lower.includes(k) || k.includes(lower)
+      );
+      if (foundKey) {
+        gameImage = gamesLookup[foundKey];
+      }
+    }
+
     return (
       <View style={[styles.ticketCard, isExpired && styles.ticketCardExpired]}>
         {/* Ticket Header */}
@@ -254,13 +292,10 @@ export default function MyTicketsScreen({ navigation }) {
               isExpired && styles.gameBannerExpired
             ]}
           >
-            <View style={[styles.gameIconBadge, isExpired && styles.gameIconBadgeExpired]}>
-              <Ionicons
-                name="cube"
-                size={18}
-                color={isExpired ? colors.textMuted : colors.primary}
-              />
-            </View>
+            <GameImage
+              uri={gameImage}
+              style={[styles.ticketGameThumb, isExpired && { opacity: 0.6 }]}
+            />
             <Text
               style={[
                 styles.gameBannerTitle,
@@ -652,17 +687,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F5F9",
     borderColor: "#E2E8F0"
   },
-  gameIconBadge: {
-    width: 32,
-    height: 32,
+  ticketGameThumb: {
+    width: 44,
+    height: 44,
     borderRadius: 8,
     backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10
-  },
-  gameIconBadgeExpired: {
-    backgroundColor: "#E2E8F0"
+    marginRight: 12
   },
   gameBannerTitle: {
     fontSize: 15,

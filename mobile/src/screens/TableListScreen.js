@@ -128,10 +128,10 @@ export default function TableListScreen({ route, navigation }) {
       {selectedGame ? (
         <View style={styles.selectedGameBanner}>
           <View style={styles.gameBannerLeft}>
-            <Ionicons name="cube" size={24} color={colors.primary} />
+            <GameImage uri={selectedGame.image_url} style={styles.gameBannerThumb} />
             <View style={styles.gameBannerTexts}>
               <Text style={styles.gameBannerLabel}>Game yang Dipilih:</Text>
-              <Text style={styles.gameBannerTitle}>{selectedGame.title}</Text>
+              <Text style={styles.gameBannerTitle} numberOfLines={1}>{selectedGame.title}</Text>
               <Text style={styles.gameBannerMeta}>
                 {selectedGame.min_players}-{selectedGame.max_players} Pemain ({selectedGame.difficulty})
               </Text>
@@ -242,6 +242,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1
+  },
+  gameBannerThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: "#F1F5F9"
   },
   gameBannerTexts: {
     marginLeft: 10,

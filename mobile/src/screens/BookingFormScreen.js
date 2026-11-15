@@ -15,6 +15,7 @@ import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import CustomDialog from "../components/CustomDialog";
 import SuccessPaymentModal from "../components/SuccessPaymentModal";
+import GameImage from "../components/GameImage";
 
 // Jam operasional kafe: Buka jam 10.00, Tutup jam 21.00 (9 malam)
 const OPENING_HOUR = 10;
@@ -432,6 +433,7 @@ export default function BookingFormScreen({ route, navigation }) {
         visible: true,
         bookingCode: result.booking_code,
         gameTitle: gameTitle,
+        gameImage: chosenGame?.image_url,
         tableType: tableType,
         tableNumber: tableNumber,
         reservationDate: reservationDate,
@@ -458,9 +460,10 @@ export default function BookingFormScreen({ route, navigation }) {
         <Text style={styles.sectionHeaderLabel}>Paket Bermain</Text>
 
         <View style={styles.packageRow}>
-          <View style={styles.packageIconBox}>
-            <Ionicons name="cube" size={22} color={colors.primary} />
-          </View>
+          <GameImage
+            uri={chosenGame?.image_url}
+            style={styles.packageGameThumb}
+          />
           <View style={styles.packageInfo}>
             <Text style={styles.packageSub}>Board Game Pilihan</Text>
             <Text style={styles.packageTitle}>{chosenGame ? chosenGame.title : "Pilih Game"}</Text>
@@ -1015,8 +1018,11 @@ export default function BookingFormScreen({ route, navigation }) {
 
               <Text style={styles.passMetaLabel}>Board Game Dipesan</Text>
               <View style={styles.passGameBox}>
-                <Ionicons name="cube" size={18} color={colors.primary} />
-                <Text style={styles.passGameTitle}>{issuedTicket?.gameTitle}</Text>
+                <GameImage
+                  uri={chosenGame?.image_url}
+                  style={styles.passGameThumb}
+                />
+                <Text style={styles.passGameTitle}>{issuedTicket?.gameTitle || chosenGame?.title}</Text>
               </View>
 
               <View style={styles.passDetailRow}>
@@ -1090,11 +1096,7 @@ export default function BookingFormScreen({ route, navigation }) {
                     setGamePickerVisible(false);
                   }}
                 >
-                  <Ionicons
-                    name="cube-outline"
-                    size={22}
-                    color={chosenGame?.id === item.id ? colors.primary : colors.textMuted}
-                  />
+                  <GameImage uri={item.image_url} style={styles.pickerGameThumb} />
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={styles.gamePickerName}>{item.title}</Text>
                     <Text style={styles.gamePickerDesc}>
@@ -1129,6 +1131,7 @@ export default function BookingFormScreen({ route, navigation }) {
         visible={successModalData.visible}
         bookingCode={successModalData.bookingCode}
         gameTitle={successModalData.gameTitle}
+        gameImage={successModalData.gameImage}
         tableType={successModalData.tableType}
         tableNumber={successModalData.tableNumber}
         reservationDate={successModalData.reservationDate}
@@ -1201,6 +1204,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryLight,
     justifyContent: "center",
     alignItems: "center"
+  },
+  packageGameThumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    backgroundColor: "#F1F5F9"
   },
   packageInfo: {
     marginLeft: 12,
@@ -1740,6 +1749,12 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 2
   },
+  pickerGameThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: "#F1F5F9"
+  },
 
   // STYLES CUSTOM POPUP TIKET PASCA PEMBELIAN
   successModalOverlay: {
@@ -1884,6 +1899,12 @@ const styles = StyleSheet.create({
     color: "#78350F",
     marginLeft: 8,
     flex: 1
+  },
+  passGameThumb: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+    backgroundColor: "#F1F5F9"
   },
   passTotalBox: {
     flexDirection: "row",
