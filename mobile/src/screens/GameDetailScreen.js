@@ -131,30 +131,7 @@ export default function GameDetailScreen({ route, navigation }) {
             </View>
           </View>
 
-          {/* Card Khusus Info Stok & Inventaris Rak */}
-          <View style={styles.stockCard}>
-            <View style={styles.stockCardHeader}>
-              <Ionicons name="file-tray-full" size={18} color={colors.primaryDark} />
-              <Text style={styles.stockCardTitle}>Informasi Stok Fisik & Rak Kafe</Text>
-            </View>
-            <View style={styles.stockGrid}>
-              <View style={styles.stockItem}>
-                <Text style={styles.stockItemLabel}>Jumlah Fisik:</Text>
-                <Text style={styles.stockItemValue}>{stockCount} Box Tersedia</Text>
-              </View>
-              <View style={styles.stockItem}>
-                <Text style={styles.stockItemLabel}>Status Pinjam:</Text>
-                <Text style={[styles.stockItemValue, { color: colors.success }]}>
-                  Siap Dimainkan
-                </Text>
-              </View>
-            </View>
-            <Text style={styles.stockNote}>
-              💡 Catatan Reservasi: Jika pada sesi waktu tertentu stok game ini sedang dipesan meja lain, Anda dapat memilih sesi jam berikutnya.
-            </Text>
-          </View>
-
-          {/* Sinopsis & Deskripsi dengan Info Stok Terintegrasi */}
+          {/* Sinopsis & Deskripsi Permainan */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Deskripsi Permainan</Text>
             <Text style={styles.sectionBody}>
@@ -296,51 +273,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textMuted,
     marginTop: 2
-  },
-  stockCard: {
-    backgroundColor: "#FEF3C7",
-    borderWidth: 1,
-    borderColor: "#FDE68A",
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 18
-  },
-  stockCardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8
-  },
-  stockCardTitle: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: colors.primaryDark,
-    marginLeft: 6
-  },
-  stockGrid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderColor: "#FCD34D"
-  },
-  stockItem: {
-    flex: 1
-  },
-  stockItemLabel: {
-    fontSize: 11,
-    color: "#78350F"
-  },
-  stockItemValue: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: "#92400E",
-    marginTop: 2
-  },
-  stockNote: {
-    fontSize: 11,
-    color: "#78350F",
-    marginTop: 8,
-    lineHeight: 16
   },
   section: {
     marginBottom: 20
