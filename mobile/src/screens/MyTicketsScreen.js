@@ -26,28 +26,18 @@ export function isReservationExpired(reservationDateStr, sessionTimeStr) {
   if (dateParts.length !== 3) return false;
   const [year, month, day] = dateParts;
 
-  let endHour = 23;
-  let endMinute = 59;
+  // Bandingkan secara kalender hari ini (YYYY-MM-DD)
+  const today = new Date();
+  const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+  const ticketDateOnly = new Date(year, month - 1, day).getTime();
 
-  if (sessionTimeStr) {
-    // Ambil jam selesai di belakang tanda minus: "- 16.00" atau "- 19:00"
-    const endMatch = sessionTimeStr.match(/-\s*(\d{1,2})[.:](\d{2})/);
-    if (endMatch) {
-      endHour = parseInt(endMatch[1], 10);
-      endMinute = parseInt(endMatch[2], 10);
-    } else {
-      const anyMatch = sessionTimeStr.match(/(\d{1,2})[.:](\d{2})/);
-      if (anyMatch) {
-        endHour = Math.min(23, parseInt(anyMatch[1], 10) + 3);
-        endMinute = parseInt(anyMatch[2], 10);
-      }
-    }
+  // Jika tanggal tiket adalah hari ini atau masa mendatang, tiket TETAP AKTIF sepanjang hari tersebut!
+  if (ticketDateOnly >= todayDateOnly) {
+    return false;
   }
 
-  const sessionEndTime = new Date(year, month - 1, day, endHour, endMinute, 0);
-  const now = new Date();
-
-  return now.getTime() > sessionEndTime.getTime();
+  // Jika tanggal tiket benar-benar sebelum hari ini (kemarin atau sebelumnya)
+  return true;
 }
 
 export default function MyTicketsScreen({ navigation }) {
@@ -55,7 +45,7 @@ export default function MyTicketsScreen({ navigation }) {
   const [gamesLookup, setGamesLookup] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [activeTab, setActiveTab] = useState("active"); // 'active' atau 'expired'
+  const [activeTab, setActiveTab] = useState("all"); // 'all', 'active', atau 'expired'
 
   const loadGamesLookup = async () => {
     try {
@@ -132,7 +122,7 @@ export default function MyTicketsScreen({ navigation }) {
     setDialogConfig((prev) => ({ ...prev, visible: false }));
   };
 
-  // Pisahkan tiket aktif (belum lewat) dan tiket yang sudah kedaluwarsa (lewat jamnya)
+  // Pisahkan tiket aktif (belum lewat) dan tiket yang sudah kedaluwarsa (lewat tanggalnya)
   const { activeTickets, expiredTickets } = useMemo(() => {
     const active = [];
     const expired = [];
@@ -148,7 +138,12 @@ export default function MyTicketsScreen({ navigation }) {
     return { activeTickets: active, expiredTickets: expired };
   }, [tickets]);
 
-  const displayedTickets = activeTab === "active" ? activeTickets : expiredTickets;
+  const displayedTickets =
+    activeTab === "all"
+      ? (tickets || [])
+      : activeTab === "active"
+        ? activeTickets
+        : expiredTickets;
 
   const handleDeleteTicket = (ticketId, bookingCode) => {
     showDialog({
@@ -376,26 +371,46 @@ export default function MyTicketsScreen({ navigation }) {
         <View style={styles.headerTop}>
           <Text style={styles.headerSubtitle}>Booking Management</Text>
           <View style={styles.totalBadge}>
-            <Ionicons name="ticket" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <Ionicons name="sparkles" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
             <Text style={styles.totalBadgeText}>
-              {activeTickets.length} Tiket Aktif
+              {tickets.length} Total Tiket
             </Text>
           </View>
         </View>
         <Text style={styles.headerTitle}>Tiket Reservasi Saya</Text>
       </View>
 
-      {/* Segmented Filter Tab: Tiket Aktif vs Riwayat Kedaluwarsa */}
+      {/* Segmented Filter Tab: Semua vs Tiket Aktif vs Riwayat Kedaluwarsa */}
       <View style={styles.tabsRow}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === "all" && styles.tabButtonActive]}
+          onPress={() => setActiveTab("all")}
+        >
+          <Ionicons
+            name="albums-outline"
+            size={14}
+            color={activeTab === "all" ? "#FFFFFF" : colors.textMuted}
+            style={{ marginRight: 4 }}
+          />
+          <Text
+            style={[
+              styles.tabButtonText,
+              activeTab === "all" && styles.tabButtonTextActive
+            ]}
+          >
+            Semua ({tickets.length})
+          </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={[styles.tabButton, activeTab === "active" && styles.tabButtonActive]}
           onPress={() => setActiveTab("active")}
         >
           <Ionicons
             name="ticket"
-            size={16}
+            size={14}
             color={activeTab === "active" ? "#FFFFFF" : colors.textMuted}
-            style={{ marginRight: 6 }}
+            style={{ marginRight: 4 }}
           />
           <Text
             style={[
@@ -403,7 +418,7 @@ export default function MyTicketsScreen({ navigation }) {
               activeTab === "active" && styles.tabButtonTextActive
             ]}
           >
-            Tiket Aktif ({activeTickets.length})
+            Aktif ({activeTickets.length})
           </Text>
         </TouchableOpacity>
 
@@ -413,9 +428,9 @@ export default function MyTicketsScreen({ navigation }) {
         >
           <Ionicons
             name="time-outline"
-            size={16}
+            size={14}
             color={activeTab === "expired" ? "#FFFFFF" : colors.textMuted}
-            style={{ marginRight: 6 }}
+            style={{ marginRight: 4 }}
           />
           <Text
             style={[
@@ -423,7 +438,7 @@ export default function MyTicketsScreen({ navigation }) {
               activeTab === "expired" && styles.tabButtonTextActive
             ]}
           >
-            Sudah Lewat ({expiredTickets.length})
+            Lewat ({expiredTickets.length})
           </Text>
         </TouchableOpacity>
       </View>
@@ -450,28 +465,36 @@ export default function MyTicketsScreen({ navigation }) {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons
-                name={activeTab === "active" ? "ticket-outline" : "archive-outline"}
+                name={
+                  activeTab === "all"
+                    ? "albums-outline"
+                    : activeTab === "active"
+                      ? "ticket-outline"
+                      : "archive-outline"
+                }
                 size={54}
                 color={colors.textMuted}
               />
               <Text style={styles.emptyTitle}>
-                {activeTab === "active"
-                  ? "Tidak Ada Tiket Aktif"
-                  : "Belum Ada Riwayat Kedaluwarsa"}
+                {activeTab === "all"
+                  ? "Belum Ada Reservasi"
+                  : activeTab === "active"
+                    ? "Tidak Ada Tiket Aktif"
+                    : "Belum Ada Riwayat Kedaluwarsa"}
               </Text>
               <Text style={styles.emptySubtitle}>
-                {activeTab === "active"
-                  ? "Tiket yang sudah lewat jam reservasinya otomatis dipindahkan ke tab 'Sudah Lewat' agar daftar Anda tetap rapi."
-                  : "Semua tiket reservasi Anda saat ini masih aktif dan belum melewati batas jam sesi."}
+                {activeTab === "all"
+                  ? "Anda belum pernah memesan meja di MeepleCafe. Pilih meja dan board game favorit sekarang!"
+                  : activeTab === "active"
+                    ? "Tiket yang tanggalnya telah berlalu dapat dilihat pada tab 'Semua' atau 'Lewat'."
+                    : "Semua tiket reservasi Anda saat ini masih aktif dan berlaku."}
               </Text>
-              {activeTab === "active" && (
-                <TouchableOpacity
-                  style={styles.browseButton}
-                  onPress={() => navigation.navigate("GameTab")}
-                >
-                  <Text style={styles.browseButtonText}>Reservasi Tiket Baru</Text>
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity
+                style={styles.browseButton}
+                onPress={() => navigation.navigate("GameTab")}
+              >
+                <Text style={styles.browseButtonText}>Reservasi Tiket Baru</Text>
+              </TouchableOpacity>
             </View>
           }
         />
@@ -556,13 +579,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 9,
+    paddingHorizontal: 2,
     borderRadius: 8
   },
   tabButtonActive: {
     backgroundColor: colors.primary
   },
   tabButtonText: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: "600",
     color: colors.textMuted
   },
