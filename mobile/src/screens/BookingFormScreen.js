@@ -21,7 +21,7 @@ import GameImage from "../components/GameImage";
 // Logo resmi perbankan & QRIS untuk metode pembayaran
 const BANK_LOGOS = {
   bca: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT51BAk8TXeqH2rGF2IDxCx-qnvAIg7ojlj45t7KAZMXw&s=10",
-  mandiri: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/500px-Bank_Mandiri_logo_2016.svg.png",
+  mandiri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ97zsGfcEryN4wtnmQt9aNVVt3YpEHGjXf13KsHDbA9Q&s=10",
   qris: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr-ZUsZr698NnD0cJv0tyPbOfuS2Q6vrf4hy9blxCxBw&s=10"
 };
 
@@ -912,8 +912,8 @@ export default function BookingFormScreen({ route, navigation }) {
                   <View style={[styles.bankLogoBox, styles.bankLogoBoxMandiri]}>
                     <Image
                       source={{ uri: BANK_LOGOS.mandiri }}
-                      style={styles.bankLogoImageContain}
-                      resizeMode="contain"
+                      style={styles.bankLogoImageCover}
+                      resizeMode="cover"
                     />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
@@ -1723,10 +1723,9 @@ const styles = StyleSheet.create({
     borderColor: "#005299"
   },
   bankLogoBoxMandiri: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#002D62",
     borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 4
+    borderColor: "#002047"
   },
   bankLogoBoxQris: {
     backgroundColor: "#000000",
