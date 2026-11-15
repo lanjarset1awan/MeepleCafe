@@ -36,7 +36,7 @@ export default function GameDetailScreen({ route, navigation }) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Memuat detail permainan...</Text>
+        <Text style={styles.loadingText}>Memuat detail permainan & stok...</Text>
       </View>
     );
   }
@@ -49,7 +49,7 @@ export default function GameDetailScreen({ route, navigation }) {
     );
   }
 
-  const stockCount = game.stock || 2;
+  const stockCount = game.stock || 2; // Default 2 box fisik di kafe
 
   const handleSelectGameAndChooseTable = () => {
     navigation.navigate("TableTab", {
@@ -71,19 +71,16 @@ export default function GameDetailScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Banner Cover Image */}
-        <View style={styles.imageWrapper}>
-          <GameImage uri={game.image_url} style={styles.bannerImage} />
-        </View>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Banner Image */}
+        <GameImage uri={game.image_url} style={styles.bannerImage} />
 
-        {/* Floating Detail Card */}
+        {/* Floating Header Card */}
         <View style={styles.detailCard}>
-          {/* Header Badges */}
           <View style={styles.badgeRow}>
             <View style={styles.categoryBadge}>
               <Text style={styles.categoryBadgeText}>
-                {game.game_categories?.name || "Board Game"}
+                {game.game_categories?.name || "General"}
               </Text>
             </View>
             <View
@@ -92,32 +89,23 @@ export default function GameDetailScreen({ route, navigation }) {
                 game.is_available ? styles.statusAvailable : styles.statusUnavailable
               ]}
             >
-              <View
-                style={[
-                  styles.statusDot,
-                  { backgroundColor: game.is_available ? colors.success : colors.danger }
-                ]}
-              />
               <Text
                 style={[
                   styles.statusText,
                   game.is_available ? styles.statusTextAvailable : styles.statusTextUnavailable
                 ]}
               >
-                {game.is_available ? "Tersedia di Kafe" : "Sedang Dimainkan"}
+                {game.is_available ? "● Tersedia di Kafe" : "● Sedang Dimainkan"}
               </Text>
             </View>
           </View>
 
-          {/* Game Title */}
           <Text style={styles.title}>{game.title}</Text>
 
-          {/* 4 Quick Stat Cards (Pemain, Durasi, Stok Kafe, Tingkat Kesulitan) */}
+          {/* Quick Stats Grid */}
           <View style={styles.statsGrid}>
             <View style={styles.statBox}>
-              <View style={[styles.statIconBox, { backgroundColor: colors.primaryLight }]}>
-                <Ionicons name="people" size={18} color={colors.primary} />
-              </View>
+              <Ionicons name="people" size={20} color={colors.primary} />
               <Text style={styles.statValue}>
                 {game.min_players}-{game.max_players}
               </Text>
@@ -125,69 +113,92 @@ export default function GameDetailScreen({ route, navigation }) {
             </View>
 
             <View style={styles.statBox}>
-              <View style={[styles.statIconBox, { backgroundColor: "#EFF6FF" }]}>
-                <Ionicons name="time" size={18} color="#2563EB" />
-              </View>
+              <Ionicons name="time" size={20} color={colors.secondary} />
               <Text style={styles.statValue}>{game.duration_minutes} Mnt</Text>
               <Text style={styles.statLabel}>Durasi</Text>
             </View>
 
             <View style={styles.statBox}>
-              <View style={[styles.statIconBox, { backgroundColor: colors.successLight }]}>
-                <Ionicons name="cube" size={18} color={colors.success} />
-              </View>
+              <Ionicons name="cube" size={20} color={colors.primaryDark} />
               <Text style={styles.statValue}>{stockCount} Box</Text>
               <Text style={styles.statLabel}>Stok Kafe</Text>
             </View>
 
             <View style={styles.statBox}>
-              <View style={[styles.statIconBox, { backgroundColor: "#FAF5FF" }]}>
-                <Ionicons name="bar-chart" size={18} color="#9333EA" />
-              </View>
+              <Ionicons name="bar-chart" size={20} color={colors.accent} />
               <Text style={styles.statValue}>{game.difficulty}</Text>
               <Text style={styles.statLabel}>Tingkat</Text>
             </View>
           </View>
 
-          {/* Deskripsi Game */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Tentang Permainan</Text>
-            <Text style={styles.sectionBody}>
-              {game.description || "Permainan board game seru dan interaktif untuk dimainkan bersama teman atau keluarga di MeepleCafe."}
+          {/* Card Khusus Info Stok & Inventaris Rak */}
+          <View style={styles.stockCard}>
+            <View style={styles.stockCardHeader}>
+              <Ionicons name="file-tray-full" size={18} color={colors.primaryDark} />
+              <Text style={styles.stockCardTitle}>Informasi Stok Fisik & Rak Kafe</Text>
+            </View>
+            <View style={styles.stockGrid}>
+              <View style={styles.stockItem}>
+                <Text style={styles.stockItemLabel}>Jumlah Fisik:</Text>
+                <Text style={styles.stockItemValue}>{stockCount} Box Tersedia</Text>
+              </View>
+              <View style={styles.stockItem}>
+                <Text style={styles.stockItemLabel}>Status Pinjam:</Text>
+                <Text style={[styles.stockItemValue, { color: colors.success }]}>
+                  Siap Dimainkan
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.stockNote}>
+              💡 Catatan Reservasi: Jika pada sesi waktu tertentu stok game ini sedang dipesan meja lain, Anda dapat memilih sesi jam berikutnya.
             </Text>
           </View>
 
-          {/* Panduan Tutorial & Aturan */}
+          {/* Sinopsis & Deskripsi dengan Info Stok Terintegrasi */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Deskripsi Permainan</Text>
+            <Text style={styles.sectionBody}>
+              {game.description || "Tidak ada deskripsi khusus untuk game ini."}
+            </Text>
+            <View style={styles.descStockBox}>
+              <Ionicons name="information-circle" size={16} color={colors.secondary} />
+              <Text style={styles.descStockText}>
+                Stok tersedia di MeepleCafe: {stockCount} set box lengkap siap dimainkan bersama teman atau keluarga.
+              </Text>
+            </View>
+          </View>
+
+          {/* Tutorial / Rangkuman Aturan Main */}
           <View style={styles.section}>
             <View style={styles.sectionTitleRow}>
               <Ionicons name="book-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
-              <Text style={styles.sectionTitle}>Panduan & Aturan Bermain</Text>
+              <Text style={styles.sectionTitle}>Panduan Tutorial & Aturan Bermain</Text>
             </View>
             <View style={styles.rulesBox}>
               <Ionicons
-                name="bulb-outline"
+                name="bulb"
                 size={22}
-                color={colors.primary}
+                color={colors.primaryDark}
                 style={{ marginRight: 10, marginTop: 2 }}
               />
               <Text style={styles.rulesText}>
                 {game.rules_summary ||
-                  "Minta bantuan Game Master kami saat kedatangan di kafe untuk memandu jalannya permainan langkah demi langkah!"}
+                  "Minta bantuan Game Master kafe kami untuk memandu jalannya permainan langkah demi langkah!"}
               </Text>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      {/* Floating Bottom CTA */}
+      {/* Bottom Floating CTA Button */}
       <View style={styles.bottomBar}>
         <TouchableOpacity
           style={styles.ctaButton}
           activeOpacity={0.88}
           onPress={handleSelectGameAndChooseTable}
         >
-          <Ionicons name="calendar-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-          <Text style={styles.ctaText}>Pilih Game & Pesan Meja</Text>
+          <Ionicons name="calendar-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+          <Text style={styles.ctaText}>Pilih Game Ini & Lanjut Reservasi Meja</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -200,37 +211,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   },
   scrollContent: {
-    paddingBottom: 100
-  },
-  imageWrapper: {
-    width: "100%",
-    height: 250,
-    backgroundColor: colors.secondary
+    paddingBottom: 90
   },
   bannerImage: {
     width: "100%",
-    height: "100%",
+    height: 240,
     resizeMode: "cover"
   },
   detailCard: {
-    marginTop: -24,
+    marginTop: -20,
     backgroundColor: colors.card,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: colors.borderLight,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: -3 }
+    borderColor: colors.border
   },
   badgeRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12
+    marginBottom: 10
   },
   categoryBadge: {
     backgroundColor: colors.primaryLight,
@@ -244,33 +245,25 @@ const styles = StyleSheet.create({
     fontSize: 12
   },
   statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 20
+    borderRadius: 8
   },
   statusAvailable: {
-    backgroundColor: colors.successLight
+    backgroundColor: "#DCFCE7"
   },
   statusUnavailable: {
-    backgroundColor: colors.dangerLight
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 6
+    backgroundColor: "#FEE2E2"
   },
   statusText: {
     fontSize: 12,
     fontWeight: "700"
   },
   statusTextAvailable: {
-    color: colors.successText
+    color: "#166534"
   },
   statusTextUnavailable: {
-    color: colors.dangerText
+    color: "#991B1B"
   },
   title: {
     fontSize: 24,
@@ -281,10 +274,11 @@ const styles = StyleSheet.create({
   statsGrid: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 22,
-    padding: 12,
+    marginBottom: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
     backgroundColor: colors.background,
-    borderRadius: 16,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border
   },
@@ -292,23 +286,61 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center"
   },
-  statIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 6
-  },
   statValue: {
     fontSize: 13,
     fontWeight: "bold",
-    color: colors.text
+    color: colors.text,
+    marginTop: 4
   },
   statLabel: {
     fontSize: 10,
     color: colors.textMuted,
     marginTop: 2
+  },
+  stockCard: {
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 18
+  },
+  stockCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8
+  },
+  stockCardTitle: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: colors.primaryDark,
+    marginLeft: 6
+  },
+  stockGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderColor: "#FCD34D"
+  },
+  stockItem: {
+    flex: 1
+  },
+  stockItemLabel: {
+    fontSize: 11,
+    color: "#78350F"
+  },
+  stockItemValue: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#92400E",
+    marginTop: 2
+  },
+  stockNote: {
+    fontSize: 11,
+    color: "#78350F",
+    marginTop: 8,
+    lineHeight: 16
   },
   section: {
     marginBottom: 20
@@ -316,27 +348,40 @@ const styles = StyleSheet.create({
   sectionTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10
+    marginBottom: 8
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: colors.text,
-    marginBottom: 8
+    color: colors.text
   },
   sectionBody: {
     fontSize: 14,
     color: colors.textMuted,
     lineHeight: 22
   },
+  descStockBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F0FDFA",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 10
+  },
+  descStockText: {
+    fontSize: 12,
+    color: "#0F766E",
+    marginLeft: 6,
+    fontWeight: "500",
+    flex: 1
+  },
   rulesBox: {
     flexDirection: "row",
     backgroundColor: colors.primaryLight,
     padding: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: "flex-start",
-    borderWidth: 1,
-    borderColor: colors.primaryBorder
+    marginTop: 4
   },
   rulesText: {
     flex: 1,
@@ -352,15 +397,9 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: colors.card,
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 24,
+    paddingVertical: 12,
     borderTopWidth: 1,
-    borderColor: colors.border,
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: -3 }
+    borderColor: colors.border
   },
   ctaButton: {
     backgroundColor: colors.primary,
@@ -368,12 +407,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 14,
-    borderRadius: 14,
-    elevation: 3
+    borderRadius: 12
   },
   ctaText: {
     color: "#FFFFFF",
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "bold"
   },
   centerContainer: {
@@ -386,7 +424,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted
   },
   errorText: {
-    color: colors.danger,
+    color: colors.accent,
     fontSize: 15
   }
 });

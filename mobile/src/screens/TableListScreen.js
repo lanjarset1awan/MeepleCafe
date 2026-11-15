@@ -336,15 +336,13 @@ const styles = StyleSheet.create({
     fontSize: 12
   },
   statusPill: {
-    backgroundColor: colors.successLight,
-    borderWidth: 1,
-    borderColor: colors.successBorder,
+    backgroundColor: "#DCFCE7",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12
   },
   statusPillText: {
-    color: colors.successText,
+    color: "#166534",
     fontSize: 11,
     fontWeight: "bold"
   },

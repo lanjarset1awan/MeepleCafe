@@ -6,12 +6,12 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity,
-  Alert
+  TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
+import CustomDialog from "../components/CustomDialog";
 
 /**
  * Memeriksa apakah waktu sesi reservasi sudah lewat dibandingkan waktu saat ini.
@@ -81,6 +81,35 @@ export default function MyTicketsScreen({ navigation }) {
     loadTickets();
   };
 
+  // State untuk CustomDialog
+  const [dialogConfig, setDialogConfig] = useState({
+    visible: false,
+    type: "info",
+    title: "",
+    message: "",
+    confirmText: "Mengerti",
+    cancelText: null,
+    onConfirm: null,
+    onCancel: null
+  });
+
+  const showDialog = (cfg) => {
+    setDialogConfig({
+      visible: true,
+      type: cfg.type || "info",
+      title: cfg.title || "",
+      message: cfg.message || "",
+      confirmText: cfg.confirmText || "Mengerti",
+      cancelText: cfg.cancelText || null,
+      onConfirm: cfg.onConfirm || null,
+      onCancel: cfg.onCancel || null
+    });
+  };
+
+  const hideDialog = () => {
+    setDialogConfig((prev) => ({ ...prev, visible: false }));
+  };
+
   // Pisahkan tiket aktif (belum lewat) dan tiket yang sudah kedaluwarsa (lewat jamnya)
   const { activeTickets, expiredTickets } = useMemo(() => {
     const active = [];
@@ -100,25 +129,25 @@ export default function MyTicketsScreen({ navigation }) {
   const displayedTickets = activeTab === "active" ? activeTickets : expiredTickets;
 
   const handleDeleteTicket = (ticketId, bookingCode) => {
-    Alert.alert(
-      "Hapus Tiket",
-      `Apakah Anda yakin ingin menghapus tiket ${bookingCode}?`,
-      [
-        { text: "Batal", style: "cancel" },
-        {
-          text: "Hapus",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await ApiService.deleteReservation(ticketId);
-              setTickets((prev) => prev.filter((item) => item.id !== ticketId));
-            } catch (err) {
-              Alert.alert("Gagal", "Tidak dapat menghapus tiket saat ini.");
-            }
-          }
+    showDialog({
+      type: "warning",
+      title: "Hapus Tiket Reservasi?",
+      message: `Apakah Anda yakin ingin membatalkan dan menghapus tiket dengan kode ${bookingCode}?`,
+      confirmText: "Ya, Hapus",
+      cancelText: "Batal",
+      onConfirm: async () => {
+        try {
+          await ApiService.deleteReservation(ticketId);
+          setTickets((prev) => prev.filter((item) => item.id !== ticketId));
+        } catch (err) {
+          showDialog({
+            type: "error",
+            title: "Gagal Menghapus",
+            message: "Tidak dapat menghapus tiket saat ini. Silakan coba kembali."
+          });
         }
-      ]
-    );
+      }
+    });
   };
 
   const renderTicketCard = ({ item }) => {
@@ -193,7 +222,7 @@ export default function MyTicketsScreen({ navigation }) {
                 style={styles.btnDelete}
                 onPress={() => handleDeleteTicket(item.id, item.booking_code)}
               >
-                <Ionicons name="trash-outline" size={16} color={colors.danger} />
+                <Ionicons name="trash-outline" size={16} color={colors.accent} />
               </TouchableOpacity>
             )}
           </View>
@@ -293,7 +322,7 @@ export default function MyTicketsScreen({ navigation }) {
               <Text style={styles.paymentTagTotalText}>Total: {displayTotal}</Text>
             </View>
             <View style={styles.paymentTagMethod}>
-              <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+              <Ionicons name="checkmark-circle" size={14} color="#166534" />
               <Text style={styles.paymentTagMethodText}>{displayMethod} (Lunas)</Text>
             </View>
           </View>
@@ -401,6 +430,19 @@ export default function MyTicketsScreen({ navigation }) {
           }
         />
       )}
+
+      {/* Dialog Kustom Pengganti Alert.alert */}
+      <CustomDialog
+        visible={dialogConfig.visible}
+        type={dialogConfig.type}
+        title={dialogConfig.title}
+        message={dialogConfig.message}
+        confirmText={dialogConfig.confirmText}
+        cancelText={dialogConfig.cancelText}
+        onConfirm={dialogConfig.onConfirm}
+        onCancel={dialogConfig.onCancel}
+        onClose={hideDialog}
+      />
     </View>
   );
 }
@@ -526,32 +568,26 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
   statusBadgeActive: {
-    backgroundColor: colors.successLight,
-    borderWidth: 1,
-    borderColor: colors.successBorder
+    backgroundColor: "#DCFCE7"
   },
   statusBadgeExpired: {
-    backgroundColor: colors.dangerLight,
-    borderWidth: 1,
-    borderColor: colors.dangerBorder
+    backgroundColor: "#F1F5F9"
   },
   statusText: {
     fontSize: 11,
     fontWeight: "bold"
   },
   statusTextActive: {
-    color: colors.successText
+    color: "#166534"
   },
   statusTextExpired: {
-    color: colors.dangerText
+    color: colors.textMuted
   },
   btnDelete: {
     marginLeft: 8,
     padding: 6,
     borderRadius: 8,
-    backgroundColor: colors.dangerLight,
-    borderWidth: 1,
-    borderColor: colors.dangerBorder
+    backgroundColor: "#FEE2E2"
   },
   dividerRow: {
     flexDirection: "row",
@@ -632,9 +668,7 @@ const styles = StyleSheet.create({
   sessionBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: "#F0FDFA",
     padding: 10,
     borderRadius: 8,
     marginTop: 6
@@ -677,9 +711,7 @@ const styles = StyleSheet.create({
   paymentTagMethod: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.successLight,
-    borderWidth: 1,
-    borderColor: colors.successBorder,
+    backgroundColor: "#DCFCE7",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8
@@ -687,7 +719,7 @@ const styles = StyleSheet.create({
   paymentTagMethodText: {
     fontSize: 11,
     fontWeight: "700",
-    color: colors.successText,
+    color: "#166534",
     marginLeft: 5
   },
   centerContainer: {

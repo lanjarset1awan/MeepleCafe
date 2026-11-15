@@ -80,18 +80,7 @@ export default function GameListScreen({ navigation }) {
                 : styles.badgeHard
             ]}
           >
-            <Text
-              style={[
-                styles.difficultyBadgeText,
-                item.difficulty === "Easy"
-                  ? { color: colors.successText }
-                  : item.difficulty === "Medium"
-                  ? { color: colors.warningText }
-                  : { color: colors.dangerText }
-              ]}
-            >
-              {item.difficulty}
-            </Text>
+            <Text style={styles.difficultyBadgeText}>{item.difficulty}</Text>
           </View>
         </View>
 
@@ -112,7 +101,7 @@ export default function GameListScreen({ navigation }) {
           </View>
           <View style={styles.metaItem}>
             <Ionicons name="checkmark-circle" size={14} color={colors.success} />
-            <Text style={[styles.metaText, { color: colors.successText, fontWeight: "600" }]}>
+            <Text style={[styles.metaText, { color: colors.success, fontWeight: "600" }]}>
               Siap Main
             </Text>
           </View>
@@ -359,28 +348,23 @@ const styles = StyleSheet.create({
     color: colors.primaryDark
   },
   difficultyBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8
   },
   badgeEasy: {
-    backgroundColor: colors.successLight,
-    borderWidth: 1,
-    borderColor: colors.successBorder
+    backgroundColor: "#DCFCE7"
   },
   badgeMedium: {
-    backgroundColor: colors.warningLight,
-    borderWidth: 1,
-    borderColor: "#FDE68A"
+    backgroundColor: "#FEF9C3"
   },
   badgeHard: {
-    backgroundColor: colors.dangerLight,
-    borderWidth: 1,
-    borderColor: colors.dangerBorder
+    backgroundColor: "#FEE2E2"
   },
   difficultyBadgeText: {
-    fontSize: 10,
-    fontWeight: "700"
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.text
   },
   gameTitle: {
     fontSize: 18,
