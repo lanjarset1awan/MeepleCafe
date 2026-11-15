@@ -29,7 +29,8 @@ async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
 
     const response = await fetch(backendUrl, fetchOptions);
     if (response.ok) {
-      return await response.json();
+      const resText = await response.text();
+      return resText ? JSON.parse(resText) : {};
     }
   } catch (err) {
     // Abaikan jika server lokal belum aktif, lanjutkan ke Supabase Cloud
@@ -70,7 +71,13 @@ async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
     throw new Error(`Gagal memuat data dari Supabase: ${errText}`);
   }
 
-  const result = await response.json();
+  const resText = await response.text();
+  let result = null;
+  try {
+    result = resText ? JSON.parse(resText) : {};
+  } catch (e) {
+    result = {};
+  }
 
   // Jika hasil berupa array dan yang diminta adalah single item
   if (Array.isArray(result)) {

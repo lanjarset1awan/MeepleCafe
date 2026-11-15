@@ -1885,9 +1885,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     flex: 1
   },
-    fontWeight: "bold",
-    color: colors.primaryDark
-  },
   passTotalBox: {
     flexDirection: "row",
     justifyContent: "space-between",

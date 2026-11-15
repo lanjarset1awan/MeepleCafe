@@ -24,7 +24,8 @@
       "backendUrl": "http://192.168.10.146:3000"
     },
     "plugins": [
-      "expo-image"
+      "expo-image",
+      "expo-font"
     ]
   }
 }
