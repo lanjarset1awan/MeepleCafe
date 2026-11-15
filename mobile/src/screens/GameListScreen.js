@@ -139,7 +139,7 @@ export default function GameListScreen({ navigation }) {
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={20} color={colors.textMuted} />
         <TextInput
-          placeholder="Cari board game (UNO, Monopoly, Catan)..."
+          placeholder="Cari board game (UNO, Monopoly, Catur)..."
           placeholderTextColor={colors.textMuted}
           style={styles.searchInput}
           value={searchQuery}
