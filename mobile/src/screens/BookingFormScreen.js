@@ -8,7 +8,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   Modal,
-  FlatList
+  FlatList,
+  Image
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
@@ -16,6 +17,13 @@ import { colors } from "../theme/colors";
 import CustomDialog from "../components/CustomDialog";
 import SuccessPaymentModal from "../components/SuccessPaymentModal";
 import GameImage from "../components/GameImage";
+
+// Logo resmi perbankan & QRIS untuk metode pembayaran
+const BANK_LOGOS = {
+  bca: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT51BAk8TXeqH2rGF2IDxCx-qnvAIg7ojlj45t7KAZMXw&s=10",
+  mandiri: "https://www.bankmandiri.co.id/documents/20143/44881086/ag-branding-logo-2.png/30f0204c-d3c1-7237-0e97-6d9c137b2866?t=1623309819189",
+  qris: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr-ZUsZr698NnD0cJv0tyPbOfuS2Q6vrf4hy9blxCxBw&s=10"
+};
 
 // Jam operasional kafe: Buka jam 10.00, Tutup jam 21.00 (9 malam)
 const OPENING_HOUR = 10;
@@ -833,11 +841,15 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("bca")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankBadge}>
-                    <Text style={styles.bankBadgeText}>BCA</Text>
+                  <View style={styles.bankLogoBox}>
+                    <Image
+                      source={{ uri: BANK_LOGOS.bca }}
+                      style={styles.bankLogoImage}
+                      resizeMode="contain"
+                    />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
-                    <Text style={styles.bankName}>Bank Central Asia</Text>
+                    <Text style={styles.bankName}>Bank Central Asia (BCA)</Text>
                     <Text style={styles.bankAccount}>8410293812</Text>
                     <Text style={styles.bankHolder}>a.n. MeepleCafe / Lanjar Setiawan</Text>
                   </View>
@@ -860,8 +872,12 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("mandiri")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankBadge}>
-                    <Text style={styles.bankBadgeText}>MDR</Text>
+                  <View style={styles.bankLogoBox}>
+                    <Image
+                      source={{ uri: BANK_LOGOS.mandiri }}
+                      style={styles.bankLogoImage}
+                      resizeMode="contain"
+                    />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={styles.bankName}>Bank Mandiri</Text>
@@ -887,12 +903,16 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("qris")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankBadge}>
-                    <Text style={styles.bankBadgeText}>QRIS</Text>
+                  <View style={styles.bankLogoBox}>
+                    <Image
+                      source={{ uri: BANK_LOGOS.qris }}
+                      style={styles.bankLogoImage}
+                      resizeMode="contain"
+                    />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
-                    <Text style={styles.bankName}>QRIS Instant</Text>
-                    <Text style={styles.bankHolder}>Gopay / ShopeePay / OVO / Dana / BCA</Text>
+                    <Text style={styles.bankName}>QRIS Standar Nasional</Text>
+                    <Text style={styles.bankHolder}>Gopay / ShopeePay / OVO / Dana / BCA / Livin</Text>
                   </View>
                 </View>
                 {selectedPaymentMethod === "qris" && (
@@ -902,6 +922,11 @@ export default function BookingFormScreen({ route, navigation }) {
 
               {selectedPaymentMethod === "qris" && (
                 <View style={styles.qrisDisplayCard}>
+                  <Image
+                    source={{ uri: BANK_LOGOS.qris }}
+                    style={styles.qrisHeaderLogo}
+                    resizeMode="contain"
+                  />
                   <Ionicons name="qr-code" size={120} color={colors.secondary} />
                   <Text style={styles.qrisDesc}>
                     Scan kode QRIS ini dari aplikasi m-banking atau e-wallet Anda.
@@ -918,8 +943,8 @@ export default function BookingFormScreen({ route, navigation }) {
                 onPress={() => setSelectedPaymentMethod("cash")}
               >
                 <View style={styles.paymentMethodLeft}>
-                  <View style={styles.bankBadge}>
-                    <Ionicons name="cash-outline" size={16} color="#FFFFFF" />
+                  <View style={styles.cashBadgeBox}>
+                    <Ionicons name="cash-outline" size={20} color={colors.primaryDark} />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={styles.bankName}>Bayar di Kasir (Cash / Tunai)</Text>
@@ -1631,18 +1656,35 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1
   },
-  bankBadge: {
-    width: 44,
-    height: 32,
-    borderRadius: 6,
-    backgroundColor: colors.secondary,
+  bankLogoBox: {
+    width: 60,
+    height: 38,
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 4
+  },
+  bankLogoImage: {
+    width: "100%",
+    height: "100%"
+  },
+  cashBadgeBox: {
+    width: 60,
+    height: 38,
+    borderRadius: 8,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: "#FCD34D",
     justifyContent: "center",
     alignItems: "center"
   },
-  bankBadgeText: {
-    color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "bold"
+  qrisHeaderLogo: {
+    width: 110,
+    height: 38,
+    marginBottom: 8
   },
   bankName: {
     fontSize: 13,
