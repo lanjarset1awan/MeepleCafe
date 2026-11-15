@@ -15,6 +15,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 
+// Jam operasional kafe: Buka jam 10.00, Tutup jam 21.00 (9 malam)
+const OPENING_HOUR = 10;
+const CLOSING_HOUR = 21;
+
 // Helper konversi jam format string ke number
 function parseHours(sessionStr) {
   if (!sessionStr) return { start: 0, end: 0 };
@@ -37,6 +41,16 @@ function doOverlap(s1, s2) {
   return h1.start < h2.end && h2.start < h1.end;
 }
 
+// Helper tanggal
+function getFormattedDate(daysOffset = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function BookingFormScreen({ route, navigation }) {
   const {
     tableId,
@@ -49,9 +63,9 @@ export default function BookingFormScreen({ route, navigation }) {
 
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [reservationDate, setReservationDate] = useState("2026-11-20");
+  const [reservationDate, setReservationDate] = useState(getFormattedDate(0));
 
-  // Pemilihan Jam & Durasi (Tiap 1 Jam, Bisa > 1 Jam)
+  // Pemilihan Jam Mulai (10.00 s/d 20.00) & Durasi (1 - 4 Jam)
   const [startHour, setStartHour] = useState(14); // default 14:00
   const [durationHours, setDurationHours] = useState(2); // default 2 Jam
 
@@ -71,12 +85,35 @@ export default function BookingFormScreen({ route, navigation }) {
   // Data reservasi aktif dari database untuk validasi slot & bentrok
   const [activeReservations, setActiveReservations] = useState([]);
 
-  // Daftar opsi jam buka kafe (10.00 sampai 21.00)
-  const startHourOptions = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
-  const durationOptions = [1, 2, 3, 4, 5];
+  // Daftar opsi jam mulai (10.00 sampai 20.00 karena kafe tutup jam 21.00)
+  const startHourOptions = useMemo(() => {
+    const hours = [];
+    for (let h = OPENING_HOUR; h < CLOSING_HOUR; h++) {
+      hours.push(h);
+    }
+    return hours;
+  }, []);
+
+  // Durasi maksimal yang diizinkan agar tidak melebihi jam 21.00 (tutup kafe)
+  const maxAllowedDuration = Math.max(1, CLOSING_HOUR - startHour);
+  const availableDurations = useMemo(() => {
+    const list = [];
+    const limit = Math.min(5, maxAllowedDuration);
+    for (let d = 1; d <= limit; d++) {
+      list.push(d);
+    }
+    return list;
+  }, [maxAllowedDuration]);
+
+  // Sesuaikan durasi secara otomatis jika jam mulai berubah mendekati jam tutup
+  useEffect(() => {
+    if (durationHours > maxAllowedDuration) {
+      setDurationHours(maxAllowedDuration);
+    }
+  }, [startHour, maxAllowedDuration]);
 
   // Hitung jam selesai & label waktu
-  const endHour = Math.min(23, startHour + durationHours);
+  const endHour = Math.min(CLOSING_HOUR, startHour + durationHours);
   const startFormatted = `${String(startHour).padStart(2, "0")}.00`;
   const endFormatted = `${String(endHour).padStart(2, "0")}.00`;
   const currentSessionTime = `${startFormatted} - ${endFormatted} (${durationHours} Jam)`;
@@ -126,7 +163,19 @@ export default function BookingFormScreen({ route, navigation }) {
     refreshAvailability();
   }, [reservationDate, tableId, chosenGame]);
 
-  // Cek ketersediaan slot untuk jam yang dipilih
+  // Cek ketersediaan untuk setiap slot jam individu (untuk indikator grid)
+  const isHourBusyForTable = (hour) => {
+    const slotString = `${String(hour).padStart(2, "0")}.00 - ${String(hour + 1).padStart(2, "0")}.00 (1 Jam)`;
+    return activeReservations.some(
+      (r) =>
+        r.reservation_date === reservationDate &&
+        r.status !== "Cancelled" &&
+        r.table_id === tableId &&
+        doOverlap(r.session_time, slotString)
+    );
+  };
+
+  // Cek ketersediaan slot untuk rentang jam yang dipilih
   const slotStatus = useMemo(() => {
     const matchingDateReservations = activeReservations.filter(
       (r) => r.reservation_date === reservationDate && r.status !== "Cancelled"
@@ -140,8 +189,8 @@ export default function BookingFormScreen({ route, navigation }) {
     if (tableConflict) {
       return {
         available: false,
-        reason: "Meja Sudah Dipesan",
-        detail: `Meja ini sudah direservasi pada rentang jam ${tableConflict.session_time}.`
+        reason: "Meja Sedang Dipesan",
+        detail: `Meja ${tableNumber} telah direservasi pelanggan lain pada rentang jam ${tableConflict.session_time}.`
       };
     }
 
@@ -169,12 +218,17 @@ export default function BookingFormScreen({ route, navigation }) {
       reason: "Slot Tersedia",
       detail: "Jam dan meja ini siap dipesan."
     };
-  }, [activeReservations, reservationDate, tableId, chosenGame, currentSessionTime]);
+  }, [activeReservations, reservationDate, tableId, chosenGame, currentSessionTime, tableNumber]);
 
-  // Langkah 1: Validasi form sebelum masuk ke modal pembayaran
+  // Validasi sebelum membuka modal pembayaran
   const handleProceedToPayment = () => {
-    if (!customerName.trim() || !customerPhone.trim()) {
-      Alert.alert("Perhatian", "Silakan isi nama pemesan dan nomor WhatsApp Anda.");
+    if (!customerName.trim()) {
+      Alert.alert("Data Belum Lengkap", "Silakan masukkan nama pemesan Anda.");
+      return;
+    }
+
+    if (!customerPhone.trim()) {
+      Alert.alert("Data Belum Lengkap", "Silakan masukkan nomor WhatsApp / HP Anda.");
       return;
     }
 
@@ -186,7 +240,7 @@ export default function BookingFormScreen({ route, navigation }) {
 
     if (!slotStatus.available) {
       Alert.alert(
-        "Slot Penuh ❌",
+        "Jadwal Tidak Tersedia ❌",
         `${slotStatus.detail}\n\nSilakan pilih jam mulai atau durasi lain yang masih kosong.`
       );
       return;
@@ -196,15 +250,14 @@ export default function BookingFormScreen({ route, navigation }) {
     setPaymentModalVisible(true);
   };
 
-  // Salin nomor rekening ke clipboard simulated
   const handleCopyAccount = (bankName, accountNum) => {
     Alert.alert(
       "Nomor Rekening Disalin ✓",
-      `Nomor rekening ${bankName} (${accountNum}) atas nama MeepleCafe / Lanjar Setiawan telah disalin ke clipboard Anda!`
+      `Nomor rekening ${bankName} (${accountNum}) a.n. MeepleCafe / Lanjar Setiawan berhasil disalin!`
     );
   };
 
-  // Langkah 2: Konfirmasi Pembayaran dan Buat Tiket Reservasi
+  // Konfirmasi Pembayaran dan Buat Tiket Reservasi
   const handleConfirmPaymentAndCreateTicket = async () => {
     try {
       setLoading(true);
@@ -217,7 +270,7 @@ export default function BookingFormScreen({ route, navigation }) {
       else if (selectedPaymentMethod === "qris") paymentMethodName = "QRIS Instant";
       else if (selectedPaymentMethod === "cash") paymentMethodName = "Bayar di Kasir";
 
-      // Simpan metadata lengkap di customer_name secara aman
+      // Format metadata
       const combinedName = `${customerName.trim()} [Game: ${gameTitle}] [Total: ${formatRupiah(
         totalPrice
       )}] [Metode: ${paymentMethodName}]`;
@@ -241,9 +294,9 @@ export default function BookingFormScreen({ route, navigation }) {
         `Kode Booking: ${result.booking_code}\n\n` +
           `🎲 Board Game: ${gameTitle}\n` +
           `🪑 Meja: ${tableType} (Meja ${tableNumber})\n` +
-          `⏱️ Waktu: ${currentSessionTime}\n` +
-          `💳 Total Bayar: ${formatRupiah(totalPrice)} (${paymentMethodName})\n\n` +
-          `Tiket Anda telah aktif! Anda dapat melihatnya langsung di menu Tiket Saya.`,
+          `⏱️ Jadwal: ${currentSessionTime}\n` +
+          `💳 Total: ${formatRupiah(totalPrice)} (${paymentMethodName})\n\n` +
+          `Tiket Anda telah terbit dan aktif di menu Tiket Saya!`,
         [
           {
             text: "Buka Tiket Saya",
@@ -257,7 +310,7 @@ export default function BookingFormScreen({ route, navigation }) {
     } catch (err) {
       Alert.alert(
         "Gagal Memproses Reservasi",
-        err.message || "Terjadi kesalahan saat memproses tiket. Silakan coba lagi."
+        err.message || "Terjadi kendala saat menerbitkan tiket. Silakan coba kembali."
       );
       refreshAvailability();
     } finally {
@@ -267,126 +320,208 @@ export default function BookingFormScreen({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* 1. Paket Reservasi Card (Meja + Game) */}
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryHeader}>Ringkasan Paket Meja & Game</Text>
+      {/* 1. Paket Meja & Game */}
+      <View style={styles.cardSection}>
+        <Text style={styles.sectionHeaderLabel}>Paket Bermain</Text>
 
-        {/* Game Terpilih */}
-        <View style={styles.summaryItem}>
-          <Ionicons name="cube" size={20} color={colors.primary} />
-          <View style={styles.summaryItemText}>
-            <Text style={styles.summaryItemLabel}>Board Game yang Dipesan:</Text>
-            <Text style={styles.summaryItemValue}>
-              {chosenGame ? chosenGame.title : "Belum memilih game"}
-            </Text>
-            <Text style={styles.stockSubText}>
-              📦 Stok Fisik Kafe: {chosenGame?.stock || 2} Box Original
+        <View style={styles.packageRow}>
+          <View style={styles.packageIconBox}>
+            <Ionicons name="cube" size={22} color={colors.primary} />
+          </View>
+          <View style={styles.packageInfo}>
+            <Text style={styles.packageSub}>Board Game Pilihan</Text>
+            <Text style={styles.packageTitle}>{chosenGame ? chosenGame.title : "Pilih Game"}</Text>
+            <Text style={styles.packageStock}>
+              Stok Kafe: {chosenGame?.stock || 2} Box Original
             </Text>
           </View>
           <TouchableOpacity
-            style={styles.changeGameBtn}
+            style={styles.packageActionBtn}
             onPress={() => setGamePickerVisible(true)}
           >
-            <Text style={styles.changeGameBtnText}>Ganti</Text>
+            <Text style={styles.packageActionBtnText}>Ganti</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Meja Terpilih */}
-        <View style={[styles.summaryItem, { borderBottomWidth: 0, paddingBottom: 0 }]}>
-          <Ionicons name="restaurant" size={20} color={colors.secondary} />
-          <View style={styles.summaryItemText}>
-            <Text style={styles.summaryItemLabel}>Meja / Ruangan Bermain:</Text>
-            <Text style={styles.summaryItemValue}>
-              {tableType} (Meja {tableNumber}) - Maks. {capacity} Orang
+        <View style={[styles.packageRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+          <View style={[styles.packageIconBox, { backgroundColor: "#FEF3C7" }]}>
+            <Ionicons name="restaurant" size={22} color={colors.secondary} />
+          </View>
+          <View style={styles.packageInfo}>
+            <Text style={styles.packageSub}>Meja Kafe</Text>
+            <Text style={styles.packageTitle}>
+              {tableType} (Meja {tableNumber})
             </Text>
-            <Text style={styles.priceSubText}>
-              Tarif: {formatRupiah(numericPricePerHour)} / Jam
+            <Text style={styles.packageRate}>
+              Kapasitas {capacity} Orang • {formatRupiah(numericPricePerHour)} / jam
             </Text>
           </View>
         </View>
       </View>
 
-      <Text style={styles.formHeader}>Lengkapi Informasi Pemesan</Text>
+      {/* 2. Informasi Pemesan */}
+      <View style={styles.cardSection}>
+        <Text style={styles.sectionHeaderLabel}>Data Pemesan</Text>
 
-      {/* Input Nama */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Nama Pemesan *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Contoh: Lanjar Setiawan"
-          placeholderTextColor={colors.textMuted}
-          value={customerName}
-          onChangeText={setCustomerName}
-        />
-      </View>
-
-      {/* Input No HP / WA */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Nomor WhatsApp / HP *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Contoh: 081234567890"
-          placeholderTextColor={colors.textMuted}
-          keyboardType="phone-pad"
-          value={customerPhone}
-          onChangeText={setCustomerPhone}
-        />
-      </View>
-
-      {/* Input Tanggal */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Tanggal Main (YYYY-MM-DD) *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="2026-11-20"
-          placeholderTextColor={colors.textMuted}
-          value={reservationDate}
-          onChangeText={setReservationDate}
-        />
-      </View>
-
-      {/* PEMILIHAN JAM MULAI (PER 1 JAM) */}
-      <View style={styles.inputGroup}>
-        <View style={styles.labelRow}>
-          <Text style={styles.label}>Pilih Jam Mulai Bermain (Tiap 1 Jam) *</Text>
-          {checkingAvailability && (
-            <Text style={styles.checkingText}>Memeriksa ketersediaan...</Text>
-          )}
+        <View style={styles.inputField}>
+          <Text style={styles.inputLabel}>Nama Lengkap *</Text>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Contoh: Lanjar Setiawan"
+            placeholderTextColor={colors.textMuted}
+            value={customerName}
+            onChangeText={setCustomerName}
+          />
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-          {startHourOptions.map((hour) => {
-            const isSelected = startHour === hour;
-            const hourLabel = `${String(hour).padStart(2, "0")}.00`;
+        <View style={styles.inputField}>
+          <Text style={styles.inputLabel}>Nomor WhatsApp / HP *</Text>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Contoh: 081234567890"
+            placeholderTextColor={colors.textMuted}
+            keyboardType="phone-pad"
+            value={customerPhone}
+            onChangeText={setCustomerPhone}
+          />
+        </View>
+
+        <View style={styles.inputField}>
+          <Text style={styles.inputLabel}>Jumlah Pemain *</Text>
+          <TextInput
+            style={styles.textInput}
+            placeholder={`Maksimal ${capacity} Orang`}
+            placeholderTextColor={colors.textMuted}
+            keyboardType="numeric"
+            value={guestCount}
+            onChangeText={setGuestCount}
+          />
+        </View>
+      </View>
+
+      {/* 3. Jadwal & Waktu Main (Bukan Scroll Kanan, Grid ke Bawah, Tutup Jam 21.00) */}
+      <View style={styles.cardSection}>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionHeaderLabel}>Jadwal Reservasi</Text>
+          <Text style={styles.operatingHoursText}>Kafe Buka 10.00 - 21.00</Text>
+        </View>
+
+        {/* Pemilihan Tanggal Cepat */}
+        <Text style={styles.inputLabel}>Pilih Tanggal Bermain</Text>
+        <View style={styles.datePillsRow}>
+          {[
+            { label: "Hari Ini", date: getFormattedDate(0) },
+            { label: "Besok", date: getFormattedDate(1) },
+            { label: "Lusa", date: getFormattedDate(2) }
+          ].map((dp) => {
+            const isSelected = reservationDate === dp.date;
             return (
               <TouchableOpacity
-                key={hour}
-                style={[styles.hourChip, isSelected && styles.hourChipActive]}
-                onPress={() => setStartHour(hour)}
+                key={dp.date}
+                style={[styles.datePill, isSelected && styles.datePillActive]}
+                onPress={() => setReservationDate(dp.date)}
               >
-                <Text style={[styles.hourChipText, isSelected && styles.hourChipTextActive]}>
-                  {hourLabel}
+                <Text style={[styles.datePillText, isSelected && styles.datePillTextActive]}>
+                  {dp.label}
+                </Text>
+                <Text style={[styles.datePillSub, isSelected && styles.datePillSubActive]}>
+                  {dp.date.slice(5)}
                 </Text>
               </TouchableOpacity>
             );
           })}
-        </ScrollView>
-      </View>
+        </View>
 
-      {/* PEMILIHAN DURASI BERMAIN (BISA PILIH > 1 JAM) */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Pilih Durasi Bermain (Bisa Lebih Dari 1 Jam) *</Text>
-        <View style={styles.durationRow}>
-          {durationOptions.map((dur) => {
+        {/* Input Tanggal Manual */}
+        <TextInput
+          style={[styles.textInput, { marginTop: 8, marginBottom: 18 }]}
+          placeholder="YYYY-MM-DD"
+          placeholderTextColor={colors.textMuted}
+          value={reservationDate}
+          onChangeText={setReservationDate}
+        />
+
+        {/* PILIHAN JAM MULAI (GRID KE BAWAH, 3 KOLOM) */}
+        <View style={styles.labelWithSubRow}>
+          <Text style={styles.inputLabel}>Pilih Jam Mulai Bermain</Text>
+          <Text style={styles.labelSubText}>Tiap 1 Jam</Text>
+        </View>
+
+        <View style={styles.hourGrid}>
+          {startHourOptions.map((hour) => {
+            const isSelected = startHour === hour;
+            const isBusy = isHourBusyForTable(hour);
+            const hourLabel = `${String(hour).padStart(2, "0")}.00`;
+
+            return (
+              <TouchableOpacity
+                key={hour}
+                activeOpacity={0.75}
+                style={[
+                  styles.hourGridItem,
+                  isSelected && styles.hourGridItemActive,
+                  isBusy && !isSelected && styles.hourGridItemBusy
+                ]}
+                onPress={() => setStartHour(hour)}
+              >
+                <View style={styles.hourItemTop}>
+                  <Text
+                    style={[
+                      styles.hourGridText,
+                      isSelected && styles.hourGridTextActive,
+                      isBusy && !isSelected && styles.hourGridTextBusy
+                    ]}
+                  >
+                    {hourLabel}
+                  </Text>
+                  <View
+                    style={[
+                      styles.dotIndicator,
+                      isSelected
+                        ? { backgroundColor: "#FFFFFF" }
+                        : isBusy
+                        ? { backgroundColor: colors.accent }
+                        : { backgroundColor: colors.success }
+                    ]}
+                  />
+                </View>
+                <Text
+                  style={[
+                    styles.hourGridSub,
+                    isSelected
+                      ? { color: "#FFFFFF" }
+                      : isBusy
+                      ? { color: colors.accent }
+                      : { color: colors.textMuted }
+                  ]}
+                >
+                  {isBusy ? "Dipesan" : "Tersedia"}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* PILIHAN DURASI BERMAIN (BISA > 1 JAM) */}
+        <View style={[styles.labelWithSubRow, { marginTop: 18 }]}>
+          <Text style={styles.inputLabel}>Durasi Main</Text>
+          <Text style={styles.labelSubText}>Maksimal s/d 21.00 (Tutup)</Text>
+        </View>
+
+        <View style={styles.durationSegmentRow}>
+          {availableDurations.map((dur) => {
             const isSelected = durationHours === dur;
             return (
               <TouchableOpacity
                 key={dur}
-                style={[styles.durationChip, isSelected && styles.durationChipActive]}
+                style={[styles.durationSegment, isSelected && styles.durationSegmentActive]}
                 onPress={() => setDurationHours(dur)}
               >
                 <Text
-                  style={[styles.durationChipText, isSelected && styles.durationChipTextActive]}
+                  style={[
+                    styles.durationSegmentText,
+                    isSelected && styles.durationSegmentTextActive
+                  ]}
                 >
                   {dur} Jam
                 </Text>
@@ -395,81 +530,77 @@ export default function BookingFormScreen({ route, navigation }) {
           })}
         </View>
 
-        {/* Live Slot Preview & Status Bentrok */}
-        <View
-          style={[
-            styles.slotStatusBox,
-            slotStatus.available ? styles.slotBoxAvailable : styles.slotBoxBooked
-          ]}
-        >
-          <View style={styles.slotStatusLeft}>
-            <Ionicons
-              name={slotStatus.available ? "checkmark-circle" : "alert-circle"}
-              size={20}
-              color={slotStatus.available ? colors.success : colors.accent}
-            />
-            <View style={{ marginLeft: 8, flex: 1 }}>
-              <Text style={styles.slotTimeText}>
-                Waktu Booking: {currentSessionTime}
+        {/* RINGKASAN WAKTU BOOKING (DESAIN ELEGAN, BUKAN AI SLOP) */}
+        <View style={styles.scheduleCard}>
+          <View style={styles.scheduleCardHeader}>
+            <View style={styles.scheduleTimeCol}>
+              <Text style={styles.scheduleTimeTitle}>
+                {startFormatted} — {endFormatted} WIB
               </Text>
+              <Text style={styles.scheduleMeta}>
+                Durasi {durationHours} Jam • Kafe tutup pukul 21.00
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.statusBadgeClean,
+                slotStatus.available ? styles.statusBadgeCleanAvailable : styles.statusBadgeCleanBusy
+              ]}
+            >
+              <View
+                style={[
+                  styles.statusDotClean,
+                  { backgroundColor: slotStatus.available ? colors.success : colors.accent }
+                ]}
+              />
               <Text
                 style={[
-                  styles.slotStatusSubText,
+                  styles.statusBadgeCleanText,
                   { color: slotStatus.available ? "#166534" : "#991B1B" }
                 ]}
               >
-                {slotStatus.available
-                  ? "✓ Meja & game siap direservasi pada jam ini."
-                  : `⚠️ ${slotStatus.detail}`}
+                {slotStatus.available ? "Tersedia" : "Penuh"}
               </Text>
             </View>
           </View>
+
+          {!slotStatus.available && (
+            <View style={styles.conflictNotice}>
+              <Ionicons name="information-circle" size={16} color="#DC2626" />
+              <Text style={styles.conflictNoticeText}>{slotStatus.detail}</Text>
+            </View>
+          )}
         </View>
       </View>
 
-      {/* Jumlah Orang */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Jumlah Pemain (Orang) *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder={`Maksimal ${capacity} Orang`}
-          placeholderTextColor={colors.textMuted}
-          keyboardType="numeric"
-          value={guestCount}
-          onChangeText={setGuestCount}
-        />
-      </View>
+      {/* 4. Rincian Total Bayar */}
+      <View style={styles.cardSection}>
+        <Text style={styles.sectionHeaderLabel}>Rincian Pembayaran</Text>
 
-      {/* KARTU RINCIAN TOTAL BAYAR */}
-      <View style={styles.billingCard}>
-        <View style={styles.billingHeaderRow}>
-          <Ionicons name="receipt-outline" size={18} color={colors.primaryDark} />
-          <Text style={styles.billingTitle}>Rincian Biaya Reservasi</Text>
-        </View>
-
-        <View style={styles.billingRow}>
-          <Text style={styles.billingLabel}>
+        <View style={styles.priceRow}>
+          <Text style={styles.priceRowLabel}>
             Sewa {tableType} ({durationHours} Jam x {formatRupiah(numericPricePerHour)}):
           </Text>
-          <Text style={styles.billingValue}>{formatRupiah(totalPrice)}</Text>
+          <Text style={styles.priceRowValue}>{formatRupiah(totalPrice)}</Text>
         </View>
 
-        <View style={styles.billingRow}>
-          <Text style={styles.billingLabel}>Peminjaman Board Game ({chosenGame?.title}):</Text>
-          <Text style={[styles.billingValue, { color: colors.success }]}>GRATIS</Text>
+        <View style={styles.priceRow}>
+          <Text style={styles.priceRowLabel}>Peminjaman {chosenGame?.title || "Board Game"}:</Text>
+          <Text style={[styles.priceRowValue, { color: colors.success }]}>GRATIS</Text>
         </View>
 
-        <View style={styles.billingRow}>
-          <Text style={styles.billingLabel}>Free Snack & Wi-Fi Kafe:</Text>
-          <Text style={[styles.billingValue, { color: colors.success }]}>GRATIS</Text>
+        <View style={styles.priceRow}>
+          <Text style={styles.priceRowLabel}>Fasilitas Wi-Fi & Snack Kafe:</Text>
+          <Text style={[styles.priceRowValue, { color: colors.success }]}>GRATIS</Text>
         </View>
 
-        <View style={styles.billingDivider} />
+        <View style={styles.priceDivider} />
 
         <View style={styles.totalRow}>
           <View>
-            <Text style={styles.totalLabel}>TOTAL PEMBAYARAN</Text>
-            <Text style={styles.totalSub}>Tarif pasti tanpa biaya tambahan</Text>
+            <Text style={styles.totalLabel}>TOTAL BAYAR</Text>
+            <Text style={styles.totalSub}>Tarif sewa meja bersih</Text>
           </View>
           <Text style={styles.totalValue}>{formatRupiah(totalPrice)}</Text>
         </View>
@@ -478,27 +609,28 @@ export default function BookingFormScreen({ route, navigation }) {
       {/* Tombol Lanjut ke Pembayaran */}
       <TouchableOpacity
         style={[
-          styles.submitButton,
-          (!slotStatus.available || loading) && styles.submitButtonDisabled
+          styles.mainActionBtn,
+          !slotStatus.available && styles.mainActionBtnWarning
         ]}
         onPress={handleProceedToPayment}
-        disabled={!slotStatus.available || loading}
-        activeOpacity={0.85}
+        activeOpacity={0.88}
       >
         <Ionicons name="wallet-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-        <Text style={styles.submitButtonText}>
-          Bayar {formatRupiah(totalPrice)} & Dapatkan Tiket
+        <Text style={styles.mainActionBtnText}>
+          {slotStatus.available
+            ? `Bayar ${formatRupiah(totalPrice)} & Dapatkan Tiket`
+            : "Slot Penuh — Pilih Jam Lain"}
         </Text>
       </TouchableOpacity>
 
       {/* MODAL SISTEM PEMBAYARAN TRANSFER & QRIS */}
       <Modal visible={paymentModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.paymentModalContent}>
+          <View style={styles.paymentModalCard}>
             <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>Pembayaran Reservasi</Text>
-                <Text style={styles.modalSub}>Selesaikan pembayaran untuk menerbitkan tiket</Text>
+                <Text style={styles.modalSub}>Transfer sesuai nominal untuk mengonfirmasi tiket</Text>
               </View>
               <TouchableOpacity onPress={() => setPaymentModalVisible(false)}>
                 <Ionicons name="close-circle" size={26} color={colors.textMuted} />
@@ -506,40 +638,40 @@ export default function BookingFormScreen({ route, navigation }) {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-              {/* Box Total Tagihan Modal */}
-              <View style={styles.modalTotalBox}>
-                <Text style={styles.modalTotalLabel}>Total Yang Harus Ditransfer:</Text>
-                <Text style={styles.modalTotalAmount}>{formatRupiah(totalPrice)}</Text>
-                <Text style={styles.modalTotalDesc}>
-                  Untuk {durationHours} Jam Bermain ({currentSessionTime})
+              {/* Total Tagihan Box */}
+              <View style={styles.modalBillBox}>
+                <Text style={styles.modalBillLabel}>TOTAL TAGIHAN</Text>
+                <Text style={styles.modalBillAmount}>{formatRupiah(totalPrice)}</Text>
+                <Text style={styles.modalBillSub}>
+                  {tableType} ({tableNumber}) • {durationHours} Jam ({currentSessionTime})
                 </Text>
               </View>
 
-              <Text style={styles.paymentSectionTitle}>Pilih Metode Pembayaran:</Text>
+              <Text style={styles.paymentGroupTitle}>Pilih Rekening Tujuan Transfer:</Text>
 
               {/* Opsi 1: BCA */}
               <TouchableOpacity
                 style={[
-                  styles.paymentOptionCard,
-                  selectedPaymentMethod === "bca" && styles.paymentOptionActive
+                  styles.paymentMethodCard,
+                  selectedPaymentMethod === "bca" && styles.paymentMethodCardActive
                 ]}
                 onPress={() => setSelectedPaymentMethod("bca")}
               >
-                <View style={styles.paymentLeft}>
-                  <View style={styles.bankLogoBadge}>
-                    <Text style={styles.bankLogoText}>BCA</Text>
+                <View style={styles.paymentMethodLeft}>
+                  <View style={[styles.bankBadge, { backgroundColor: "#005BAA" }]}>
+                    <Text style={styles.bankBadgeText}>BCA</Text>
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
-                    <Text style={styles.bankName}>Bank Central Asia (BCA)</Text>
-                    <Text style={styles.accountNumber}>8410293812</Text>
-                    <Text style={styles.accountHolder}>a.n. MeepleCafe / Lanjar Setiawan</Text>
+                    <Text style={styles.bankName}>Bank Central Asia</Text>
+                    <Text style={styles.bankAccount}>8410293812</Text>
+                    <Text style={styles.bankHolder}>a.n. MeepleCafe / Lanjar Setiawan</Text>
                   </View>
                 </View>
                 <TouchableOpacity
                   style={styles.copyBtn}
                   onPress={() => handleCopyAccount("BCA", "8410293812")}
                 >
-                  <Ionicons name="copy-outline" size={14} color={colors.primary} />
+                  <Ionicons name="copy-outline" size={13} color={colors.primary} />
                   <Text style={styles.copyBtnText}>Salin</Text>
                 </TouchableOpacity>
               </TouchableOpacity>
@@ -547,26 +679,26 @@ export default function BookingFormScreen({ route, navigation }) {
               {/* Opsi 2: Mandiri */}
               <TouchableOpacity
                 style={[
-                  styles.paymentOptionCard,
-                  selectedPaymentMethod === "mandiri" && styles.paymentOptionActive
+                  styles.paymentMethodCard,
+                  selectedPaymentMethod === "mandiri" && styles.paymentMethodCardActive
                 ]}
                 onPress={() => setSelectedPaymentMethod("mandiri")}
               >
-                <View style={styles.paymentLeft}>
-                  <View style={[styles.bankLogoBadge, { backgroundColor: "#1E3A8A" }]}>
-                    <Text style={styles.bankLogoText}>MDR</Text>
+                <View style={styles.paymentMethodLeft}>
+                  <View style={[styles.bankBadge, { backgroundColor: "#002776" }]}>
+                    <Text style={styles.bankBadgeText}>MDR</Text>
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={styles.bankName}>Bank Mandiri</Text>
-                    <Text style={styles.accountNumber}>1370019283741</Text>
-                    <Text style={styles.accountHolder}>a.n. MeepleCafe / Lanjar Setiawan</Text>
+                    <Text style={styles.bankAccount}>1370019283741</Text>
+                    <Text style={styles.bankHolder}>a.n. MeepleCafe / Lanjar Setiawan</Text>
                   </View>
                 </View>
                 <TouchableOpacity
                   style={styles.copyBtn}
                   onPress={() => handleCopyAccount("Mandiri", "1370019283741")}
                 >
-                  <Ionicons name="copy-outline" size={14} color={colors.primary} />
+                  <Ionicons name="copy-outline" size={13} color={colors.primary} />
                   <Text style={styles.copyBtnText}>Salin</Text>
                 </TouchableOpacity>
               </TouchableOpacity>
@@ -574,18 +706,18 @@ export default function BookingFormScreen({ route, navigation }) {
               {/* Opsi 3: QRIS */}
               <TouchableOpacity
                 style={[
-                  styles.paymentOptionCard,
-                  selectedPaymentMethod === "qris" && styles.paymentOptionActive
+                  styles.paymentMethodCard,
+                  selectedPaymentMethod === "qris" && styles.paymentMethodCardActive
                 ]}
                 onPress={() => setSelectedPaymentMethod("qris")}
               >
-                <View style={styles.paymentLeft}>
-                  <View style={[styles.bankLogoBadge, { backgroundColor: "#DC2626" }]}>
-                    <Text style={styles.bankLogoText}>QRIS</Text>
+                <View style={styles.paymentMethodLeft}>
+                  <View style={[styles.bankBadge, { backgroundColor: "#ED1C24" }]}>
+                    <Text style={styles.bankBadgeText}>QRIS</Text>
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={styles.bankName}>QRIS Instant</Text>
-                    <Text style={styles.accountHolder}>Gopay / ShopeePay / OVO / Dana / BCA QR</Text>
+                    <Text style={styles.bankHolder}>Gopay / ShopeePay / OVO / Dana / BCA</Text>
                   </View>
                 </View>
                 {selectedPaymentMethod === "qris" && (
@@ -593,12 +725,11 @@ export default function BookingFormScreen({ route, navigation }) {
                 )}
               </TouchableOpacity>
 
-              {/* Box Tampilan Kode QR jika QRIS dipilih */}
               {selectedPaymentMethod === "qris" && (
-                <View style={styles.qrisBox}>
-                  <Ionicons name="qr-code" size={120} color={colors.text} />
-                  <Text style={styles.qrisInstruction}>
-                    Scan QRIS ini menggunakan aplikasi E-Wallet atau Mobile Banking Anda.
+                <View style={styles.qrisDisplayCard}>
+                  <Ionicons name="qr-code" size={130} color={colors.text} />
+                  <Text style={styles.qrisDesc}>
+                    Scan kode QRIS ini dari aplikasi e-wallet Anda untuk transfer instan.
                   </Text>
                 </View>
               )}
@@ -606,18 +737,18 @@ export default function BookingFormScreen({ route, navigation }) {
               {/* Opsi 4: Bayar di Kasir (Cash) */}
               <TouchableOpacity
                 style={[
-                  styles.paymentOptionCard,
-                  selectedPaymentMethod === "cash" && styles.paymentOptionActive
+                  styles.paymentMethodCard,
+                  selectedPaymentMethod === "cash" && styles.paymentMethodCardActive
                 ]}
                 onPress={() => setSelectedPaymentMethod("cash")}
               >
-                <View style={styles.paymentLeft}>
-                  <View style={[styles.bankLogoBadge, { backgroundColor: "#059669" }]}>
-                    <Ionicons name="cash-outline" size={18} color="#FFFFFF" />
+                <View style={styles.paymentMethodLeft}>
+                  <View style={[styles.bankBadge, { backgroundColor: "#059669" }]}>
+                    <Ionicons name="cash-outline" size={16} color="#FFFFFF" />
                   </View>
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={styles.bankName}>Bayar di Kasir (Cash / Tunai)</Text>
-                    <Text style={styles.accountHolder}>Bayar langsung saat kedatangan di cafe</Text>
+                    <Text style={styles.bankHolder}>Bayar langsung di kasir kafe saat kedatangan</Text>
                   </View>
                 </View>
                 {selectedPaymentMethod === "cash" && (
@@ -625,27 +756,28 @@ export default function BookingFormScreen({ route, navigation }) {
                 )}
               </TouchableOpacity>
 
-              {/* Instruksi & Petunjuk Transfer */}
-              <View style={styles.noticeBox}>
-                <Ionicons name="information-circle" size={18} color={colors.secondary} />
-                <Text style={styles.noticeText}>
-                  Silakan transfer tepat sejumlah {formatRupiah(totalPrice)}. Setelah transfer selesai,
-                  tekan tombol konfirmasi di bawah untuk menerbitkan tiket resmi Anda.
+              {/* Petunjuk Konfirmasi */}
+              <View style={styles.transferGuideBox}>
+                <Ionicons name="shield-checkmark" size={18} color={colors.secondary} />
+                <Text style={styles.transferGuideText}>
+                  Setelah melakukan transfer sejumlah {formatRupiah(totalPrice)}, tekan tombol konfirmasi
+                  di bawah untuk langsung menerbitkan tiket Anda.
                 </Text>
               </View>
 
               {/* Tombol Konfirmasi Pembayaran */}
               <TouchableOpacity
-                style={[styles.confirmPayButton, loading && styles.submitButtonDisabled]}
+                style={[styles.confirmPaymentBtn, loading && { opacity: 0.6 }]}
                 onPress={handleConfirmPaymentAndCreateTicket}
                 disabled={loading}
+                activeOpacity={0.88}
               >
                 {loading ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <>
-                    <Ionicons name="checkmark-done" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-                    <Text style={styles.confirmPayButtonText}>
+                    <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.confirmPaymentBtnText}>
                       Saya Sudah Transfer (Konfirmasi Tiket)
                     </Text>
                   </>
@@ -659,7 +791,7 @@ export default function BookingFormScreen({ route, navigation }) {
       {/* Modal Picker untuk Ganti Board Game */}
       <Modal visible={gamePickerVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={styles.pickerModalCard}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Pilih Board Game</Text>
               <TouchableOpacity onPress={() => setGamePickerVisible(false)}>
@@ -673,8 +805,8 @@ export default function BookingFormScreen({ route, navigation }) {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[
-                    styles.gamePickerItem,
-                    chosenGame?.id === item.id && styles.gamePickerItemActive
+                    styles.gamePickerRow,
+                    chosenGame?.id === item.id && styles.gamePickerRowActive
                   ]}
                   onPress={() => {
                     setChosenGame(item);
@@ -683,12 +815,12 @@ export default function BookingFormScreen({ route, navigation }) {
                 >
                   <Ionicons
                     name="cube-outline"
-                    size={20}
+                    size={22}
                     color={chosenGame?.id === item.id ? colors.primary : colors.textMuted}
                   />
-                  <View style={{ marginLeft: 10, flex: 1 }}>
-                    <Text style={styles.gamePickerTitle}>{item.title}</Text>
-                    <Text style={styles.gamePickerSub}>
+                  <View style={{ marginLeft: 12, flex: 1 }}>
+                    <Text style={styles.gamePickerName}>{item.title}</Text>
+                    <Text style={styles.gamePickerDesc}>
                       {item.min_players}-{item.max_players} Pemain • Stok: {item.stock || 2} Box
                     </Text>
                   </View>
@@ -714,28 +846,39 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 40
   },
-  summaryCard: {
+  cardSection: {
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
-    marginBottom: 20,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 2,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.04,
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 }
   },
-  summaryHeader: {
-    fontSize: 13,
+  sectionHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12
+  },
+  sectionHeaderLabel: {
+    fontSize: 12,
     fontWeight: "700",
     color: colors.primaryDark,
     textTransform: "uppercase",
     letterSpacing: 0.8,
     marginBottom: 12
   },
-  summaryItem: {
+  operatingHoursText: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: "500"
+  },
+  packageRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingBottom: 12,
@@ -743,71 +886,72 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.border
   },
-  summaryItemText: {
+  packageIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.primaryLight,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  packageInfo: {
     marginLeft: 12,
     flex: 1
   },
-  summaryItemLabel: {
+  packageSub: {
     fontSize: 11,
     color: colors.textMuted
   },
-  summaryItemValue: {
+  packageTitle: {
     fontSize: 15,
     fontWeight: "bold",
     color: colors.text,
     marginTop: 2
   },
-  stockSubText: {
+  packageStock: {
     fontSize: 11,
     color: colors.primaryDark,
     marginTop: 2,
     fontWeight: "600"
   },
-  priceSubText: {
+  packageRate: {
     fontSize: 11,
     color: colors.secondary,
     marginTop: 2,
     fontWeight: "600"
   },
-  changeGameBtn: {
+  packageActionBtn: {
     backgroundColor: colors.primaryLight,
     paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 8
   },
-  changeGameBtnText: {
+  packageActionBtnText: {
     fontSize: 12,
     fontWeight: "bold",
     color: colors.primaryDark
   },
-  formHeader: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.text,
+  inputField: {
     marginBottom: 14
   },
-  inputGroup: {
-    marginBottom: 16
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.text,
+    marginBottom: 6
   },
-  labelRow: {
+  labelWithSubRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8
   },
-  label: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 8
-  },
-  checkingText: {
+  labelSubText: {
     fontSize: 11,
-    color: colors.primaryDark,
-    fontStyle: "italic"
+    color: colors.textMuted
   },
-  input: {
-    backgroundColor: colors.card,
+  textInput: {
+    backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 10,
@@ -816,129 +960,196 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text
   },
-  chipScroll: {
-    flexDirection: "row",
-    paddingVertical: 4
-  },
-  hourChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: colors.card,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginRight: 8
-  },
-  hourChipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary
-  },
-  hourChipText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: colors.text
-  },
-  hourChipTextActive: {
-    color: "#FFFFFF",
-    fontWeight: "bold"
-  },
-  durationRow: {
+  datePillsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 10
+    marginBottom: 4
   },
-  durationChip: {
+  datePill: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 10,
-    backgroundColor: colors.card,
+    paddingVertical: 8,
+    backgroundColor: colors.background,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     marginHorizontal: 3
   },
-  durationChipActive: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.secondary
+  datePillActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary
   },
-  durationChipText: {
+  datePillText: {
     fontSize: 12,
     fontWeight: "600",
     color: colors.text
   },
-  durationChipTextActive: {
-    color: "#FFFFFF",
+  datePillTextActive: {
+    color: colors.primaryDark,
     fontWeight: "bold"
   },
-  slotStatusBox: {
-    borderRadius: 10,
-    padding: 12,
-    borderWidth: 1,
-    marginTop: 4
+  datePillSub: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2
   },
-  slotBoxAvailable: {
-    backgroundColor: "#F0FDF4",
-    borderColor: "#BBF7D0"
+  datePillSubActive: {
+    color: colors.primaryDark
   },
-  slotBoxBooked: {
-    backgroundColor: "#FEF2F2",
-    borderColor: "#FECACA"
-  },
-  slotStatusLeft: {
+  hourGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between"
+  },
+  hourGridItem: {
+    width: "31.5%",
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    marginBottom: 10
+  },
+  hourGridItemActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
+  },
+  hourGridItemBusy: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0"
+  },
+  hourItemTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center"
   },
-  slotTimeText: {
-    fontSize: 13,
+  hourGridText: {
+    fontSize: 14,
     fontWeight: "bold",
     color: colors.text
   },
-  slotStatusSubText: {
-    fontSize: 11,
-    marginTop: 2,
+  hourGridTextActive: {
+    color: "#FFFFFF"
+  },
+  hourGridTextBusy: {
+    color: colors.textMuted
+  },
+  dotIndicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3
+  },
+  hourGridSub: {
+    fontSize: 10,
+    marginTop: 4,
     fontWeight: "500"
   },
-  billingCard: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 4,
-    marginBottom: 20,
+  durationSegmentRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 14
+  },
+  durationSegment: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 9,
+    backgroundColor: colors.background,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 }
+    marginHorizontal: 3
   },
-  billingHeaderRow: {
+  durationSegmentActive: {
+    backgroundColor: colors.secondary,
+    borderColor: colors.secondary
+  },
+  durationSegmentText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.text
+  },
+  durationSegmentTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "bold"
+  },
+  scheduleCard: {
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 14
+  },
+  scheduleCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  scheduleTimeCol: {
+    flex: 1
+  },
+  scheduleTimeTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.text
+  },
+  scheduleMeta: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 3
+  },
+  statusBadgeClean: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20
   },
-  billingTitle: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: colors.primaryDark,
+  statusBadgeCleanAvailable: {
+    backgroundColor: "#DCFCE7"
+  },
+  statusBadgeCleanBusy: {
+    backgroundColor: "#FEE2E2"
+  },
+  statusDotClean: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 5
+  },
+  statusBadgeCleanText: {
+    fontSize: 11,
+    fontWeight: "bold"
+  },
+  conflictNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    padding: 8,
+    borderRadius: 8,
+    marginTop: 10
+  },
+  conflictNoticeText: {
+    fontSize: 11,
+    color: "#991B1B",
     marginLeft: 6,
-    textTransform: "uppercase"
+    flex: 1
   },
-  billingRow: {
+  priceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 8
   },
-  billingLabel: {
+  priceRowLabel: {
     fontSize: 12,
     color: colors.textMuted
   },
-  billingValue: {
+  priceRowValue: {
     fontSize: 12,
     fontWeight: "600",
     color: colors.text
   },
-  billingDivider: {
+  priceDivider: {
     height: 1,
     backgroundColor: colors.border,
     marginVertical: 10
@@ -962,19 +1173,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.primary
   },
-  submitButton: {
+  mainActionBtn: {
     backgroundColor: colors.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 15,
-    borderRadius: 12,
+    borderRadius: 14,
     elevation: 3
   },
-  submitButtonDisabled: {
-    opacity: 0.6
+  mainActionBtnWarning: {
+    backgroundColor: colors.accent
   },
-  submitButtonText: {
+  mainActionBtnText: {
     color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "bold"
@@ -984,14 +1195,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "flex-end"
   },
-  modalContent: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: "75%",
-    padding: 20
-  },
-  paymentModalContent: {
+  paymentModalCard: {
     backgroundColor: colors.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -1014,38 +1218,36 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 2
   },
-  modalTotalBox: {
+  modalBillBox: {
     backgroundColor: colors.primaryLight,
     padding: 16,
     borderRadius: 14,
     alignItems: "center",
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: "#E0E7FF"
+    marginBottom: 16
   },
-  modalTotalLabel: {
+  modalBillLabel: {
     fontSize: 11,
-    fontWeight: "600",
+    fontWeight: "700",
     color: colors.primaryDark,
-    textTransform: "uppercase"
+    letterSpacing: 0.8
   },
-  modalTotalAmount: {
-    fontSize: 26,
+  modalBillAmount: {
+    fontSize: 28,
     fontWeight: "bold",
     color: colors.primaryDark,
     marginVertical: 4
   },
-  modalTotalDesc: {
+  modalBillSub: {
     fontSize: 11,
     color: colors.primary
   },
-  paymentSectionTitle: {
-    fontSize: 13,
+  paymentGroupTitle: {
+    fontSize: 12,
     fontWeight: "bold",
     color: colors.text,
     marginBottom: 10
   },
-  paymentOptionCard: {
+  paymentMethodCard: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -1056,24 +1258,23 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 10
   },
-  paymentOptionActive: {
+  paymentMethodCardActive: {
     borderColor: colors.primary,
     backgroundColor: "#F8FAFC"
   },
-  paymentLeft: {
+  paymentMethodLeft: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1
   },
-  bankLogoBadge: {
+  bankBadge: {
     width: 44,
     height: 32,
     borderRadius: 6,
-    backgroundColor: "#005BAA",
     justifyContent: "center",
     alignItems: "center"
   },
-  bankLogoText: {
+  bankBadgeText: {
     color: "#FFFFFF",
     fontSize: 11,
     fontWeight: "bold"
@@ -1083,14 +1284,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.text
   },
-  accountNumber: {
+  bankAccount: {
     fontSize: 14,
     fontWeight: "bold",
     color: colors.primaryDark,
     letterSpacing: 0.5,
     marginTop: 2
   },
-  accountHolder: {
+  bankHolder: {
     fontSize: 10,
     color: colors.textMuted
   },
@@ -1108,22 +1309,22 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginLeft: 4
   },
-  qrisBox: {
+  qrisDisplayCard: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    marginBottom: 12
+    marginBottom: 10
   },
-  qrisInstruction: {
+  qrisDesc: {
     fontSize: 11,
     color: colors.textMuted,
     textAlign: "center",
     marginTop: 8
   },
-  noticeBox: {
+  transferGuideBox: {
     flexDirection: "row",
     alignItems: "flex-start",
     backgroundColor: "#F0FDFA",
@@ -1131,29 +1332,35 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginVertical: 12
   },
-  noticeText: {
+  transferGuideText: {
     fontSize: 11,
     color: "#0F766E",
     marginLeft: 8,
     flex: 1,
     lineHeight: 16
   },
-  confirmPayButton: {
+  confirmPaymentBtn: {
     backgroundColor: colors.success,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 15,
     borderRadius: 12,
-    elevation: 3,
     marginTop: 4
   },
-  confirmPayButtonText: {
+  confirmPaymentBtnText: {
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "bold"
   },
-  gamePickerItem: {
+  pickerModalCard: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "75%",
+    padding: 20
+  },
+  gamePickerRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
@@ -1161,16 +1368,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.border
   },
-  gamePickerItemActive: {
+  gamePickerRowActive: {
     backgroundColor: colors.primaryLight,
     borderRadius: 8
   },
-  gamePickerTitle: {
+  gamePickerName: {
     fontSize: 14,
     fontWeight: "bold",
     color: colors.text
   },
-  gamePickerSub: {
+  gamePickerDesc: {
     fontSize: 12,
     color: colors.textMuted,
     marginTop: 2
