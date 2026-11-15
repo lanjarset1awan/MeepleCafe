@@ -912,7 +912,7 @@ export default function BookingFormScreen({ route, navigation }) {
                   <View style={[styles.bankLogoBox, styles.bankLogoBoxMandiri]}>
                     <Image
                       source={{ uri: BANK_LOGOS.mandiri }}
-                      style={styles.bankLogoImageCover}
+                      style={styles.bankLogoImageMandiri}
                       resizeMode="cover"
                     />
                   </View>
@@ -1723,9 +1723,9 @@ const styles = StyleSheet.create({
     borderColor: "#005299"
   },
   bankLogoBoxMandiri: {
-    backgroundColor: "#002D62",
+    backgroundColor: "#0D2B5B",
     borderWidth: 1,
-    borderColor: "#002047"
+    borderColor: "#0A234A"
   },
   bankLogoBoxQris: {
     backgroundColor: "#000000",
@@ -1740,6 +1740,11 @@ const styles = StyleSheet.create({
   bankLogoImageCover: {
     width: "100%",
     height: "100%"
+  },
+  bankLogoImageMandiri: {
+    width: "100%",
+    height: "100%",
+    transform: [{ scale: 1.35 }]
   },
   bankLogoImageContain: {
     width: "100%",
