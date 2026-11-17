@@ -177,26 +177,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: colors.primaryLight,
-    paddingVertical: 11,
+    backgroundColor: colors.background,
+    paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#CCE3F5",
+    borderColor: colors.border,
     marginBottom: 20
   },
   categoryBadge: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.primaryLight,
     paddingHorizontal: 9,
     paddingVertical: 4,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#CCE3F5"
+    borderRadius: 6
   },
   categoryBadgeText: {
     fontSize: 12,
     fontWeight: "700",
-    color: colors.primary
+    color: colors.primaryDark
   },
   metaItem: {
     flexDirection: "row",
