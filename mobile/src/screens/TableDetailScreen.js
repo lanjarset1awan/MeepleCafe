@@ -138,6 +138,7 @@ export default function TableDetailScreen({ route, navigation }) {
               tableType: table.table_type,
               pricePerHour: table.price_per_hour,
               capacity: table.capacity,
+              tableImage: table.image_url,
               selectedGame: selectedGame
             })
           }

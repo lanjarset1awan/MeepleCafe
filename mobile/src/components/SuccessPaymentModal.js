@@ -49,7 +49,7 @@ export default function SuccessPaymentModal({
                 <Text style={styles.codeText}>{bookingCode || "MC-XXXX"}</Text>
               </View>
               <View style={styles.statusPill}>
-                <Text style={styles.statusPillText}>LUNAS ✓</Text>
+                <Text style={styles.statusPillText}>LUNAS</Text>
               </View>
             </View>
 
@@ -118,7 +118,7 @@ export default function SuccessPaymentModal({
             onPress={onViewTicket}
             activeOpacity={0.88}
           >
-            <Text style={styles.actionBtnText}>Buka Tiket Saya ➔</Text>
+            <Text style={styles.actionBtnText}>Buka Tiket Saya</Text>
           </TouchableOpacity>
         </View>
       </View>

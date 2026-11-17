@@ -247,6 +247,12 @@ export default function BookingFormScreen({ route, navigation }) {
           setChosenGame(games[0]);
         }
         setAllTables(tables || []);
+        if (tables && tables.length > 0) {
+          setChosenTable((prev) => {
+            const match = tables.find((t) => t.id === prev.id);
+            return match ? { ...prev, image_url: prev.image_url || match.image_url } : prev;
+          });
+        }
       } catch (err) {
         console.error(err);
       }
@@ -362,7 +368,7 @@ export default function BookingFormScreen({ route, navigation }) {
     if (isPastDate) {
       showDialog({
         type: "error",
-        title: "Tanggal Sudah Lewat 📅",
+        title: "Tanggal Sudah Lewat",
         message: `Tanggal yang Anda pilih (${reservationDate}) sudah berlalu. Silakan pilih tanggal hari ini atau besok.`
       });
       return;
@@ -399,7 +405,7 @@ export default function BookingFormScreen({ route, navigation }) {
     if (!slotStatus.available) {
       showDialog({
         type: "error",
-        title: slotStatus.reason || "Jadwal Tidak Tersedia ❌",
+        title: slotStatus.reason || "Jadwal Tidak Tersedia",
         message: `${slotStatus.detail}\n\nSilakan pilih jam mulai atau durasi lain yang masih kosong.`
       });
       return;
@@ -412,7 +418,7 @@ export default function BookingFormScreen({ route, navigation }) {
   const handleCopyAccount = (bankName, accountNum) => {
     showDialog({
       type: "success",
-      title: "Rekening Disalin ✓",
+      title: "Rekening Disalin",
       message: `Nomor rekening ${bankName} (${accountNum}) a.n. MeepleCafe / Lanjar Setiawan berhasil disalin!`
     });
   };
@@ -501,9 +507,16 @@ export default function BookingFormScreen({ route, navigation }) {
         </View>
 
         <View style={[styles.packageRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
-          <View style={[styles.packageIconBox, { backgroundColor: colors.primaryLight }]}>
-            <MaterialCommunityIcons name="table-chair" size={22} color={colors.primary} />
-          </View>
+          {chosenTable?.image_url ? (
+            <GameImage
+              uri={chosenTable.image_url}
+              style={styles.packageGameThumb}
+            />
+          ) : (
+            <View style={[styles.packageIconBox, { backgroundColor: colors.primaryLight }]}>
+              <MaterialCommunityIcons name="table-chair" size={22} color={colors.primary} />
+            </View>
+          )}
           <View style={styles.packageInfo}>
             <Text style={styles.packageSub}>Meja Kafe</Text>
             <Text style={styles.packageTitle}>
@@ -652,7 +665,7 @@ export default function BookingFormScreen({ route, navigation }) {
                   if (isPassed) {
                     showDialog({
                       type: "warning",
-                      title: isPastDate ? "Tanggal Sudah Lewat ⏰" : "Jam Sudah Terlewati ⏰",
+                      title: isPastDate ? "Tanggal Sudah Lewat" : "Jam Sudah Terlewati",
                       message: isPastDate
                         ? `Tanggal ${reservationDate} sudah berlalu. Silakan pilih hari ini atau tanggal mendatang.`
                         : `Pukul ${hourLabel} sudah lewat untuk hari ini. Silakan pilih jam lain yang masih buka atau pilih tanggal besok.`

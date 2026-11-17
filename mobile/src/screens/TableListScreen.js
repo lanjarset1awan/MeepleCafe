@@ -82,6 +82,7 @@ export default function TableListScreen({ route, navigation }) {
       tableType: table.table_type,
       pricePerHour: table.price_per_hour,
       capacity: table.capacity,
+      tableImage: table.image_url,
       selectedGame: selectedGame // Membawa game yang dipilih ke form booking!
     });
   };
