@@ -502,7 +502,7 @@ export default function BookingFormScreen({ route, navigation }) {
 
         <View style={[styles.packageRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
           <View style={[styles.packageIconBox, { backgroundColor: colors.primaryLight }]}>
-            <MaterialCommunityIcons name="table-chair" size={22} color={colors.secondary} />
+            <MaterialCommunityIcons name="table-chair" size={22} color={colors.primary} />
           </View>
           <View style={styles.packageInfo}>
             <Text style={styles.packageSub}>Meja Kafe</Text>
@@ -1382,7 +1382,7 @@ const styles = StyleSheet.create({
   },
   packageRate: {
     fontSize: 11,
-    color: colors.secondary,
+    color: colors.primaryDark,
     marginTop: 2,
     fontWeight: "600"
   },
