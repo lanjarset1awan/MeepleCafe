@@ -78,19 +78,18 @@ export default function GameDetailScreen({ route, navigation }) {
 
         {/* Floating Header Card */}
         <View style={styles.detailCard}>
+          <View style={styles.badgeRow}>
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryBadgeText}>
+                {game.game_categories?.name || "General"}
+              </Text>
+            </View>
+          </View>
+
           <Text style={styles.title}>{game.title}</Text>
 
           {/* Quick Stats Grid */}
           <View style={styles.statsGrid}>
-            <View style={styles.statBox}>
-              <View style={styles.categoryBadge}>
-                <Text style={styles.categoryBadgeText} numberOfLines={1}>
-                  {game.game_categories?.name || "General"}
-                </Text>
-              </View>
-              <Text style={styles.statLabel}>Kategori</Text>
-            </View>
-
             <View style={styles.statBox}>
               <Ionicons name="people-outline" size={20} color={colors.primary} />
               <Text style={styles.statValue}>
@@ -109,6 +108,22 @@ export default function GameDetailScreen({ route, navigation }) {
               <Ionicons name="cube-outline" size={20} color={colors.primary} />
               <Text style={styles.statValue}>{stockCount} Box</Text>
               <Text style={styles.statLabel}>Stok Kafe</Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Ionicons
+                name="bar-chart-outline"
+                size={20}
+                color={
+                  (game.difficulty || "").toLowerCase() === "easy"
+                    ? colors.success
+                    : (game.difficulty || "").toLowerCase() === "medium"
+                      ? colors.secondary
+                      : colors.accent
+                }
+              />
+              <Text style={styles.statValue}>{game.difficulty}</Text>
+              <Text style={styles.statLabel}>Tingkat</Text>
             </View>
           </View>
 
@@ -173,6 +188,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border
   },
+  badgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10
+  },
+  categoryBadge: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  categoryBadgeText: {
+    color: colors.primaryDark,
+    fontWeight: "700",
+    fontSize: 12
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -185,45 +216,25 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingVertical: 12,
     paddingHorizontal: 6,
-    backgroundColor: "#F4F9FD",
+    backgroundColor: colors.primaryLight,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#D0E2F2"
+    borderColor: "#CCE3F5"
   },
   statBox: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  categoryBadge: {
-    backgroundColor: "#EBF4FB",
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#D0E2F2",
-    marginBottom: 4,
-    maxWidth: "92%",
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  categoryBadgeText: {
-    color: colors.primaryDark,
-    fontSize: 11,
-    fontWeight: "700"
+    alignItems: "center"
   },
   statValue: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "bold",
     color: colors.text,
-    marginTop: 4,
-    textAlign: "center"
+    marginTop: 4
   },
   statLabel: {
     fontSize: 10,
     color: colors.textMuted,
-    marginTop: 2,
-    textAlign: "center"
+    marginTop: 2
   },
   section: {
     marginBottom: 20
