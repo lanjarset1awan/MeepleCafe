@@ -83,10 +83,11 @@ export default function GameDetailScreen({ route, navigation }) {
           {/* Quick Stats Grid */}
           <View style={styles.statsGrid}>
             <View style={styles.statBox}>
-              <Ionicons name="shapes-outline" size={20} color={colors.primary} />
-              <Text style={styles.statValue} numberOfLines={1}>
-                {game.game_categories?.name || "General"}
-              </Text>
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryBadgeText} numberOfLines={1}>
+                  {game.game_categories?.name || "General"}
+                </Text>
+              </View>
               <Text style={styles.statLabel}>Kategori</Text>
             </View>
 
@@ -191,7 +192,25 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    alignItems: "center"
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  categoryBadge: {
+    backgroundColor: "#EBF4FB",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#D0E2F2",
+    marginBottom: 4,
+    maxWidth: "92%",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  categoryBadgeText: {
+    color: colors.primaryDark,
+    fontSize: 11,
+    fontWeight: "700"
   },
   statValue: {
     fontSize: 12,
