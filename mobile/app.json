@@ -12,17 +12,18 @@
     "android": {
       "package": "com.lanjar.meeplecafe",
       "adaptiveIcon": {
-        "backgroundColor": "#D97706",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/android-icon-foreground.png"
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "backendUrl": "https://meeple-cafe-backend.vercel.app"
+      "backendUrl": "https://meeple-cafe-backend.vercel.app",
+      "eas": {
+        "projectId": "a8f037ac-0e8c-4c3e-89fc-fae06bbdefb6"
+      }
     },
     "plugins": [
       "expo-image",
