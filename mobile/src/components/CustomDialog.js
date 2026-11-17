@@ -28,9 +28,9 @@ export default function CustomDialog({
       case "warning":
         return {
           iconName: "alert-circle",
-          iconColor: "#D97706",
-          badgeBg: "#FEF3C7",
-          borderColor: "#FDE68A",
+          iconColor: colors.secondary,
+          badgeBg: colors.secondaryLight,
+          borderColor: "#FED7AA",
           buttonBg: colors.primary
         };
       case "error":

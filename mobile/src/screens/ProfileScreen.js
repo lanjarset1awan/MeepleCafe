@@ -49,7 +49,18 @@ export default function ProfileScreen() {
         {/* About Application */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="information-circle" size={20} color={colors.primary} />
+            <Image
+              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: 13,
+                marginRight: 8,
+                borderWidth: 1,
+                borderColor: colors.border
+              }}
+              resizeMode="contain"
+            />
             <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
           </View>
           <Text style={styles.aboutText}>
