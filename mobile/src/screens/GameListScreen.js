@@ -98,14 +98,13 @@ export default function GameListScreen({ navigation }) {
           {item.description}
         </Text>
 
-          <View style={styles.actionFooter}>
-            <Text style={styles.actionFooterText}>Pelajari Aturan & Pilih Game</Text>
-            <Ionicons name="arrow-forward-circle" size={18} color={colors.primary} />
-          </View>
+        <View style={styles.actionFooter}>
+          <Text style={styles.actionFooterText}>Pelajari Aturan & Pilih Game</Text>
+          <Ionicons name="arrow-forward-circle" size={18} color={colors.primary} />
         </View>
-      </TouchableOpacity>
-    );
-  };
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
