@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border
   },
   title: {
-    fontSize: 22,
+    fontSize: 25,
     fontWeight: "bold",
     color: colors.text,
     marginBottom: 12

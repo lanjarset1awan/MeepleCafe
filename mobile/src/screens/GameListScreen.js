@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     padding: 14
   },
   gameTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: colors.text,
     marginBottom: 6
