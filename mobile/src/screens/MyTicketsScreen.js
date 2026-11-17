@@ -6,7 +6,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
@@ -374,7 +375,20 @@ export default function MyTicketsScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.headerSubtitle}>Booking Management</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Image
+              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 11,
+                marginRight: 8,
+                backgroundColor: "#FFFFFF"
+              }}
+              resizeMode="contain"
+            />
+            <Text style={styles.headerSubtitle}>Booking Management</Text>
+          </View>
           <View style={styles.totalBadge}>
             <Ionicons name="ticket" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
             <Text style={styles.totalBadgeText}>

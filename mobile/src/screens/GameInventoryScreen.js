@@ -159,7 +159,20 @@ export default function GameInventoryScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.headerSubtitle}>Inventaris & Rak Kafe</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Image
+              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 11,
+                marginRight: 8,
+                backgroundColor: "#FFFFFF"
+              }}
+              resizeMode="contain"
+            />
+            <Text style={styles.headerSubtitle}>Inventaris & Rak Kafe</Text>
+          </View>
           <View style={styles.totalBadge}>
             <Ionicons name="file-tray-stacked" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
             <Text style={styles.totalBadgeText}>

@@ -145,7 +145,20 @@ export default function TableListScreen({ route, navigation }) {
       {/* Header Banner */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <Text style={styles.headerSubtitle}>Play Area & Seating</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Image
+              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 11,
+                marginRight: 8,
+                backgroundColor: "#FFFFFF"
+              }}
+              resizeMode="contain"
+            />
+            <Text style={styles.headerSubtitle}>Play Area & Seating</Text>
+          </View>
           <View style={styles.availableBadge}>
             <MaterialCommunityIcons name="table-chair" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
             <Text style={styles.availableBadgeText}>{tables.length} Tipe Meja</Text>
