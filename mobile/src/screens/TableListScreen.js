@@ -104,7 +104,7 @@ export default function TableListScreen({ route, navigation }) {
 
         <View style={styles.infoMetaRow}>
           <View style={styles.capacityRow}>
-            <Ionicons name="people-outline" size={16} color={colors.secondary} />
+            <Ionicons name="people-outline" size={16} color={colors.primary} />
             <Text style={styles.capacityText}>Kapasitas: Maks. {item.capacity} Orang</Text>
           </View>
           <Text style={styles.priceText}>{formatRupiah(item.price_per_hour)}/jam</Text>
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 14,
     fontWeight: "bold",
-    color: colors.secondary
+    color: colors.primary
   },
   facilitiesText: {
     fontSize: 13,

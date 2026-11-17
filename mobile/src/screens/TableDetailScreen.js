@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   priceValue: {
     fontSize: 16,
     fontWeight: "bold",
-    color: colors.secondary
+    color: colors.primary
   },
   specsRow: {
     flexDirection: "row",
