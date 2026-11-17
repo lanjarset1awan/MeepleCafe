@@ -145,27 +145,14 @@ export default function TableListScreen({ route, navigation }) {
     <View style={styles.container}>
       {/* Header Banner */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 11,
-                marginRight: 8,
-                backgroundColor: "#FFFFFF"
-              }}
-              resizeMode="contain"
-            />
-            <Text style={styles.headerSubtitle}>Play Area & Seating</Text>
-          </View>
-          <View style={styles.availableBadge}>
-            <MaterialCommunityIcons name="table-chair" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
-            <Text style={styles.availableBadgeText}>{tables.length} Tipe Meja</Text>
-          </View>
+        <View style={styles.headerBrandRow}>
+          <Image
+            source={require("../../assets/Logo-MeepleCafe.jpeg")}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>Pilih Meja Bermain</Text>
         </View>
-        <Text style={styles.headerTitle}>Pilih Meja Bermain</Text>
       </View>
 
       {/* Selected Game Sticky Notification Banner */}
@@ -280,39 +267,24 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 52,
-    paddingBottom: 28,
+    paddingBottom: 22,
     paddingHorizontal: 20
   },
-  headerTop: {
+  headerBrandRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center"
   },
-  headerSubtitle: {
-    fontSize: 11,
-    color: colors.primaryLight,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 1.2
-  },
-  availableBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.primaryDark,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20
-  },
-  availableBadgeText: {
-    color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "bold"
+  headerLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 12,
+    backgroundColor: "#FFFFFF"
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#FFFFFF",
-    marginTop: 4
+    color: "#FFFFFF"
   },
   selectedGameBanner: {
     flexDirection: "row",

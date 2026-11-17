@@ -13,27 +13,14 @@ export default function ProfileScreen() {
     <View style={styles.container}>
       {/* Header Banner Konsisten */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 11,
-                marginRight: 8,
-                backgroundColor: "#FFFFFF"
-              }}
-              resizeMode="contain"
-            />
-            <Text style={styles.headerSubtitle}>User Profile & Info</Text>
-          </View>
-          <View style={styles.totalBadge}>
-            <Ionicons name="school" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
-            <Text style={styles.totalBadgeText}>Teknik Komputer</Text>
-          </View>
+        <View style={styles.headerBrandRow}>
+          <Image
+            source={require("../../assets/Logo-MeepleCafe.jpeg")}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>Profil Saya</Text>
         </View>
-        <Text style={styles.headerTitle}>Profil Saya</Text>
       </View>
 
       {/* Kotakan Profil (Avatar & Nama) - Melayang Menumpuk di Atas Kotak Biru */}
@@ -121,45 +108,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background
   },
-  scrollContent: {
-    paddingBottom: 40
-  },
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 52,
     paddingBottom: 28,
     paddingHorizontal: 20
   },
-  headerTop: {
+  headerBrandRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center"
   },
-  headerSubtitle: {
-    fontSize: 11,
-    color: colors.primaryLight,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 1.2
-  },
-  totalBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.primaryDark,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20
-  },
-  totalBadgeText: {
-    color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "bold"
+  headerLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 12,
+    backgroundColor: "#FFFFFF"
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#FFFFFF",
-    marginTop: 4
+    color: "#FFFFFF"
   },
   profileHeaderCard: {
     backgroundColor: colors.card,
