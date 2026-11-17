@@ -243,9 +243,6 @@ export default function BookingFormScreen({ route, navigation }) {
           ApiService.getTables()
         ]);
         setAllGames(games || []);
-        if (!chosenGame && games && games.length > 0) {
-          setChosenGame(games[0]);
-        }
         setAllTables(tables || []);
         if (tables && tables.length > 0) {
           setChosenTable((prev) => {
@@ -374,6 +371,17 @@ export default function BookingFormScreen({ route, navigation }) {
       return;
     }
 
+    if (!chosenGame) {
+      showDialog({
+        type: "warning",
+        title: "Pilih Board Game",
+        message: "Silakan pilih board game yang ingin Anda mainkan terlebih dahulu sebelum melanjutkan ke pembayaran.",
+        confirmText: "Pilih Game",
+        onConfirm: () => setGamePickerVisible(true)
+      });
+      return;
+    }
+
     if (!customerName.trim()) {
       showDialog({
         type: "warning",
@@ -487,22 +495,34 @@ export default function BookingFormScreen({ route, navigation }) {
         <Text style={styles.sectionHeaderLabel}>Paket Bermain</Text>
 
         <View style={styles.packageRow}>
-          <GameImage
-            uri={chosenGame?.image_url}
-            style={styles.packageGameThumb}
-          />
+          {chosenGame?.image_url ? (
+            <GameImage
+              uri={chosenGame.image_url}
+              style={styles.packageGameThumb}
+            />
+          ) : (
+            <View style={[styles.packageIconBox, { backgroundColor: colors.primaryLight }]}>
+              <Ionicons name="cube-outline" size={22} color={colors.primary} />
+            </View>
+          )}
           <View style={styles.packageInfo}>
             <Text style={styles.packageSub}>Board Game Pilihan</Text>
-            <Text style={styles.packageTitle}>{chosenGame ? chosenGame.title : "Pilih Game"}</Text>
+            <Text style={[styles.packageTitle, !chosenGame && { color: colors.textMuted }]}>
+              {chosenGame ? chosenGame.title : "Belum Memilih Game"}
+            </Text>
             <Text style={styles.packageStock}>
-              Stok Kafe: {chosenGame?.stock || 2} Box Original
+              {chosenGame
+                ? `Stok Kafe: ${chosenGame.stock || 2} Box Original`
+                : "Silakan pilih game yang ingin dimainkan"}
             </Text>
           </View>
           <TouchableOpacity
             style={styles.packageActionBtn}
             onPress={() => setGamePickerVisible(true)}
           >
-            <Text style={styles.packageActionBtnText}>Ganti</Text>
+            <Text style={styles.packageActionBtnText}>
+              {chosenGame ? "Ganti" : "Pilih"}
+            </Text>
           </TouchableOpacity>
         </View>
 
