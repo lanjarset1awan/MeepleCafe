@@ -499,14 +499,13 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.darkBg,
-    paddingTop: 42,
-    paddingBottom: 28,
+    paddingTop: 46,
+    paddingBottom: 36,
     paddingHorizontal: 20
   },
   headerBrandRow: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center"
+    alignItems: "center"
   },
   headerLogo: {
     width: 32,
