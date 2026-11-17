@@ -49,10 +49,6 @@ export default function GameDetailScreen({ route, navigation }) {
     );
   }
 
-  const isAvailable =
-    route.params?.isAvailable !== undefined
-      ? route.params.isAvailable
-      : game.is_available;
   const stockCount =
     route.params?.stock !== undefined ? route.params.stock : (game.stock || 2);
 
@@ -82,30 +78,14 @@ export default function GameDetailScreen({ route, navigation }) {
 
         {/* Floating Header Card */}
         <View style={styles.detailCard}>
-          <View style={styles.badgeRow}>
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>
-                {game.game_categories?.name || "General"}
-              </Text>
-            </View>
-            <View
-              style={[
-                styles.statusBadge,
-                isAvailable ? styles.statusAvailable : styles.statusUnavailable
-              ]}
-            >
-              <Text
-                style={[
-                  styles.statusText,
-                  isAvailable ? styles.statusTextAvailable : styles.statusTextUnavailable
-                ]}
-              >
-                {isAvailable ? "Tersedia di Kafe" : "Sedang Dimainkan"}
-              </Text>
-            </View>
-          </View>
-
           <Text style={styles.title}>{game.title}</Text>
+
+          {/* Kategori (Bubble Kotak Biru dibawah judul, model seperti di katalog) */}
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryBadgeText}>
+              {game.game_categories?.name || "General"}
+            </Text>
+          </View>
 
           {/* Quick Stats Grid */}
           <View style={styles.statsGrid}>
@@ -118,13 +98,13 @@ export default function GameDetailScreen({ route, navigation }) {
             </View>
 
             <View style={styles.statBox}>
-              <Ionicons name="time-outline" size={20} color={colors.secondary} />
+              <Ionicons name="time-outline" size={20} color={colors.primary} />
               <Text style={styles.statValue}>{game.duration_minutes} Mnt</Text>
               <Text style={styles.statLabel}>Durasi</Text>
             </View>
 
             <View style={styles.statBox}>
-              <Ionicons name="cube-outline" size={20} color={colors.primaryDark} />
+              <Ionicons name="cube-outline" size={20} color={colors.primary} />
               <Text style={styles.statValue}>{stockCount} Box</Text>
               <Text style={styles.statLabel}>Stok Kafe</Text>
             </View>
@@ -207,49 +187,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border
   },
-  badgeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10
-  },
-  categoryBadge: {
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 8
-  },
-  categoryBadgeText: {
-    color: colors.primaryDark,
-    fontWeight: "700",
-    fontSize: 12
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8
-  },
-  statusAvailable: {
-    backgroundColor: "#DCFCE7"
-  },
-  statusUnavailable: {
-    backgroundColor: "#FEE2E2"
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "700"
-  },
-  statusTextAvailable: {
-    color: "#166534"
-  },
-  statusTextUnavailable: {
-    color: "#991B1B"
-  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     color: colors.text,
+    marginBottom: 8
+  },
+  categoryBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: "#EBF4FB",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#D0E2F2",
     marginBottom: 16
+  },
+  categoryBadgeText: {
+    color: colors.primaryDark,
+    fontSize: 11,
+    fontWeight: "700"
   },
   statsGrid: {
     flexDirection: "row",
@@ -257,10 +214,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingVertical: 12,
     paddingHorizontal: 6,
-    backgroundColor: colors.background,
+    backgroundColor: "#F4F9FD",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border
+    borderColor: "#D0E2F2"
   },
   statBox: {
     flex: 1,
