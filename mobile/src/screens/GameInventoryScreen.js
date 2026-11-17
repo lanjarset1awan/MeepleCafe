@@ -108,12 +108,27 @@ export default function GameInventoryScreen({ navigation }) {
                 {item.game_categories?.name || "Game"}
               </Text>
             </View>
-            <Text style={styles.rackText}>📍 {rackCode}</Text>
+            <View style={styles.rackBadge}>
+              <Ionicons name="location-sharp" size={11} color={colors.textMuted} style={{ marginRight: 2 }} />
+              <Text style={styles.rackText}>{rackCode}</Text>
+            </View>
           </View>
 
-          <Text style={styles.playerText}>
-            👥 {item.min_players}-{item.max_players} Pemain • ⏱️ {item.duration_minutes} mnt
-          </Text>
+          <View style={styles.metaIconRow}>
+            <View style={styles.metaIconItem}>
+              <Ionicons name="people" size={13} color={colors.primary} style={{ marginRight: 4 }} />
+              <Text style={styles.playerText}>
+                {item.min_players}-{item.max_players} Pemain
+              </Text>
+            </View>
+            <Text style={styles.metaDivider}>•</Text>
+            <View style={styles.metaIconItem}>
+              <Ionicons name="time" size={13} color={colors.secondary} style={{ marginRight: 4 }} />
+              <Text style={styles.playerText}>
+                {item.duration_minutes} mnt
+              </Text>
+            </View>
+          </View>
         </View>
 
         {/* Status & Ketersediaan di Kanan */}
@@ -429,9 +444,27 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.primaryDark
   },
+  rackBadge: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
   rackText: {
     fontSize: 11,
     color: colors.textMuted
+  },
+  metaIconRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2
+  },
+  metaIconItem: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  metaDivider: {
+    marginHorizontal: 6,
+    color: colors.textMuted,
+    fontSize: 10
   },
   playerText: {
     fontSize: 11,

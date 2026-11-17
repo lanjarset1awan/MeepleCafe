@@ -32,11 +32,11 @@ export default function SuccessPaymentModal({
           {/* Header Icon Celebration */}
           <View style={styles.celebrationBadge}>
             <View style={styles.innerBadge}>
-              <Ionicons name="checkmark-done" size={36} color="#FFFFFF" />
+              <Ionicons name="checkmark" size={36} color="#FFFFFF" />
             </View>
           </View>
 
-          <Text style={styles.title}>Pembayaran Berhasil! 🎉</Text>
+          <Text style={styles.title}>Pembayaran Berhasil!</Text>
           <Text style={styles.subtitle}>
             Tiket resmi reservasi MeepleCafe Anda telah diterbitkan.
           </Text>

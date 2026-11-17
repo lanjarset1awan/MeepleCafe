@@ -91,13 +91,13 @@ export default function GameListScreen({ navigation }) {
 
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
-            <Ionicons name="people-outline" size={14} color={colors.textMuted} />
+            <Ionicons name="people" size={14} color={colors.primary} />
             <Text style={styles.metaText}>
               {item.min_players}-{item.max_players} Pemain
             </Text>
           </View>
           <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={14} color={colors.textMuted} />
+            <Ionicons name="time" size={14} color={colors.secondary} />
             <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
           </View>
           <View style={styles.metaItem}>
