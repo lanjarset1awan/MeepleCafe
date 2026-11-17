@@ -1565,8 +1565,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 3
   },
   durationSegmentActive: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.secondary
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
   },
   durationSegmentText: {
     fontSize: 12,
