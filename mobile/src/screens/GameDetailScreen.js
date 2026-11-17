@@ -52,6 +52,17 @@ export default function GameDetailScreen({ route, navigation }) {
   const stockCount =
     route.params?.stock !== undefined ? route.params.stock : (game.stock || 2);
 
+  const getRackCode = (id) => {
+    const num = typeof id === "number" ? id : (parseInt(String(id).replace(/\D/g, ""), 10) || 1);
+    const letters = ["A", "B", "C", "D"];
+    const section = letters[(num - 1) % letters.length];
+    const shelfNum = Math.floor(((num - 1) % 12) / letters.length) + 1;
+    return `Rak ${section}-0${shelfNum}`;
+  };
+
+  const rackCode =
+    route.params?.rackCode || game.rack_code || getRackCode(game.id);
+
   const handleSelectGameAndChooseTable = () => {
     navigation.navigate("TableTab", {
       screen: "TableList",
@@ -80,29 +91,62 @@ export default function GameDetailScreen({ route, navigation }) {
         <View style={styles.detailCard}>
           <Text style={styles.title}>{game.title}</Text>
 
-          {/* Kotakan Meta Info: Kategori (Bubble), Total Pemain, dan Waktu Main */}
+          {/* Kotakan Meta Info: 2 Baris Info Game */}
           <View style={styles.metaBox}>
-            {/* 1. Kategori (Bubble Kotak Biru) */}
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>
-                {game.game_categories?.name || "General"}
-              </Text>
+            {/* Baris 1: Kategori, Jumlah Pemain, dan Waktu Main */}
+            <View style={styles.metaRow}>
+              {/* 1. Kategori (Bubble Kotak Biru) */}
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryBadgeText}>
+                  {game.game_categories?.name || "General"}
+                </Text>
+              </View>
+
+              {/* 2. Jumlah Pemain (Biru) */}
+              <View style={styles.metaItem}>
+                <Ionicons name="people-outline" size={14} color={colors.primary} />
+                <Text style={styles.metaText}>
+                  {game.min_players}-{game.max_players} Pemain
+                </Text>
+              </View>
+
+              {/* 3. Waktu Main (Biru) */}
+              <View style={styles.metaItem}>
+                <Ionicons name="time-outline" size={14} color={colors.primary} />
+                <Text style={styles.metaText}>
+                  {game.duration_minutes} mnt
+                </Text>
+              </View>
             </View>
 
-            {/* 2. Jumlah Pemain (Biru) */}
-            <View style={styles.metaItem}>
-              <Ionicons name="people-outline" size={15} color={colors.primary} />
-              <Text style={styles.metaText}>
-                {game.min_players}-{game.max_players} Pemain
-              </Text>
-            </View>
+            {/* Garis Pemisah Antar Baris */}
+            <View style={styles.metaDivider} />
 
-            {/* 3. Waktu Main (Biru) */}
-            <View style={styles.metaItem}>
-              <Ionicons name="time-outline" size={15} color={colors.primary} />
-              <Text style={styles.metaText}>
-                {game.duration_minutes} mnt
-              </Text>
+            {/* Baris 2: Stok Box, Lokasi Rak, dan Tingkat Kesulitan */}
+            <View style={styles.metaRow}>
+              {/* 1. Ada Berapa Box */}
+              <View style={styles.metaItem}>
+                <Ionicons name="cube-outline" size={14} color={colors.primary} />
+                <Text style={styles.metaText}>
+                  {stockCount} Box
+                </Text>
+              </View>
+
+              {/* 2. Rak Dimana */}
+              <View style={styles.metaItem}>
+                <Ionicons name="location-outline" size={14} color={colors.primary} />
+                <Text style={styles.metaText}>
+                  {rackCode}
+                </Text>
+              </View>
+
+              {/* 3. Kesulitan */}
+              <View style={styles.metaItem}>
+                <Ionicons name="bar-chart-outline" size={14} color={colors.primary} />
+                <Text style={styles.metaText}>
+                  {game.difficulty || "Medium"}
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -174,9 +218,6 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   metaBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     backgroundColor: colors.background,
     paddingVertical: 12,
     paddingHorizontal: 14,
@@ -184,6 +225,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     marginBottom: 20
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  metaDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: 10
   },
   categoryBadge: {
     backgroundColor: colors.primaryLight,
@@ -201,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   metaText: {
-    fontSize: 12.5,
+    fontSize: 12,
     marginLeft: 5,
     color: colors.primary,
     fontWeight: "600"

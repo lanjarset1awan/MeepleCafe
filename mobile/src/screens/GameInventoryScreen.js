@@ -99,7 +99,8 @@ export default function GameInventoryScreen({ navigation }) {
             gameId: item.id,
             title: item.title,
             isAvailable: item.is_available,
-            stock: item.stock
+            stock: item.stock,
+            rackCode: item.rack_code
           })
         }
       >
