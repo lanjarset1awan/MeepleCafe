@@ -341,7 +341,7 @@ export default function MyTicketsScreen({ navigation }) {
             <Ionicons
               name={isExpired ? "hourglass-outline" : "time-outline"}
               size={16}
-              color={isExpired ? colors.textMuted : colors.text}
+              color={isExpired ? colors.textMuted : colors.secondary}
             />
             <Text
               style={[
