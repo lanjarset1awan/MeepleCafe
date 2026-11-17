@@ -43,31 +43,9 @@ export default function ProfileScreen() {
         <Text style={styles.studentName}>Lanjar Setiawan</Text>
         <Text style={styles.studentNim}>NIM: 21120124120023</Text>
         <Text style={styles.studentDept}>Teknik Komputer</Text>
-
-        <View style={styles.tagRow}>
-          <View style={styles.tag}>
-            <Text style={styles.tagText}>Praktikum PPB 2026</Text>
-          </View>
-          <View style={[styles.tag, { backgroundColor: "#DCFCE7" }]}>
-            <Text style={[styles.tagText, { color: "#166534" }]}>React Native + Supabase</Text>
-          </View>
-        </View>
       </View>
 
       <View style={styles.bodyContent}>
-      {/* About Application */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="information-circle" size={20} color={colors.primary} />
-          <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
-        </View>
-        <Text style={styles.aboutText}>
-          MeepleCafe adalah aplikasi mobile terintegrasi untuk pecinta board game. 
-          Aplikasi ini memadukan katalog koleksi permainan fisik terlengkap dengan 
-          sistem pemesanan meja dan ruangan bermain di kafe secara instan.
-        </Text>
-      </View>
-
       {/* Cafe Information */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -208,22 +186,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 1
   },
-  tagRow: {
-    flexDirection: "row",
-    marginTop: 14
-  },
-  tag: {
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginHorizontal: 4
-  },
-  tagText: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.primaryDark
-  },
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
@@ -242,11 +204,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.text,
     marginLeft: 8
-  },
-  aboutText: {
-    fontSize: 13,
-    color: colors.textMuted,
-    lineHeight: 20
   },
   infoItem: {
     flexDirection: "row",
