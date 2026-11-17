@@ -162,12 +162,6 @@ export default function GameDetailScreen({ route, navigation }) {
               <Text style={styles.sectionTitle}>Panduan Tutorial & Aturan Bermain</Text>
             </View>
             <View style={styles.rulesBox}>
-              <Ionicons
-                name="bulb"
-                size={22}
-                color={colors.primaryDark}
-                style={{ marginRight: 10, marginTop: 2 }}
-              />
               <Text style={styles.rulesText}>
                 {game.rules_summary ||
                   "Minta bantuan Game Master kafe kami untuk memandu jalannya permainan langkah demi langkah!"}
