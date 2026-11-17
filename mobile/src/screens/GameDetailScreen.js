@@ -78,52 +78,31 @@ export default function GameDetailScreen({ route, navigation }) {
 
         {/* Floating Header Card */}
         <View style={styles.detailCard}>
-          <View style={styles.badgeRow}>
+          <Text style={styles.title}>{game.title}</Text>
+
+          {/* Meta Info: Kategori (Bubble), Total Pemain, dan Waktu Main */}
+          <View style={styles.metaRow}>
+            {/* 1. Kategori (Bubble Kotak Biru) */}
             <View style={styles.categoryBadge}>
               <Text style={styles.categoryBadgeText}>
                 {game.game_categories?.name || "General"}
               </Text>
             </View>
-          </View>
 
-          <Text style={styles.title}>{game.title}</Text>
-
-          {/* Quick Stats Grid */}
-          <View style={styles.statsGrid}>
-            <View style={styles.statBox}>
-              <Ionicons name="people-outline" size={20} color={colors.primary} />
-              <Text style={styles.statValue}>
-                {game.min_players}-{game.max_players}
+            {/* 2. Jumlah Pemain (Biru) */}
+            <View style={styles.metaItem}>
+              <Ionicons name="people-outline" size={14} color={colors.primary} />
+              <Text style={styles.metaText}>
+                {game.min_players}-{game.max_players} Pemain
               </Text>
-              <Text style={styles.statLabel}>Pemain</Text>
             </View>
 
-            <View style={styles.statBox}>
-              <Ionicons name="time-outline" size={20} color={colors.primary} />
-              <Text style={styles.statValue}>{game.duration_minutes} Mnt</Text>
-              <Text style={styles.statLabel}>Durasi</Text>
-            </View>
-
-            <View style={styles.statBox}>
-              <Ionicons name="cube-outline" size={20} color={colors.primary} />
-              <Text style={styles.statValue}>{stockCount} Box</Text>
-              <Text style={styles.statLabel}>Stok Kafe</Text>
-            </View>
-
-            <View style={styles.statBox}>
-              <Ionicons
-                name="bar-chart-outline"
-                size={20}
-                color={
-                  (game.difficulty || "").toLowerCase() === "easy"
-                    ? colors.success
-                    : (game.difficulty || "").toLowerCase() === "medium"
-                      ? colors.secondary
-                      : colors.accent
-                }
-              />
-              <Text style={styles.statValue}>{game.difficulty}</Text>
-              <Text style={styles.statLabel}>Tingkat</Text>
+            {/* 3. Waktu Main (Biru) */}
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={14} color={colors.primary} />
+              <Text style={styles.metaText}>
+                {game.duration_minutes} mnt
+              </Text>
             </View>
           </View>
 
@@ -188,53 +167,40 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border
   },
-  badgeRow: {
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: 8
+  },
+  metaRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10
+    marginBottom: 20,
+    flexWrap: "wrap"
   },
   categoryBadge: {
     backgroundColor: colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 8
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginRight: 12
   },
   categoryBadgeText: {
-    color: colors.primaryDark,
+    fontSize: 12,
     fontWeight: "700",
-    fontSize: 12
+    color: colors.primaryDark
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: colors.text,
-    marginBottom: 16
-  },
-  statsGrid: {
+  metaItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 6,
-    backgroundColor: colors.primaryLight,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#CCE3F5"
+    alignItems: "center",
+    marginRight: 12
   },
-  statBox: {
-    flex: 1,
-    alignItems: "center"
-  },
-  statValue: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: colors.text,
-    marginTop: 4
-  },
-  statLabel: {
-    fontSize: 10,
-    color: colors.textMuted,
-    marginTop: 2
+  metaText: {
+    fontSize: 12.5,
+    marginLeft: 4,
+    color: colors.primary,
+    fontWeight: "600"
   },
   section: {
     marginBottom: 20
