@@ -98,7 +98,7 @@ export default function GameDetailScreen({ route, navigation }) {
               {/* 1. Kategori */}
               <View style={styles.specCell}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="shapes-outline" size={17} color={colors.primary} />
+                  <Ionicons name="shapes-outline" size={17} color={colors.text} />
                 </View>
                 <Text style={styles.specValue} numberOfLines={1}>
                   {game.game_categories?.name || "General"}
@@ -109,7 +109,7 @@ export default function GameDetailScreen({ route, navigation }) {
               {/* 2. Jumlah Pemain */}
               <View style={styles.specCell}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="people-outline" size={17} color={colors.primary} />
+                  <Ionicons name="people-outline" size={17} color={colors.text} />
                 </View>
                 <Text style={styles.specValue} numberOfLines={1}>
                   {game.min_players}-{game.max_players} Org
@@ -120,7 +120,7 @@ export default function GameDetailScreen({ route, navigation }) {
               {/* 3. Durasi Main */}
               <View style={styles.specCell}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="time-outline" size={17} color={colors.primary} />
+                  <Ionicons name="time-outline" size={17} color={colors.text} />
                 </View>
                 <Text style={styles.specValue} numberOfLines={1}>
                   {game.duration_minutes} Mnt
@@ -137,7 +137,7 @@ export default function GameDetailScreen({ route, navigation }) {
               {/* 4. Stok Box */}
               <View style={styles.specCell}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="cube-outline" size={17} color={colors.primary} />
+                  <Ionicons name="cube-outline" size={17} color={colors.text} />
                 </View>
                 <Text style={styles.specValue} numberOfLines={1}>
                   {stockCount} Box
@@ -148,7 +148,7 @@ export default function GameDetailScreen({ route, navigation }) {
               {/* 5. Posisi Rak */}
               <View style={styles.specCell}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="location-outline" size={17} color={colors.primary} />
+                  <Ionicons name="location-outline" size={17} color={colors.text} />
                 </View>
                 <Text style={styles.specValue} numberOfLines={1}>
                   {rackCode}
@@ -159,7 +159,7 @@ export default function GameDetailScreen({ route, navigation }) {
               {/* 6. Kesulitan */}
               <View style={styles.specCell}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="bar-chart-outline" size={17} color={colors.primary} />
+                  <Ionicons name="bar-chart-outline" size={17} color={colors.text} />
                 </View>
                 <Text style={styles.specValue} numberOfLines={1}>
                   {game.difficulty || "Medium"}
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: "#F1F5F9",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 6
