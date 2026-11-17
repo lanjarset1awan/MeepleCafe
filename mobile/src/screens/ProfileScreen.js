@@ -37,7 +37,10 @@ export default function ProfileScreen() {
 
         <Text style={styles.studentName}>Lanjar Setiawan</Text>
         <Text style={styles.studentNim}>NIM: 21120124120023</Text>
-        <Text style={styles.studentDept}>Teknik Komputer</Text>
+        <View style={styles.deptBadge}>
+          <Ionicons name="school-outline" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+          <Text style={styles.deptText}>Teknik Komputer</Text>
+        </View>
       </View>
 
       <View style={styles.bodyContent}>
@@ -46,14 +49,7 @@ export default function ProfileScreen() {
           <View style={styles.cardHeader}>
             <Image
               source={require("../../assets/Logo-MeepleCafe.jpeg")}
-              style={{
-                width: 26,
-                height: 26,
-                borderRadius: 13,
-                marginRight: 8,
-                borderWidth: 1,
-                borderColor: colors.border
-              }}
+              style={styles.cardLogo}
               resizeMode="contain"
             />
             <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
@@ -68,12 +64,12 @@ export default function ProfileScreen() {
         {/* Cafe Information */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="storefront" size={20} color={colors.secondary} />
+            <Ionicons name="storefront" size={22} color={colors.secondary} />
             <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
           </View>
 
           <View style={styles.infoItem}>
-            <Ionicons name="location-outline" size={18} color={colors.textMuted} />
+            <Ionicons name="location-outline" size={20} color={colors.primary} />
             <View style={styles.infoContent}>
               <Text style={styles.infoHeading}>Alamat Kafe</Text>
               <Text style={styles.infoDesc}>
@@ -83,15 +79,15 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.infoItem}>
-            <Ionicons name="time-outline" size={18} color={colors.textMuted} />
+            <Ionicons name="time-outline" size={20} color={colors.secondary} />
             <View style={styles.infoContent}>
               <Text style={styles.infoHeading}>Jam Buka</Text>
               <Text style={styles.infoDesc}>Setiap Hari: 10.00 – 21.00 WIB</Text>
             </View>
           </View>
 
-          <View style={styles.infoItem}>
-            <Ionicons name="call-outline" size={18} color={colors.textMuted} />
+          <View style={[styles.infoItem, { marginBottom: 0 }]}>
+            <Ionicons name="call-outline" size={20} color={colors.success} />
             <View style={styles.infoContent}>
               <Text style={styles.infoHeading}>Kontak Layanan</Text>
               <Text style={styles.infoDesc}>WhatsApp: +62 812-3456-7890</Text>
@@ -132,12 +128,13 @@ const styles = StyleSheet.create({
   },
   profileHeaderCard: {
     backgroundColor: colors.card,
-    borderRadius: 14,
-    padding: 24,
+    borderRadius: 16,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
     alignItems: "center",
     marginHorizontal: 16,
     marginTop: -16,
-    marginBottom: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 3,
@@ -148,60 +145,84 @@ const styles = StyleSheet.create({
     zIndex: 10
   },
   bodyContent: {
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
+    flex: 1,
+    justifyContent: "space-between",
+    paddingBottom: 16
   },
   avatarContainer: {
     position: "relative",
-    marginBottom: 12
+    marginBottom: 10
   },
   avatarImage: {
-    width: 86,
-    height: 86,
-    borderRadius: 43,
-    borderWidth: 3,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 3.5,
     borderColor: colors.primary
   },
   onlineBadge: {
     position: "absolute",
     bottom: 2,
     right: 4,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     backgroundColor: colors.success,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: "#FFFFFF"
   },
   studentName: {
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: "bold",
     color: colors.text
   },
   studentNim: {
-    fontSize: 13,
+    fontSize: 13.5,
     color: colors.textMuted,
     marginTop: 2
   },
-  studentDept: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 1
+  deptBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 6
+  },
+  deptText: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    color: colors.primaryDark
   },
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: 16,
-    marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.border
+    borderColor: colors.border,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12
+    marginBottom: 10
+  },
+  cardLogo: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: colors.border
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize: 15.5,
     fontWeight: "bold",
     color: colors.text,
     marginLeft: 8
@@ -214,14 +235,14 @@ const styles = StyleSheet.create({
   infoItem: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginBottom: 12
+    marginBottom: 10
   },
   infoContent: {
     marginLeft: 10,
     flex: 1
   },
   infoHeading: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: "700",
     color: colors.text
   },
