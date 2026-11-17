@@ -46,6 +46,19 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.bodyContent}>
+      {/* About Application */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Ionicons name="information-circle" size={20} color={colors.primary} />
+          <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
+        </View>
+        <Text style={styles.aboutText}>
+          MeepleCafe adalah aplikasi mobile terintegrasi untuk pecinta board game. 
+          Aplikasi ini memadukan katalog koleksi permainan fisik terlengkap dengan 
+          sistem pemesanan meja dan ruangan bermain di kafe secara instan.
+        </Text>
+      </View>
+
       {/* Cafe Information */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -204,6 +217,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.text,
     marginLeft: 8
+  },
+  aboutText: {
+    fontSize: 13,
+    color: colors.textMuted,
+    lineHeight: 20
   },
   infoItem: {
     flexDirection: "row",
