@@ -22,7 +22,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "backendUrl": "http://10.34.2.135:3000"
+      "backendUrl": "https://meeple-cafe-backend.vercel.app"
     },
     "plugins": [
       "expo-image",
