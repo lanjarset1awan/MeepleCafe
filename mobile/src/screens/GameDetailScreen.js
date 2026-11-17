@@ -80,15 +80,16 @@ export default function GameDetailScreen({ route, navigation }) {
         <View style={styles.detailCard}>
           <Text style={styles.title}>{game.title}</Text>
 
-          {/* Kategori (Bubble Kotak Biru dibawah judul, model seperti di katalog) */}
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryBadgeText}>
-              {game.game_categories?.name || "General"}
-            </Text>
-          </View>
-
           {/* Quick Stats Grid */}
           <View style={styles.statsGrid}>
+            <View style={styles.statBox}>
+              <Ionicons name="shapes-outline" size={20} color={colors.primary} />
+              <Text style={styles.statValue} numberOfLines={1}>
+                {game.game_categories?.name || "General"}
+              </Text>
+              <Text style={styles.statLabel}>Kategori</Text>
+            </View>
+
             <View style={styles.statBox}>
               <Ionicons name="people-outline" size={20} color={colors.primary} />
               <Text style={styles.statValue}>
@@ -107,22 +108,6 @@ export default function GameDetailScreen({ route, navigation }) {
               <Ionicons name="cube-outline" size={20} color={colors.primary} />
               <Text style={styles.statValue}>{stockCount} Box</Text>
               <Text style={styles.statLabel}>Stok Kafe</Text>
-            </View>
-
-            <View style={styles.statBox}>
-              <Ionicons
-                name="bar-chart-outline"
-                size={20}
-                color={
-                  (game.difficulty || "").toLowerCase() === "easy"
-                    ? colors.success
-                    : (game.difficulty || "").toLowerCase() === "medium"
-                      ? colors.secondary
-                      : colors.accent
-                }
-              />
-              <Text style={styles.statValue}>{game.difficulty}</Text>
-              <Text style={styles.statLabel}>Tingkat</Text>
             </View>
           </View>
 
@@ -191,22 +176,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: colors.text,
-    marginBottom: 8
-  },
-  categoryBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#EBF4FB",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#D0E2F2",
     marginBottom: 16
-  },
-  categoryBadgeText: {
-    color: colors.primaryDark,
-    fontSize: 11,
-    fontWeight: "700"
   },
   statsGrid: {
     flexDirection: "row",
@@ -224,15 +194,17 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   statValue: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "bold",
     color: colors.text,
-    marginTop: 4
+    marginTop: 4,
+    textAlign: "center"
   },
   statLabel: {
     fontSize: 10,
     color: colors.textMuted,
-    marginTop: 2
+    marginTop: 2,
+    textAlign: "center"
   },
   section: {
     marginBottom: 20
