@@ -1232,15 +1232,20 @@ export default function BookingFormScreen({ route, navigation }) {
                         {
                           backgroundColor: colors.primaryLight,
                           justifyContent: "center",
-                          alignItems: "center"
+                          alignItems: "center",
+                          overflow: "hidden"
                         }
                       ]}
                     >
-                      <Ionicons name="restaurant" size={20} color={colors.primary} />
+                      {item.image_url ? (
+                        <GameImage uri={item.image_url} style={styles.pickerGameThumb} />
+                      ) : (
+                        <Ionicons name="restaurant" size={20} color={colors.primary} />
+                      )}
                     </View>
                     <View style={{ marginLeft: 12, flex: 1 }}>
                       <Text style={styles.gamePickerName}>
-                        {item.table_type} ({item.table_number})
+                        {item.table_type} (Meja {item.table_number})
                       </Text>
                       <Text style={styles.gamePickerDesc}>
                         Kapasitas Maksimal {item.capacity} Orang • {formatRupiah(item.price_per_hour || 30000)}/jam
