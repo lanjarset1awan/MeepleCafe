@@ -360,7 +360,7 @@ export default function MyTicketsScreen({ navigation }) {
               <Text style={styles.paymentTagTotalText}>Total: {displayTotal}</Text>
             </View>
             <View style={styles.paymentTagMethod}>
-              <Ionicons name="checkmark-circle" size={14} color="#C2410C" />
+              <Ionicons name="checkmark-circle" size={14} color="#166534" />
               <Text style={styles.paymentTagMethodText}>{displayMethod} (Lunas)</Text>
             </View>
           </View>
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
   statusBadgeActive: {
-    backgroundColor: "#FFEDD5"
+    backgroundColor: "#DCFCE7"
   },
   statusBadgeExpired: {
     backgroundColor: "#F1F5F9"
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   statusTextActive: {
-    color: "#C2410C"
+    color: "#166534"
   },
   statusTextExpired: {
     color: colors.textMuted
@@ -720,7 +720,7 @@ const styles = StyleSheet.create({
   gameBannerTitle: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#78350F",
+    color: colors.text,
     flex: 1
   },
   gameBannerTitleExpired: {
@@ -794,7 +794,7 @@ const styles = StyleSheet.create({
   paymentTagMethod: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFEDD5",
+    backgroundColor: "#DCFCE7",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
   paymentTagMethodText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#C2410C",
+    color: "#166534",
     marginLeft: 5
   },
   centerContainer: {

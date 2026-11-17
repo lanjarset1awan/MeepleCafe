@@ -62,14 +62,23 @@ function getFormattedDate(daysOffset = 0) {
 }
 
 export default function BookingFormScreen({ route, navigation }) {
-  const {
-    tableId,
-    tableNumber,
-    tableType,
-    pricePerHour = 30000,
-    capacity = 4,
-    selectedGame
-  } = route.params;
+  const [chosenTable, setChosenTable] = useState({
+    id: route.params.tableId,
+    table_number: route.params.tableNumber,
+    table_type: route.params.tableType,
+    price_per_hour: route.params.pricePerHour || 30000,
+    capacity: route.params.capacity || 4,
+    image_url: route.params.tableImage || null
+  });
+  const [allTables, setAllTables] = useState([]);
+  const [tablePickerVisible, setTablePickerVisible] = useState(false);
+
+  const tableId = chosenTable.id;
+  const tableNumber = chosenTable.table_number;
+  const tableType = chosenTable.table_type;
+  const capacity = chosenTable.capacity;
+  const pricePerHour = chosenTable.price_per_hour;
+  const selectedGame = route.params.selectedGame;
 
   const todayStr = useMemo(() => getFormattedDate(0), []);
   const currentNow = new Date();
@@ -225,20 +234,24 @@ export default function BookingFormScreen({ route, navigation }) {
     }).format(val);
   };
 
-  // 1. Load daftar game untuk opsi ganti game
+  // 1. Load daftar game & meja untuk opsi ganti
   useEffect(() => {
-    async function loadAllGames() {
+    async function loadAllGamesAndTables() {
       try {
-        const games = await ApiService.getGames();
+        const [games, tables] = await Promise.all([
+          ApiService.getGames(),
+          ApiService.getTables()
+        ]);
         setAllGames(games || []);
         if (!chosenGame && games && games.length > 0) {
           setChosenGame(games[0]);
         }
+        setAllTables(tables || []);
       } catch (err) {
         console.error(err);
       }
     }
-    loadAllGames();
+    loadAllGamesAndTables();
   }, []);
 
   // 2. Ambil seluruh data reservasi dari database untuk cek bentrok jam & stok
@@ -500,6 +513,12 @@ export default function BookingFormScreen({ route, navigation }) {
               Kapasitas {capacity} Orang • {formatRupiah(numericPricePerHour)} / jam
             </Text>
           </View>
+          <TouchableOpacity
+            style={styles.packageActionBtn}
+            onPress={() => setTablePickerVisible(true)}
+          >
+            <Text style={styles.packageActionBtnText}>Ganti</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -1172,6 +1191,67 @@ export default function BookingFormScreen({ route, navigation }) {
                   )}
                 </TouchableOpacity>
               )}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Picker untuk Ganti Meja Kafe */}
+      <Modal visible={tablePickerVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.pickerModalCard}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Pilih Meja Kafe</Text>
+              <TouchableOpacity onPress={() => setTablePickerVisible(false)}>
+                <Ionicons name="close" size={24} color={colors.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={allTables}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={({ item }) => {
+                const isSelected = chosenTable?.id === item.id;
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.gamePickerRow,
+                      isSelected && styles.gamePickerRowActive
+                    ]}
+                    onPress={() => {
+                      setChosenTable(item);
+                      if (parseInt(guestCount, 10) > item.capacity) {
+                        setGuestCount(String(item.capacity));
+                      }
+                      setTablePickerVisible(false);
+                    }}
+                  >
+                    <View
+                      style={[
+                        styles.pickerGameThumb,
+                        {
+                          backgroundColor: colors.primaryLight,
+                          justifyContent: "center",
+                          alignItems: "center"
+                        }
+                      ]}
+                    >
+                      <Ionicons name="restaurant" size={20} color={colors.primary} />
+                    </View>
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <Text style={styles.gamePickerName}>
+                        {item.table_type} ({item.table_number})
+                      </Text>
+                      <Text style={styles.gamePickerDesc}>
+                        Kapasitas Maksimal {item.capacity} Orang • {formatRupiah(item.price_per_hour || 30000)}/jam
+                      </Text>
+                    </View>
+                    {isSelected && (
+                      <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
             />
           </View>
         </View>
