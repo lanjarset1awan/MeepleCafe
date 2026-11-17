@@ -74,14 +74,25 @@ export default function GameListScreen({ navigation }) {
           <View
             style={[
               styles.difficultyBadge,
-              item.difficulty === "Easy"
+              (item.difficulty || "").toLowerCase() === "easy"
                 ? styles.badgeEasy
-                : item.difficulty === "Medium"
+                : (item.difficulty || "").toLowerCase() === "medium"
                   ? styles.badgeMedium
                   : styles.badgeHard
             ]}
           >
-            <Text style={styles.difficultyBadgeText}>{item.difficulty}</Text>
+            <Text
+              style={[
+                styles.difficultyBadgeText,
+                (item.difficulty || "").toLowerCase() === "easy"
+                  ? styles.badgeTextEasy
+                  : (item.difficulty || "").toLowerCase() === "medium"
+                    ? styles.badgeTextMedium
+                    : styles.badgeTextHard
+              ]}
+            >
+              {item.difficulty}
+            </Text>
           </View>
         </View>
 
@@ -367,18 +378,26 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   badgeEasy: {
-    backgroundColor: "#F1F5F9"
+    backgroundColor: "#DCFCE7"
   },
   badgeMedium: {
-    backgroundColor: "#F1F5F9"
+    backgroundColor: colors.secondaryLight
   },
   badgeHard: {
-    backgroundColor: "#F1F5F9"
+    backgroundColor: "#FFE4E6"
   },
   difficultyBadgeText: {
     fontSize: 11,
-    fontWeight: "700",
+    fontWeight: "700"
+  },
+  badgeTextEasy: {
+    color: colors.success
+  },
+  badgeTextMedium: {
     color: colors.secondary
+  },
+  badgeTextHard: {
+    color: colors.accent
   },
   gameTitle: {
     fontSize: 18,

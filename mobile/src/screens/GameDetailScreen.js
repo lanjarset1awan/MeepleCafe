@@ -125,7 +125,17 @@ export default function GameDetailScreen({ route, navigation }) {
             </View>
 
             <View style={styles.statBox}>
-              <Ionicons name="bar-chart-outline" size={20} color={colors.accent} />
+              <Ionicons
+                name="bar-chart-outline"
+                size={20}
+                color={
+                  (game.difficulty || "").toLowerCase() === "easy"
+                    ? colors.success
+                    : (game.difficulty || "").toLowerCase() === "medium"
+                      ? colors.secondary
+                      : colors.accent
+                }
+              />
               <Text style={styles.statValue}>{game.difficulty}</Text>
               <Text style={styles.statLabel}>Tingkat</Text>
             </View>
