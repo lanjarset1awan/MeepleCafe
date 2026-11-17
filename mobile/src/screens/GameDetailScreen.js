@@ -147,12 +147,6 @@ export default function GameDetailScreen({ route, navigation }) {
             <Text style={styles.sectionBody}>
               {game.description || "Tidak ada deskripsi khusus untuk game ini."}
             </Text>
-            <View style={styles.descStockBox}>
-              <Ionicons name="information-circle" size={16} color={colors.secondary} />
-              <Text style={styles.descStockText}>
-                Stok tersedia di MeepleCafe: {stockCount} set box lengkap siap dimainkan bersama teman atau keluarga.
-              </Text>
-            </View>
           </View>
 
           {/* Tutorial / Rangkuman Aturan Main */}
@@ -295,21 +289,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textMuted,
     lineHeight: 22
-  },
-  descStockBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F0FDFA",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 10
-  },
-  descStockText: {
-    fontSize: 12,
-    color: "#0F766E",
-    marginLeft: 6,
-    fontWeight: "500",
-    flex: 1
   },
   rulesBox: {
     flexDirection: "row",
