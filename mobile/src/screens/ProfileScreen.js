@@ -19,7 +19,7 @@ export default function ProfileScreen() {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>Profil Saya</Text>
+          <Text style={styles.headerTitle}>Profil Pengguna</Text>
         </View>
       </View>
 
@@ -110,13 +110,14 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.darkBg,
-    paddingTop: 52,
-    paddingBottom: 28,
+    paddingTop: 42,
+    paddingBottom: 30,
     paddingHorizontal: 20
   },
   headerBrandRow: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    justifyContent: "center"
   },
   headerLogo: {
     width: 32,

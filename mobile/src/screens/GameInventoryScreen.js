@@ -273,13 +273,14 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.darkBg,
-    paddingTop: 52,
-    paddingBottom: 26,
+    paddingTop: 42,
+    paddingBottom: 30,
     paddingHorizontal: 20
   },
   headerBrandRow: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    justifyContent: "center"
   },
   headerLogo: {
     width: 32,

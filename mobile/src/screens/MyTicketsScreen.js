@@ -380,7 +380,7 @@ export default function MyTicketsScreen({ navigation }) {
             style={styles.headerLogo}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>Tiket Reservasi Saya</Text>
+          <Text style={styles.headerTitle}>Tiket Reservasi</Text>
         </View>
       </View>
 
@@ -499,13 +499,14 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.darkBg,
-    paddingTop: 52,
-    paddingBottom: 26,
+    paddingTop: 42,
+    paddingBottom: 28,
     paddingHorizontal: 20
   },
   headerBrandRow: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    justifyContent: "center"
   },
   headerLogo: {
     width: 32,
