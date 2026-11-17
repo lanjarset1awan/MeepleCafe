@@ -79,7 +79,7 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.infoItem}>
-            <Ionicons name="time-outline" size={20} color={colors.secondary} />
+            <Ionicons name="time-outline" size={20} color={colors.primary} />
             <View style={styles.infoContent}>
               <Text style={styles.infoHeading}>Jam Buka</Text>
               <Text style={styles.infoDesc}>Setiap Hari: 10.00 – 21.00 WIB</Text>
@@ -87,7 +87,7 @@ export default function ProfileScreen() {
           </View>
 
           <View style={[styles.infoItem, { marginBottom: 0 }]}>
-            <Ionicons name="call-outline" size={20} color={colors.success} />
+            <Ionicons name="call-outline" size={20} color={colors.primary} />
             <View style={styles.infoContent}>
               <Text style={styles.infoHeading}>Kontak Layanan</Text>
               <Text style={styles.infoDesc}>WhatsApp: +62 812-3456-7890</Text>

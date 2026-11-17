@@ -69,6 +69,8 @@ export default function TableDetailScreen({ route, navigation }) {
         <GameImage uri={table.image_url} style={styles.bannerImage} />
 
         <View style={styles.detailCard}>
+          <Text style={styles.title}>{table.table_type}</Text>
+
           <View style={styles.topRow}>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>Nomor Meja: {table.table_number}</Text>
@@ -77,8 +79,6 @@ export default function TableDetailScreen({ route, navigation }) {
               <Text style={styles.activeText}>Siap Digunakan</Text>
             </View>
           </View>
-
-          <Text style={styles.title}>{table.table_type}</Text>
 
           <View style={styles.priceContainer}>
             <Text style={styles.priceLabel}>Biaya Sewa Meja:</Text>
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8
+    marginBottom: 16
   },
   badge: {
     backgroundColor: colors.primaryLight,
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     color: colors.text,
-    marginBottom: 12
+    marginBottom: 8
   },
   priceContainer: {
     backgroundColor: "#F1F5F9",

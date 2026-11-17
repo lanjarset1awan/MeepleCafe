@@ -91,6 +91,8 @@ export default function TableListScreen({ route, navigation }) {
     <View style={styles.card}>
       <GameImage uri={item.image_url} style={styles.cardImage} />
       <View style={styles.cardContent}>
+        <Text style={styles.tableType}>{item.table_type}</Text>
+
         <View style={styles.cardTopRow}>
           <View style={styles.tableNumberBadge}>
             <Text style={styles.tableNumberText}>Meja {item.table_number}</Text>
@@ -99,8 +101,6 @@ export default function TableListScreen({ route, navigation }) {
             <Text style={styles.statusPillText}>Tersedia</Text>
           </View>
         </View>
-
-        <Text style={styles.tableType}>{item.table_type}</Text>
 
         <View style={styles.infoMetaRow}>
           <View style={styles.capacityRow}>
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8
+    marginBottom: 10
   },
   tableNumberBadge: {
     backgroundColor: colors.primaryLight,
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: colors.text,
-    marginBottom: 6
+    marginBottom: 8
   },
   infoMetaRow: {
     flexDirection: "row",
