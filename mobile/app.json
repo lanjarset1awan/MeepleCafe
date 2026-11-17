@@ -6,6 +6,11 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "ios": {
       "supportsTablet": true
     },
@@ -14,6 +19,11 @@
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "splash": {
+        "image": "./assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#FFFFFF"
       }
     },
     "web": {
@@ -27,7 +37,15 @@
     },
     "plugins": [
       "expo-image",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200
+        }
+      ]
     ]
   }
 }
