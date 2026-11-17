@@ -378,6 +378,8 @@ const styles = StyleSheet.create({
   },
   filterTabsRow: {
     flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 16,
     marginTop: 10,
     marginBottom: 6
@@ -389,7 +391,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
-    marginRight: 8
+    marginHorizontal: 4
   },
   tabBtnActive: {
     backgroundColor: colors.primary,
