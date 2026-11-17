@@ -91,7 +91,7 @@ export default function GameListScreen({ navigation }) {
 
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
-            <Ionicons name="people" size={14} color={colors.primary} />
+            <Ionicons name="people-outline" size={14} color={colors.primary} />
             <Text style={styles.metaText}>
               {item.min_players}-{item.max_players} Pemain
             </Text>
@@ -140,7 +140,7 @@ export default function GameListScreen({ navigation }) {
             <Text style={styles.headerSubtitle}>MeepleCafe Library</Text>
           </View>
           <View style={styles.totalBadge}>
-            <Ionicons name="cube" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <Ionicons name="cube-outline" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
             <Text style={styles.totalBadgeText}>
               {games.length} Board Game Tersedia
             </Text>

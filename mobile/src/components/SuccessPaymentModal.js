@@ -67,7 +67,7 @@ export default function SuccessPaymentModal({
                   {gameImage ? (
                     <GameImage uri={gameImage} style={styles.modalGameThumb} />
                   ) : (
-                    <Ionicons name="cube" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                    <Ionicons name="cube-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
                   )}
                   <Text style={styles.detailValue} numberOfLines={1}>
                     {gameTitle || "General Play"}

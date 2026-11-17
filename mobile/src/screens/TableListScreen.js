@@ -103,7 +103,7 @@ export default function TableListScreen({ route, navigation }) {
 
         <View style={styles.infoMetaRow}>
           <View style={styles.capacityRow}>
-            <Ionicons name="people" size={16} color={colors.secondary} />
+            <Ionicons name="people-outline" size={16} color={colors.secondary} />
             <Text style={styles.capacityText}>Kapasitas: Maks. {item.capacity} Orang</Text>
           </View>
           <Text style={styles.priceText}>{formatRupiah(item.price_per_hour)}/jam</Text>

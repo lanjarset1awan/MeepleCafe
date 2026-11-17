@@ -116,7 +116,7 @@ export default function GameInventoryScreen({ navigation }) {
 
           <View style={styles.metaIconRow}>
             <View style={styles.metaIconItem}>
-              <Ionicons name="people" size={13} color={colors.primary} style={{ marginRight: 4 }} />
+              <Ionicons name="people-outline" size={13} color={colors.primary} style={{ marginRight: 4 }} />
               <Text style={styles.playerText}>
                 {item.min_players}-{item.max_players} Pemain
               </Text>

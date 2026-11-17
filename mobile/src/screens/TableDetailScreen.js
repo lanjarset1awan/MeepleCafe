@@ -87,7 +87,7 @@ export default function TableDetailScreen({ route, navigation }) {
 
           <View style={styles.specsRow}>
             <View style={styles.specBox}>
-              <Ionicons name="people" size={24} color={colors.primary} />
+              <Ionicons name="people-outline" size={24} color={colors.primary} />
               <Text style={styles.specTitle}>Kapasitas</Text>
               <Text style={styles.specSub}>Maks. {table.capacity} Orang</Text>
             </View>

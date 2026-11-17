@@ -105,7 +105,7 @@ export default function GameDetailScreen({ route, navigation }) {
           {/* Quick Stats Grid */}
           <View style={styles.statsGrid}>
             <View style={styles.statBox}>
-              <Ionicons name="people" size={20} color={colors.primary} />
+              <Ionicons name="people-outline" size={20} color={colors.primary} />
               <Text style={styles.statValue}>
                 {game.min_players}-{game.max_players}
               </Text>
@@ -119,13 +119,13 @@ export default function GameDetailScreen({ route, navigation }) {
             </View>
 
             <View style={styles.statBox}>
-              <Ionicons name="cube" size={20} color={colors.primaryDark} />
+              <Ionicons name="cube-outline" size={20} color={colors.primaryDark} />
               <Text style={styles.statValue}>{stockCount} Box</Text>
               <Text style={styles.statLabel}>Stok Kafe</Text>
             </View>
 
             <View style={styles.statBox}>
-              <Ionicons name="bar-chart" size={20} color={colors.accent} />
+              <Ionicons name="bar-chart-outline" size={20} color={colors.accent} />
               <Text style={styles.statValue}>{game.difficulty}</Text>
               <Text style={styles.statLabel}>Tingkat</Text>
             </View>
