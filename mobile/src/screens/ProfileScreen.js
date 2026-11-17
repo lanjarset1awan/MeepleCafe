@@ -4,19 +4,12 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  Image,
-  TouchableOpacity,
-  Linking
+  Image
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
-import { DEFAULT_BACKEND_URL } from "../api/config";
 
 export default function ProfileScreen() {
-  const openGitHub = () => {
-    Linking.openURL("https://github.com");
-  };
-
   return (
     <ScrollView
       style={styles.container}
@@ -107,40 +100,6 @@ export default function ProfileScreen() {
             <Text style={styles.infoDesc}>WhatsApp: +62 812-3456-7890</Text>
           </View>
         </View>
-      </View>
-
-      {/* Technical Spec & Status */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="code-slash" size={20} color={colors.darkBg} />
-          <Text style={styles.cardTitle}>Spesifikasi Teknis Tugas Akhir</Text>
-        </View>
-
-        <View style={styles.specRow}>
-          <Text style={styles.specKey}>Arsitektur Backend</Text>
-          <Text style={styles.specVal}>Node.js + Express (MVC)</Text>
-        </View>
-        <View style={styles.specRow}>
-          <Text style={styles.specKey}>Database</Text>
-          <Text style={styles.specVal}>Supabase PostgreSQL</Text>
-        </View>
-        <View style={styles.specRow}>
-          <Text style={styles.specKey}>Frontend Framework</Text>
-          <Text style={styles.specVal}>React Native Expo</Text>
-        </View>
-        <View style={styles.specRow}>
-          <Text style={styles.specKey}>Navigasi</Text>
-          <Text style={styles.specVal}>5 Tab Bottom Bar & Native Stack</Text>
-        </View>
-        <View style={styles.specRow}>
-          <Text style={styles.specKey}>Total Halaman</Text>
-          <Text style={styles.specVal}>8 Halaman Terintegrasi</Text>
-        </View>
-
-        <TouchableOpacity style={styles.githubButton} onPress={openGitHub} activeOpacity={0.85}>
-          <Ionicons name="logo-github" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-          <Text style={styles.githubText}>Lihat Source Code di GitHub</Text>
-        </TouchableOpacity>
       </View>
       </View>
     </ScrollView>
@@ -308,36 +267,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 2,
     lineHeight: 18
-  },
-  specRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 7,
-    borderBottomWidth: 1,
-    borderColor: colors.border
-  },
-  specKey: {
-    fontSize: 12,
-    color: colors.textMuted
-  },
-  specVal: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.text
-  },
-  githubButton: {
-    flexDirection: "row",
-    backgroundColor: colors.darkBg,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginTop: 16
-  },
-  githubText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "bold"
   }
 });
 
