@@ -49,7 +49,12 @@ export default function GameDetailScreen({ route, navigation }) {
     );
   }
 
-  const stockCount = game.stock || 2; // Default 2 box fisik di kafe
+  const isAvailable =
+    route.params?.isAvailable !== undefined
+      ? route.params.isAvailable
+      : game.is_available;
+  const stockCount =
+    route.params?.stock !== undefined ? route.params.stock : (game.stock || 2);
 
   const handleSelectGameAndChooseTable = () => {
     navigation.navigate("TableTab", {
@@ -86,16 +91,16 @@ export default function GameDetailScreen({ route, navigation }) {
             <View
               style={[
                 styles.statusBadge,
-                game.is_available ? styles.statusAvailable : styles.statusUnavailable
+                isAvailable ? styles.statusAvailable : styles.statusUnavailable
               ]}
             >
               <Text
                 style={[
                   styles.statusText,
-                  game.is_available ? styles.statusTextAvailable : styles.statusTextUnavailable
+                  isAvailable ? styles.statusTextAvailable : styles.statusTextUnavailable
                 ]}
               >
-                {game.is_available ? "Tersedia di Kafe" : "Sedang Dimainkan"}
+                {isAvailable ? "Tersedia di Kafe" : "Sedang Dimainkan"}
               </Text>
             </View>
           </View>

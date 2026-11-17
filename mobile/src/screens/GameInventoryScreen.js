@@ -26,7 +26,22 @@ export default function GameInventoryScreen({ navigation }) {
     try {
       setLoading(true);
       const data = await ApiService.getGames();
-      setGames(data || []);
+      const enriched = (data || []).map((game, originalIndex) => {
+        const isInUse = originalIndex === 3 || originalIndex === 7 || game.is_available === false;
+        const isAvailable = !isInUse;
+        const stockCount = isAvailable ? (originalIndex % 3) + 1 : 0;
+        const rackCode = getRackCode(originalIndex);
+
+        return {
+          ...game,
+          originalIndex,
+          is_in_use: isInUse,
+          is_available: isAvailable,
+          stock: stockCount,
+          rack_code: rackCode
+        };
+      });
+      setGames(enriched);
     } catch (err) {
       console.error(err);
     } finally {
@@ -44,13 +59,6 @@ export default function GameInventoryScreen({ navigation }) {
     loadGames();
   };
 
-  // Generate deterministic stock info for inventory display
-  const getGameStock = (index, isAvailable) => {
-    if (!isAvailable) return 0;
-    // Stock varies between 1 to 3 boxes
-    return (index % 3) + 1;
-  };
-
   const getRackCode = (index) => {
     const letters = ["A", "B", "C", "D"];
     const section = letters[index % letters.length];
@@ -58,39 +66,41 @@ export default function GameInventoryScreen({ navigation }) {
     return `Rak ${section}-0${shelfNum}`;
   };
 
-  const filteredGames = games.filter((item, index) => {
+  const filteredGames = games.filter((item) => {
     const matchesSearch = item.title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
 
-    // Simulate one or two games in-use for realistic cafe inventory demo
-    const isInUse = index === 3 || index === 7;
-    const isAvailable = !isInUse && item.is_available;
-
     if (filterAvailability === "available") {
-      return matchesSearch && isAvailable;
+      return matchesSearch && item.is_available;
     }
     if (filterAvailability === "in_use") {
-      return matchesSearch && isInUse;
+      return matchesSearch && item.is_in_use;
     }
     return matchesSearch;
   });
 
   const totalTitles = games.length;
-  const availableTitles = games.filter((_, idx) => idx !== 3 && idx !== 7).length;
+  const availableTitles = games.filter((item) => item.is_available).length;
+  const inUseTitles = games.filter((item) => item.is_in_use).length;
 
-  const renderCompactItem = ({ item, index }) => {
-    const isInUse = index === 3 || index === 7;
-    const isAvailable = !isInUse && item.is_available;
-    const stockCount = getGameStock(index, isAvailable);
-    const rackCode = getRackCode(index);
+  const renderCompactItem = ({ item }) => {
+    const isInUse = item.is_in_use;
+    const isAvailable = item.is_available;
+    const stockCount = item.stock;
+    const rackCode = item.rack_code;
 
     return (
       <TouchableOpacity
         style={styles.compactRow}
         activeOpacity={0.7}
         onPress={() =>
-          navigation.navigate("GameDetail", { gameId: item.id, title: item.title })
+          navigation.navigate("GameDetail", {
+            gameId: item.id,
+            title: item.title,
+            isAvailable: item.is_available,
+            stock: item.stock
+          })
         }
       >
         {/* Thumbnail Small */}
@@ -183,7 +193,7 @@ export default function GameInventoryScreen({ navigation }) {
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statCol}>
-          <Text style={[styles.statNum, { color: colors.secondary }]}>2</Text>
+          <Text style={[styles.statNum, { color: colors.secondary }]}>{inUseTitles}</Text>
           <Text style={styles.statLbl}>Sedang Main</Text>
         </View>
       </View>
@@ -230,7 +240,7 @@ export default function GameInventoryScreen({ navigation }) {
           onPress={() => setFilterAvailability("in_use")}
         >
           <Text style={[styles.tabBtnText, filterAvailability === "in_use" && styles.tabBtnTextActive]}>
-            Sedang Main (2)
+            Sedang Main ({inUseTitles})
           </Text>
         </TouchableOpacity>
       </View>
