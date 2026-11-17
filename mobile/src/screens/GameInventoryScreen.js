@@ -123,7 +123,7 @@ export default function GameInventoryScreen({ navigation }) {
             </View>
             <Text style={styles.metaDivider}>•</Text>
             <View style={styles.metaIconItem}>
-              <Ionicons name="time" size={13} color={colors.secondary} style={{ marginRight: 4 }} />
+              <Ionicons name="time-outline" size={13} color={colors.secondary} style={{ marginRight: 4 }} />
               <Text style={styles.playerText}>
                 {item.duration_minutes} mnt
               </Text>

@@ -113,7 +113,7 @@ export default function GameDetailScreen({ route, navigation }) {
             </View>
 
             <View style={styles.statBox}>
-              <Ionicons name="time" size={20} color={colors.secondary} />
+              <Ionicons name="time-outline" size={20} color={colors.secondary} />
               <Text style={styles.statValue}>{game.duration_minutes} Mnt</Text>
               <Text style={styles.statLabel}>Durasi</Text>
             </View>

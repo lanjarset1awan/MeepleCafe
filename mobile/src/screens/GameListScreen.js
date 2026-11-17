@@ -97,7 +97,7 @@ export default function GameListScreen({ navigation }) {
             </Text>
           </View>
           <View style={styles.metaItem}>
-            <Ionicons name="time" size={14} color={colors.secondary} />
+            <Ionicons name="time-outline" size={14} color={colors.secondary} />
             <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
           </View>
           <View style={styles.metaItem}>
