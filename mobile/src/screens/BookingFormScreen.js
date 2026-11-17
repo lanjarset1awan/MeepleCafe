@@ -1196,7 +1196,7 @@ export default function BookingFormScreen({ route, navigation }) {
                     </Text>
                   </View>
                   {chosenGame?.id === item.id && (
-                    <Ionicons name="checkmark" size={20} color={colors.primary} />
+                    <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
                   )}
                 </TouchableOpacity>
               )}
@@ -1252,17 +1252,27 @@ export default function BookingFormScreen({ route, navigation }) {
                         <MaterialCommunityIcons name="table-chair" size={20} color={colors.primary} />
                       )}
                     </View>
-                    <View style={{ marginLeft: 12, flex: 1 }}>
+                    <View style={{ marginLeft: 12, flex: 1, justifyContent: "center" }}>
                       <Text style={styles.gamePickerName}>
                         {item.table_type} (Meja {item.table_number})
                       </Text>
                       <Text style={styles.gamePickerDesc}>
-                        Kapasitas Maksimal {item.capacity} Orang • {formatRupiah(item.price_per_hour || 30000)}/jam
+                        Kapasitas {item.capacity} Orang
                       </Text>
                     </View>
-                    {isSelected && (
-                      <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
-                    )}
+                    <View style={styles.tablePickerRightCol}>
+                      <Text style={styles.tablePickerPrice}>
+                        {formatRupiah(item.price_per_hour || 30000)}/jam
+                      </Text>
+                      {isSelected && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={22}
+                          color={colors.primary}
+                          style={{ marginTop: 4 }}
+                        />
+                      )}
+                    </View>
                   </TouchableOpacity>
                 );
               }}
@@ -1965,6 +1975,16 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 8,
     backgroundColor: "#F1F5F9"
+  },
+  tablePickerRightCol: {
+    alignItems: "flex-end",
+    justifyContent: "center",
+    marginLeft: 8
+  },
+  tablePickerPrice: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: colors.primary
   },
 
   // STYLES CUSTOM POPUP TIKET PASCA PEMBELIAN
