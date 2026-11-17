@@ -80,30 +80,32 @@ export default function GameListScreen({ navigation }) {
           </Text>
 
           <View style={styles.metaRow}>
-            {/* Sisi Kiri: Kategori (Paling Kiri), Pemain, Durasi */}
-            <View style={styles.metaLeftCluster}>
-              <View style={styles.metaItem}>
-                <Ionicons name="shapes-outline" size={13} color={colors.primary} />
-                <Text style={[styles.metaText, { color: colors.primary, fontWeight: "700" }]}>
-                  {item.game_categories?.name || "General"}
-                </Text>
-              </View>
-
-              <View style={styles.metaItem}>
-                <Ionicons name="people-outline" size={13} color={colors.textMuted} />
-                <Text style={styles.metaText}>
-                  {item.min_players}-{item.max_players} Pemain
-                </Text>
-              </View>
-
-              <View style={styles.metaItem}>
-                <Ionicons name="time-outline" size={13} color={colors.textMuted} />
-                <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
-              </View>
+            {/* 1. Kategori (Biru) */}
+            <View style={styles.metaItem}>
+              <Ionicons name="shapes-outline" size={13} color={colors.primary} />
+              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
+                {item.game_categories?.name || "General"}
+              </Text>
             </View>
 
-            {/* Sisi Kanan: Tingkat Kesulitan (Paling Kanan) */}
-            <View style={styles.metaDifficultyItem}>
+            {/* 2. Jumlah Pemain (Biru) */}
+            <View style={styles.metaItem}>
+              <Ionicons name="people-outline" size={13} color={colors.primary} />
+              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
+                {item.min_players}-{item.max_players} Pemain
+              </Text>
+            </View>
+
+            {/* 3. Durasi (Biru) */}
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={13} color={colors.primary} />
+              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
+                {item.duration_minutes} mnt
+              </Text>
+            </View>
+
+            {/* 4. Tingkat Kesulitan (Di Samping Kanan Jam, Rata Kiri) */}
+            <View style={styles.metaItem}>
               <Ionicons name="bar-chart-outline" size={13} color={diffColor} />
               <Text style={[styles.metaText, { color: diffColor, fontWeight: "700" }]}>
                 {item.difficulty}
@@ -327,27 +329,16 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 8
-  },
-  metaLeftCluster: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
+    marginBottom: 8,
     flexWrap: "wrap"
   },
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 10
-  },
-  metaDifficultyItem: {
-    flexDirection: "row",
-    alignItems: "center"
+    marginRight: 11
   },
   metaText: {
     fontSize: 12,
-    color: colors.textMuted,
     marginLeft: 4
   },
   description: {
