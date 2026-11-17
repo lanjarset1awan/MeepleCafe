@@ -10,6 +10,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.lanjar.meeplecafe",
       "adaptiveIcon": {
         "backgroundColor": "#D97706",
         "foregroundImage": "./assets/android-icon-foreground.png",

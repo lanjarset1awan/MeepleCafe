@@ -46,52 +46,52 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.bodyContent}>
-      {/* About Application */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="information-circle" size={20} color={colors.primary} />
-          <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
-        </View>
-        <Text style={styles.aboutText}>
-          MeepleCafe adalah aplikasi mobile terintegrasi untuk pecinta board game. 
-          Aplikasi ini memadukan katalog koleksi permainan fisik terlengkap dengan 
-          sistem pemesanan meja dan ruangan bermain di kafe secara instan.
-        </Text>
-      </View>
-
-      {/* Cafe Information */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="storefront" size={20} color={colors.secondary} />
-          <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
+        {/* About Application */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="information-circle" size={20} color={colors.primary} />
+            <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
+          </View>
+          <Text style={styles.aboutText}>
+            MeepleCafe adalah aplikasi mobile terintegrasi untuk pecinta board game.
+            Aplikasi ini memadukan katalog koleksi permainan fisik terlengkap dengan
+            sistem pemesanan meja dan ruangan bermain di kafe secara instan.
+          </Text>
         </View>
 
-        <View style={styles.infoItem}>
-          <Ionicons name="location-outline" size={18} color={colors.textMuted} />
-          <View style={styles.infoContent}>
-            <Text style={styles.infoHeading}>Alamat Kafe</Text>
-            <Text style={styles.infoDesc}>
-              Jl. Graha Prasetya IV No.65, Pedalangan, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50268
-            </Text>
+        {/* Cafe Information */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="storefront" size={20} color={colors.secondary} />
+            <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
+          </View>
+
+          <View style={styles.infoItem}>
+            <Ionicons name="location-outline" size={18} color={colors.textMuted} />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoHeading}>Alamat Kafe</Text>
+              <Text style={styles.infoDesc}>
+                Jl. Graha Prasetya IV No.65, Pedalangan, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50268
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <Ionicons name="time-outline" size={18} color={colors.textMuted} />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoHeading}>Jam Buka</Text>
+              <Text style={styles.infoDesc}>Selasa – Minggu: 12.00 – 23.00 WIB (Senin Tutup)</Text>
+            </View>
+          </View>
+
+          <View style={styles.infoItem}>
+            <Ionicons name="call-outline" size={18} color={colors.textMuted} />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoHeading}>Kontak Layanan</Text>
+              <Text style={styles.infoDesc}>WhatsApp: +62 812-3456-7890</Text>
+            </View>
           </View>
         </View>
-
-        <View style={styles.infoItem}>
-          <Ionicons name="time-outline" size={18} color={colors.textMuted} />
-          <View style={styles.infoContent}>
-            <Text style={styles.infoHeading}>Jam Buka</Text>
-            <Text style={styles.infoDesc}>Selasa – Minggu: 12.00 – 23.00 WIB (Senin Tutup)</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoItem}>
-          <Ionicons name="call-outline" size={18} color={colors.textMuted} />
-          <View style={styles.infoContent}>
-            <Text style={styles.infoHeading}>Kontak Layanan</Text>
-            <Text style={styles.infoDesc}>WhatsApp: +62 812-3456-7890</Text>
-          </View>
-        </View>
-      </View>
       </View>
     </ScrollView>
   );
