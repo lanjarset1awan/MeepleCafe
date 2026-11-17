@@ -65,7 +65,21 @@ export default function GameListScreen({ navigation }) {
     >
       <GameImage uri={item.image_url} style={styles.cardImage} />
       <View style={styles.cardContent}>
-        <View style={styles.badgeRow}>
+        <Text style={styles.gameTitle} numberOfLines={1}>
+          {item.title}
+        </Text>
+
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
+            <Ionicons name="people-outline" size={14} color={colors.primary} />
+            <Text style={styles.metaText}>
+              {item.min_players}-{item.max_players} Pemain
+            </Text>
+          </View>
+          <View style={styles.metaItem}>
+            <Ionicons name="time-outline" size={14} color={colors.secondary} />
+            <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
+          </View>
           <View style={styles.categoryBadge}>
             <Text style={styles.categoryBadgeText}>
               {item.game_categories?.name || "General"}
@@ -92,29 +106,6 @@ export default function GameListScreen({ navigation }) {
               ]}
             >
               {item.difficulty}
-            </Text>
-          </View>
-        </View>
-
-        <Text style={styles.gameTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-
-        <View style={styles.metaRow}>
-          <View style={styles.metaItem}>
-            <Ionicons name="people-outline" size={14} color={colors.primary} />
-            <Text style={styles.metaText}>
-              {item.min_players}-{item.max_players} Pemain
-            </Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={14} color={colors.secondary} />
-            <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
-          </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="checkmark-circle" size={14} color={colors.success} />
-            <Text style={[styles.metaText, { color: colors.success, fontWeight: "600" }]}>
-              Siap Main
             </Text>
           </View>
         </View>
@@ -325,17 +316,33 @@ const styles = StyleSheet.create({
   cardContent: {
     padding: 14
   },
-  badgeRow: {
+  gameTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: 6
+  },
+  metaRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8
   },
+  metaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 10
+  },
+  metaText: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginLeft: 4
+  },
   categoryBadge: {
     backgroundColor: colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    marginRight: 6
   },
   categoryBadgeText: {
     fontSize: 11,
@@ -343,9 +350,9 @@ const styles = StyleSheet.create({
     color: colors.primaryDark
   },
   difficultyBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6
   },
   badgeEasy: {
     backgroundColor: "#DCFCE7"
@@ -368,27 +375,6 @@ const styles = StyleSheet.create({
   },
   badgeTextHard: {
     color: colors.accent
-  },
-  gameTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.text,
-    marginBottom: 6
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8
-  },
-  metaItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 14
-  },
-  metaText: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginLeft: 5
   },
   description: {
     fontSize: 13,
