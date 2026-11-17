@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   profileHeaderCard: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    paddingVertical: 20,
+    paddingVertical: 22,
     paddingHorizontal: 20,
     alignItems: "center",
     marginHorizontal: 16,
@@ -145,10 +145,7 @@ const styles = StyleSheet.create({
     zIndex: 10
   },
   bodyContent: {
-    paddingHorizontal: 16,
-    flex: 1,
-    justifyContent: "space-between",
-    paddingBottom: 16
+    paddingHorizontal: 16
   },
   avatarContainer: {
     position: "relative",
@@ -199,7 +196,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    padding: 16,
+    padding: 18,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 2,
