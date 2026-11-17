@@ -57,64 +57,46 @@ export default function GameListScreen({ navigation }) {
     return matchesCategory && matchesSearch;
   });
 
-  const getDifficultyColor = (difficulty) => {
-    const diff = (difficulty || "").toLowerCase();
-    if (diff === "easy") return colors.success;
-    if (diff === "medium") return colors.secondary;
-    return colors.accent;
-  };
+  const renderGameCard = ({ item }) => (
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.88}
+      onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title })}
+    >
+      <GameImage uri={item.image_url} style={styles.cardImage} />
+      <View style={styles.cardContent}>
+        <Text style={styles.gameTitle} numberOfLines={1}>
+          {item.title}
+        </Text>
 
-  const renderGameCard = ({ item }) => {
-    const diffColor = getDifficultyColor(item.difficulty);
-
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        activeOpacity={0.88}
-        onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title })}
-      >
-        <GameImage uri={item.image_url} style={styles.cardImage} />
-        <View style={styles.cardContent}>
-          <Text style={styles.gameTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-
-          <View style={styles.metaRow}>
-            {/* 1. Kategori (Bubble Kotak Biru) */}
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryBadgeText}>
-                {item.game_categories?.name || "General"}
-              </Text>
-            </View>
-
-            {/* 2. Jumlah Pemain (Biru) */}
-            <View style={styles.metaItem}>
-              <Ionicons name="people-outline" size={13} color={colors.primary} />
-              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
-                {item.min_players}-{item.max_players} Pemain
-              </Text>
-            </View>
-
-            {/* 3. Durasi (Biru) */}
-            <View style={styles.metaItem}>
-              <Ionicons name="time-outline" size={13} color={colors.primary} />
-              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
-                {item.duration_minutes} mnt
-              </Text>
-            </View>
-
-            {/* 4. Tingkat Kesulitan (Di Samping Kanan Jam, Rata Kiri) */}
-            <View style={styles.metaItem}>
-              <Ionicons name="bar-chart-outline" size={13} color={diffColor} />
-              <Text style={[styles.metaText, { color: diffColor, fontWeight: "700" }]}>
-                {item.difficulty}
-              </Text>
-            </View>
+        <View style={styles.metaRow}>
+          {/* 1. Kategori (Bubble Kotak Biru) */}
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryBadgeText}>
+              {item.game_categories?.name || "General"}
+            </Text>
           </View>
 
-          <Text style={styles.description} numberOfLines={2}>
-            {item.description}
-          </Text>
+          {/* 2. Jumlah Pemain (Biru) */}
+          <View style={styles.metaItem}>
+            <Ionicons name="people-outline" size={13} color={colors.primary} />
+            <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
+              {item.min_players}-{item.max_players} Pemain
+            </Text>
+          </View>
+
+          {/* 3. Durasi (Biru) */}
+          <View style={styles.metaItem}>
+            <Ionicons name="time-outline" size={13} color={colors.primary} />
+            <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
+              {item.duration_minutes} mnt
+            </Text>
+          </View>
+        </View>
+
+        <Text style={styles.description} numberOfLines={2}>
+          {item.description}
+        </Text>
 
           <View style={styles.actionFooter}>
             <Text style={styles.actionFooterText}>Pelajari Aturan & Pilih Game</Text>
