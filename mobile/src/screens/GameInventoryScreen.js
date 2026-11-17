@@ -133,7 +133,7 @@ export default function GameInventoryScreen({ navigation }) {
             </View>
             <Text style={styles.metaDivider}>•</Text>
             <View style={styles.metaIconItem}>
-              <Ionicons name="time-outline" size={13} color={colors.secondary} style={{ marginRight: 4 }} />
+              <Ionicons name="time-outline" size={13} color={colors.primary} style={{ marginRight: 4 }} />
               <Text style={styles.playerText}>
                 {item.duration_minutes} mnt
               </Text>
@@ -186,14 +186,12 @@ export default function GameInventoryScreen({ navigation }) {
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statCol}>
-          <Text style={[styles.statNum, { color: colors.primary }]}>
-            {availableTitles}
-          </Text>
+          <Text style={styles.statNum}>{availableTitles}</Text>
           <Text style={styles.statLbl}>Siap di Rak</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statCol}>
-          <Text style={[styles.statNum, { color: colors.secondary }]}>{inUseTitles}</Text>
+          <Text style={styles.statNum}>{inUseTitles}</Text>
           <Text style={styles.statLbl}>Sedang Main</Text>
         </View>
       </View>
@@ -325,7 +323,7 @@ const styles = StyleSheet.create({
   statNum: {
     fontSize: 18,
     fontWeight: "bold",
-    color: colors.text
+    color: colors.primary
   },
   statLbl: {
     fontSize: 11,
