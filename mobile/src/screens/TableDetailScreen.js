@@ -115,14 +115,6 @@ export default function TableDetailScreen({ route, navigation }) {
               </View>
             ))}
           </View>
-
-          {/* Info Tambahan */}
-          <View style={styles.infoBox}>
-            <Ionicons name="shield-checkmark-outline" size={20} color={colors.secondary} />
-            <Text style={styles.infoBoxText}>
-              Setiap pemesanan meja sudah termasuk akses bebas ke seluruh koleksi board game MeepleCafe dan bantuan panduan dari Game Master kafe.
-            </Text>
-          </View>
         </View>
       </ScrollView>
 
@@ -271,20 +263,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.text,
     marginLeft: 10
-  },
-  infoBox: {
-    flexDirection: "row",
-    backgroundColor: colors.primaryLight,
-    padding: 14,
-    borderRadius: 12,
-    alignItems: "flex-start"
-  },
-  infoBoxText: {
-    flex: 1,
-    fontSize: 12,
-    color: colors.primaryDark,
-    marginLeft: 8,
-    lineHeight: 18
   },
   bottomBar: {
     position: "absolute",
