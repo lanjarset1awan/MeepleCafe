@@ -80,10 +80,9 @@ export default function GameListScreen({ navigation }) {
           </Text>
 
           <View style={styles.metaRow}>
-            {/* 1. Kategori (Biru) */}
-            <View style={styles.metaItem}>
-              <Ionicons name="shapes-outline" size={13} color={colors.primary} />
-              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
+            {/* 1. Kategori (Bubble Kotak Biru) */}
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryBadgeText}>
                 {item.game_categories?.name || "General"}
               </Text>
             </View>
@@ -331,6 +330,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
     flexWrap: "wrap"
+  },
+  categoryBadge: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginRight: 11
+  },
+  categoryBadgeText: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: colors.primaryDark
   },
   metaItem: {
     flexDirection: "row",
