@@ -57,70 +57,72 @@ export default function GameListScreen({ navigation }) {
     return matchesCategory && matchesSearch;
   });
 
-  const renderGameCard = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.88}
-      onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title })}
-    >
-      <GameImage uri={item.image_url} style={styles.cardImage} />
-      <View style={styles.cardContent}>
-        <Text style={styles.gameTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
+  const getDifficultyColor = (difficulty) => {
+    const diff = (difficulty || "").toLowerCase();
+    if (diff === "easy") return colors.success;
+    if (diff === "medium") return colors.secondary;
+    return colors.accent;
+  };
 
-        <View style={styles.metaRow}>
-          <View style={styles.metaItem}>
-            <Ionicons name="people-outline" size={14} color={colors.primary} />
-            <Text style={styles.metaText}>
-              {item.min_players}-{item.max_players} Pemain
-            </Text>
+  const renderGameCard = ({ item }) => {
+    const diffColor = getDifficultyColor(item.difficulty);
+
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.88}
+        onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title })}
+      >
+        <GameImage uri={item.image_url} style={styles.cardImage} />
+        <View style={styles.cardContent}>
+          <Text style={styles.gameTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
+
+          <View style={styles.metaRow}>
+            {/* 1. Kategori (Paling Kiri) */}
+            <View style={styles.metaItem}>
+              <Ionicons name="shapes-outline" size={13} color={colors.primary} />
+              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "700" }]}>
+                {item.game_categories?.name || "General"}
+              </Text>
+            </View>
+
+            {/* 2. Tingkat Kesulitan */}
+            <View style={styles.metaItem}>
+              <Ionicons name="bar-chart-outline" size={13} color={diffColor} />
+              <Text style={[styles.metaText, { color: diffColor, fontWeight: "700" }]}>
+                {item.difficulty}
+              </Text>
+            </View>
+
+            {/* 3. Jumlah Pemain */}
+            <View style={styles.metaItem}>
+              <Ionicons name="people-outline" size={13} color={colors.textMuted} />
+              <Text style={styles.metaText}>
+                {item.min_players}-{item.max_players} Pemain
+              </Text>
+            </View>
+
+            {/* 4. Durasi */}
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={13} color={colors.textMuted} />
+              <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
+            </View>
           </View>
-          <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={14} color={colors.secondary} />
-            <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
-          </View>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryBadgeText}>
-              {item.game_categories?.name || "General"}
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.difficultyBadge,
-              (item.difficulty || "").toLowerCase() === "easy"
-                ? styles.badgeEasy
-                : (item.difficulty || "").toLowerCase() === "medium"
-                  ? styles.badgeMedium
-                  : styles.badgeHard
-            ]}
-          >
-            <Text
-              style={[
-                styles.difficultyBadgeText,
-                (item.difficulty || "").toLowerCase() === "easy"
-                  ? styles.badgeTextEasy
-                  : (item.difficulty || "").toLowerCase() === "medium"
-                    ? styles.badgeTextMedium
-                    : styles.badgeTextHard
-              ]}
-            >
-              {item.difficulty}
-            </Text>
+
+          <Text style={styles.description} numberOfLines={2}>
+            {item.description}
+          </Text>
+
+          <View style={styles.actionFooter}>
+            <Text style={styles.actionFooterText}>Pelajari Aturan & Pilih Game</Text>
+            <Ionicons name="arrow-forward-circle" size={18} color={colors.primary} />
           </View>
         </View>
-
-        <Text style={styles.description} numberOfLines={2}>
-          {item.description}
-        </Text>
-
-        <View style={styles.actionFooter}>
-          <Text style={styles.actionFooterText}>Pelajari Aturan & Pilih Game</Text>
-          <Ionicons name="arrow-forward-circle" size={18} color={colors.primary} />
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -317,7 +319,7 @@ const styles = StyleSheet.create({
     padding: 14
   },
   gameTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: colors.text,
     marginBottom: 6
@@ -325,56 +327,18 @@ const styles = StyleSheet.create({
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8
+    marginBottom: 8,
+    flexWrap: "wrap"
   },
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 10
+    marginRight: 12
   },
   metaText: {
     fontSize: 12,
     color: colors.textMuted,
     marginLeft: 4
-  },
-  categoryBadge: {
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
-    borderRadius: 6,
-    marginRight: 6
-  },
-  categoryBadgeText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: colors.primaryDark
-  },
-  difficultyBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
-    borderRadius: 6
-  },
-  badgeEasy: {
-    backgroundColor: "#DCFCE7"
-  },
-  badgeMedium: {
-    backgroundColor: colors.secondaryLight
-  },
-  badgeHard: {
-    backgroundColor: "#FFE4E6"
-  },
-  difficultyBadgeText: {
-    fontSize: 11,
-    fontWeight: "700"
-  },
-  badgeTextEasy: {
-    color: colors.success
-  },
-  badgeTextMedium: {
-    color: colors.secondary
-  },
-  badgeTextHard: {
-    color: colors.accent
   },
   description: {
     fontSize: 13,
