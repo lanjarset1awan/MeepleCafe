@@ -673,18 +673,6 @@ export default function BookingFormScreen({ route, navigation }) {
                   {hourLabel}
                 </Text>
                 <View style={styles.hourStatusRow}>
-                  <View
-                    style={[
-                      styles.dotIndicator,
-                      isActive
-                        ? { backgroundColor: "#FFFFFF" }
-                        : isPassed
-                          ? { backgroundColor: "#CBD5E1" }
-                          : isBusy
-                            ? { backgroundColor: colors.secondary }
-                            : { backgroundColor: colors.primary }
-                    ]}
-                  />
                   <Text
                     style={[
                       styles.hourGridSub,
@@ -755,18 +743,6 @@ export default function BookingFormScreen({ route, navigation }) {
                     : styles.statusBadgeCleanBusy
               ]}
             >
-              <View
-                style={[
-                  styles.statusDotClean,
-                  {
-                    backgroundColor: slotStatus.available
-                      ? colors.primary
-                      : isPastDate || isHourPassed(startHour)
-                        ? "#94A3B8"
-                        : colors.secondary
-                  }
-                ]}
-              />
               <Text
                 style={[
                   styles.statusBadgeCleanText,
