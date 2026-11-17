@@ -80,8 +80,8 @@ export default function GameDetailScreen({ route, navigation }) {
         <View style={styles.detailCard}>
           <Text style={styles.title}>{game.title}</Text>
 
-          {/* Meta Info: Kategori (Bubble), Total Pemain, dan Waktu Main */}
-          <View style={styles.metaRow}>
+          {/* Kotakan Meta Info: Kategori (Bubble), Total Pemain, dan Waktu Main */}
+          <View style={styles.metaBox}>
             {/* 1. Kategori (Bubble Kotak Biru) */}
             <View style={styles.categoryBadge}>
               <Text style={styles.categoryBadgeText}>
@@ -91,7 +91,7 @@ export default function GameDetailScreen({ route, navigation }) {
 
             {/* 2. Jumlah Pemain (Biru) */}
             <View style={styles.metaItem}>
-              <Ionicons name="people-outline" size={14} color={colors.primary} />
+              <Ionicons name="people-outline" size={15} color={colors.primary} />
               <Text style={styles.metaText}>
                 {game.min_players}-{game.max_players} Pemain
               </Text>
@@ -99,7 +99,7 @@ export default function GameDetailScreen({ route, navigation }) {
 
             {/* 3. Waktu Main (Biru) */}
             <View style={styles.metaItem}>
-              <Ionicons name="time-outline" size={14} color={colors.primary} />
+              <Ionicons name="time-outline" size={15} color={colors.primary} />
               <Text style={styles.metaText}>
                 {game.duration_minutes} mnt
               </Text>
@@ -171,34 +171,40 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     color: colors.text,
-    marginBottom: 8
+    marginBottom: 12
   },
-  metaRow: {
+  metaBox: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
-    flexWrap: "wrap"
+    justifyContent: "space-between",
+    backgroundColor: colors.primaryLight,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#CCE3F5",
+    marginBottom: 20
   },
   categoryBadge: {
-    backgroundColor: colors.primaryLight,
+    backgroundColor: "#FFFFFF",
     paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 6,
-    marginRight: 12
+    borderWidth: 1,
+    borderColor: "#CCE3F5"
   },
   categoryBadgeText: {
     fontSize: 12,
     fontWeight: "700",
-    color: colors.primaryDark
+    color: colors.primary
   },
   metaItem: {
     flexDirection: "row",
-    alignItems: "center",
-    marginRight: 12
+    alignItems: "center"
   },
   metaText: {
     fontSize: 12.5,
-    marginLeft: 4,
+    marginLeft: 5,
     color: colors.primary,
     fontWeight: "600"
   },
