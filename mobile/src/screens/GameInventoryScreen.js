@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   statNum: {
     fontSize: 18,
     fontWeight: "bold",
-    color: colors.primary
+    color: colors.text
   },
   statLbl: {
     fontSize: 11,
