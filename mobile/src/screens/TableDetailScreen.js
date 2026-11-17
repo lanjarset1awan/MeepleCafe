@@ -273,9 +273,7 @@ const styles = StyleSheet.create({
   },
   infoBox: {
     flexDirection: "row",
-    backgroundColor: "#F0FDFA",
-    borderWidth: 1,
-    borderColor: "#99F6E4",
+    backgroundColor: colors.primaryLight,
     padding: 14,
     borderRadius: 12,
     alignItems: "flex-start"
@@ -283,7 +281,7 @@ const styles = StyleSheet.create({
   infoBoxText: {
     flex: 1,
     fontSize: 12,
-    color: "#0F766E",
+    color: colors.primaryDark,
     marginLeft: 8,
     lineHeight: 18
   },

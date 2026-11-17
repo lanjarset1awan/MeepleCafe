@@ -310,8 +310,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 12,
     borderRadius: 14,
-    borderWidth: 2,
-    borderColor: colors.primary,
+    borderWidth: 1,
+    borderColor: colors.border,
     elevation: 3,
     shadowColor: "#000",
     shadowOpacity: 0.08,
@@ -369,9 +369,7 @@ const styles = StyleSheet.create({
     marginTop: -16,
     marginBottom: 10,
     padding: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#FCD34D"
+    borderRadius: 14
   },
   noGameBannerText: {
     fontSize: 12,

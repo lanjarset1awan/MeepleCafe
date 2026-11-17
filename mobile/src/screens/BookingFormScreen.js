@@ -1358,7 +1358,7 @@ const styles = StyleSheet.create({
   },
   datePillActive: {
     backgroundColor: colors.primaryLight,
-    borderColor: colors.primary
+    borderColor: colors.primaryLight
   },
   datePillText: {
     fontSize: 12,
@@ -1733,9 +1733,7 @@ const styles = StyleSheet.create({
     borderColor: "#000000"
   },
   bankLogoBoxCash: {
-    backgroundColor: colors.primaryLight,
-    borderWidth: 1,
-    borderColor: "#FCD34D"
+    backgroundColor: colors.primaryLight
   },
   bankLogoImageCover: {
     width: "100%",

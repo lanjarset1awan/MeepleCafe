@@ -705,13 +705,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#FDE68A",
     marginBottom: 16
   },
   gameBannerExpired: {
-    backgroundColor: "#F1F5F9",
-    borderColor: "#E2E8F0"
+    backgroundColor: "#F1F5F9"
   },
   ticketGameThumb: {
     width: 44,
