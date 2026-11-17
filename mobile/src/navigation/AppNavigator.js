@@ -1,7 +1,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import GameListScreen from "../screens/GameListScreen";
 import GameDetailScreen from "../screens/GameDetailScreen";
@@ -172,7 +172,13 @@ export default function AppNavigator() {
           } else if (route.name === "InventoryTab") {
             iconName = focused ? "list" : "list-outline";
           } else if (route.name === "TableTab") {
-            iconName = focused ? "restaurant" : "restaurant-outline";
+            return (
+              <MaterialCommunityIcons
+                name="table-chair"
+                size={21}
+                color={color}
+              />
+            );
           } else if (route.name === "TicketsTab") {
             iconName = focused ? "ticket" : "ticket-outline";
           } else if (route.name === "ProfileTab") {

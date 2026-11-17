@@ -10,7 +10,7 @@ import {
   RefreshControl,
   Modal
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
@@ -147,7 +147,7 @@ export default function TableListScreen({ route, navigation }) {
         <View style={styles.headerTop}>
           <Text style={styles.headerSubtitle}>Play Area & Seating</Text>
           <View style={styles.availableBadge}>
-            <Ionicons name="restaurant" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
+            <MaterialCommunityIcons name="table-chair" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
             <Text style={styles.availableBadgeText}>{tables.length} Tipe Meja</Text>
           </View>
         </View>

@@ -11,7 +11,7 @@ import {
   FlatList,
   Image
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import CustomDialog from "../components/CustomDialog";
@@ -502,7 +502,7 @@ export default function BookingFormScreen({ route, navigation }) {
 
         <View style={[styles.packageRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
           <View style={[styles.packageIconBox, { backgroundColor: colors.primaryLight }]}>
-            <Ionicons name="restaurant" size={22} color={colors.secondary} />
+            <MaterialCommunityIcons name="table-chair" size={22} color={colors.secondary} />
           </View>
           <View style={styles.packageInfo}>
             <Text style={styles.packageSub}>Meja Kafe</Text>
@@ -1240,7 +1240,7 @@ export default function BookingFormScreen({ route, navigation }) {
                       {item.image_url ? (
                         <GameImage uri={item.image_url} style={styles.pickerGameThumb} />
                       ) : (
-                        <Ionicons name="restaurant" size={20} color={colors.primary} />
+                        <MaterialCommunityIcons name="table-chair" size={20} color={colors.primary} />
                       )}
                     </View>
                     <View style={{ marginLeft: 12, flex: 1 }}>
