@@ -1264,14 +1264,6 @@ export default function BookingFormScreen({ route, navigation }) {
                       <Text style={styles.tablePickerPrice}>
                         {formatRupiah(item.price_per_hour || 30000)}/jam
                       </Text>
-                      {isSelected && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={22}
-                          color={colors.primary}
-                          style={{ marginTop: 4 }}
-                        />
-                      )}
                     </View>
                   </TouchableOpacity>
                 );
