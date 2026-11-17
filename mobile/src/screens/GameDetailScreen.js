@@ -91,61 +91,80 @@ export default function GameDetailScreen({ route, navigation }) {
         <View style={styles.detailCard}>
           <Text style={styles.title}>{game.title}</Text>
 
-          {/* Kotakan Meta Info: 2 Baris Info Game */}
-          <View style={styles.metaBox}>
-            {/* Baris 1: Kategori, Jumlah Pemain, dan Waktu Main */}
-            <View style={styles.metaRow}>
-              {/* 1. Kategori (Bubble Kotak Biru) */}
-              <View style={styles.categoryBadge}>
-                <Text style={styles.categoryBadgeText}>
+          {/* Kotakan Ringkasan Spesifikasi Game (Grid 3x2 Seimbang & Elegan) */}
+          <View style={styles.specsCard}>
+            {/* Baris 1: Kategori, Jumlah Pemain, Durasi Main */}
+            <View style={styles.specsRow}>
+              {/* 1. Kategori */}
+              <View style={styles.specCell}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="shapes-outline" size={17} color={colors.primary} />
+                </View>
+                <Text style={styles.specValue} numberOfLines={1}>
                   {game.game_categories?.name || "General"}
                 </Text>
+                <Text style={styles.specLabel}>Kategori</Text>
               </View>
 
-              {/* 2. Jumlah Pemain (Biru) */}
-              <View style={styles.metaItem}>
-                <Ionicons name="people-outline" size={14} color={colors.primary} />
-                <Text style={styles.metaText}>
-                  {game.min_players}-{game.max_players} Pemain
+              {/* 2. Jumlah Pemain */}
+              <View style={styles.specCell}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="people-outline" size={17} color={colors.primary} />
+                </View>
+                <Text style={styles.specValue} numberOfLines={1}>
+                  {game.min_players}-{game.max_players} Org
                 </Text>
+                <Text style={styles.specLabel}>Pemain</Text>
               </View>
 
-              {/* 3. Waktu Main (Biru) */}
-              <View style={styles.metaItem}>
-                <Ionicons name="time-outline" size={14} color={colors.primary} />
-                <Text style={styles.metaText}>
-                  {game.duration_minutes} mnt
+              {/* 3. Durasi Main */}
+              <View style={styles.specCell}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="time-outline" size={17} color={colors.primary} />
+                </View>
+                <Text style={styles.specValue} numberOfLines={1}>
+                  {game.duration_minutes} Mnt
                 </Text>
+                <Text style={styles.specLabel}>Durasi</Text>
               </View>
             </View>
 
-            {/* Garis Pemisah Antar Baris */}
-            <View style={styles.metaDivider} />
+            {/* Garis Pemisah Halus Antar Baris */}
+            <View style={styles.specsDivider} />
 
-            {/* Baris 2: Stok Box, Lokasi Rak, dan Tingkat Kesulitan */}
-            <View style={styles.metaRow}>
-              {/* 1. Ada Berapa Box */}
-              <View style={styles.metaItem}>
-                <Ionicons name="cube-outline" size={14} color={colors.primary} />
-                <Text style={styles.metaText}>
+            {/* Baris 2: Stok Box, Posisi Rak, Tingkat Kesulitan */}
+            <View style={styles.specsRow}>
+              {/* 4. Stok Box */}
+              <View style={styles.specCell}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="cube-outline" size={17} color={colors.primary} />
+                </View>
+                <Text style={styles.specValue} numberOfLines={1}>
                   {stockCount} Box
                 </Text>
+                <Text style={styles.specLabel}>Stok Kafe</Text>
               </View>
 
-              {/* 2. Rak Dimana */}
-              <View style={styles.metaItem}>
-                <Ionicons name="location-outline" size={14} color={colors.primary} />
-                <Text style={styles.metaText}>
+              {/* 5. Posisi Rak */}
+              <View style={styles.specCell}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="location-outline" size={17} color={colors.primary} />
+                </View>
+                <Text style={styles.specValue} numberOfLines={1}>
                   {rackCode}
                 </Text>
+                <Text style={styles.specLabel}>Posisi Rak</Text>
               </View>
 
-              {/* 3. Kesulitan */}
-              <View style={styles.metaItem}>
-                <Ionicons name="bar-chart-outline" size={14} color={colors.primary} />
-                <Text style={styles.metaText}>
+              {/* 6. Kesulitan */}
+              <View style={styles.specCell}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="bar-chart-outline" size={17} color={colors.primary} />
+                </View>
+                <Text style={styles.specValue} numberOfLines={1}>
                   {game.difficulty || "Medium"}
                 </Text>
+                <Text style={styles.specLabel}>Tingkat</Text>
               </View>
             </View>
           </View>
@@ -217,45 +236,51 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 12
   },
-  metaBox: {
+  specsCard: {
     backgroundColor: colors.background,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.border,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     marginBottom: 20
   },
-  metaRow: {
+  specsRow: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between"
-  },
-  metaDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 10
-  },
-  categoryBadge: {
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 6
-  },
-  categoryBadgeText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: colors.primaryDark
-  },
-  metaItem: {
-    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center"
   },
-  metaText: {
-    fontSize: 12,
-    marginLeft: 5,
-    color: colors.primary,
-    fontWeight: "600"
+  specCell: {
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 2
+  },
+  iconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 6
+  },
+  specValue: {
+    fontSize: 12.5,
+    fontWeight: "bold",
+    color: colors.text,
+    textAlign: "center"
+  },
+  specLabel: {
+    fontSize: 10.5,
+    color: colors.textMuted,
+    marginTop: 2,
+    textAlign: "center"
+  },
+  specsDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: 12,
+    marginHorizontal: 10
   },
   section: {
     marginBottom: 20
