@@ -74,7 +74,7 @@ export default function TableDetailScreen({ route, navigation }) {
               <Text style={styles.badgeText}>Nomor Meja: {table.table_number}</Text>
             </View>
             <View style={styles.activeBadge}>
-              <Text style={styles.activeText}>● Siap Digunakan</Text>
+              <Text style={styles.activeText}>Siap Digunakan</Text>
             </View>
           </View>
 

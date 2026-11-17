@@ -251,7 +251,7 @@ export default function MyTicketsScreen({ navigation }) {
                   isExpired ? styles.statusTextExpired : styles.statusTextActive
                 ]}
               >
-                {isExpired ? "● Kedaluwarsa" : "● Aktif"}
+                {isExpired ? "Kedaluwarsa" : "Aktif"}
               </Text>
             </View>
 

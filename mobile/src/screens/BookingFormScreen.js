@@ -751,8 +751,8 @@ export default function BookingFormScreen({ route, navigation }) {
                 slotStatus.available
                   ? styles.statusBadgeCleanAvailable
                   : isPastDate || isHourPassed(startHour)
-                  ? styles.statusBadgeCleanPassed
-                  : styles.statusBadgeCleanBusy
+                    ? styles.statusBadgeCleanPassed
+                    : styles.statusBadgeCleanBusy
               ]}
             >
               <View
@@ -762,8 +762,8 @@ export default function BookingFormScreen({ route, navigation }) {
                     backgroundColor: slotStatus.available
                       ? colors.primary
                       : isPastDate || isHourPassed(startHour)
-                      ? "#94A3B8"
-                      : colors.secondary
+                        ? "#94A3B8"
+                        : colors.secondary
                   }
                 ]}
               />
@@ -774,16 +774,16 @@ export default function BookingFormScreen({ route, navigation }) {
                     color: slotStatus.available
                       ? colors.primaryDark
                       : isPastDate || isHourPassed(startHour)
-                      ? "#64748B"
-                      : colors.secondary
+                        ? "#64748B"
+                        : colors.secondary
                   }
                 ]}
               >
                 {slotStatus.available
                   ? "Tersedia"
                   : isPastDate || isHourPassed(startHour)
-                  ? "Lewat"
-                  : "Penuh"}
+                    ? "Lewat"
+                    : "Penuh"}
               </Text>
             </View>
           </View>

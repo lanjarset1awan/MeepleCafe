@@ -95,7 +95,7 @@ export default function TableListScreen({ route, navigation }) {
             <Text style={styles.tableNumberText}>Meja {item.table_number}</Text>
           </View>
           <View style={styles.statusPill}>
-            <Text style={styles.statusPillText}>● Tersedia</Text>
+            <Text style={styles.statusPillText}>Tersedia</Text>
           </View>
         </View>
 

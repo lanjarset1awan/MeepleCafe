@@ -95,7 +95,7 @@ export default function GameDetailScreen({ route, navigation }) {
                   game.is_available ? styles.statusTextAvailable : styles.statusTextUnavailable
                 ]}
               >
-                {game.is_available ? "● Tersedia di Kafe" : "● Sedang Dimainkan"}
+                {game.is_available ? "Tersedia di Kafe" : "Sedang Dimainkan"}
               </Text>
             </View>
           </View>
