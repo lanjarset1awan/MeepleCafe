@@ -214,7 +214,7 @@ export default function LandingScreen({ navigation }) {
           <View style={styles.searchContainer}>
             <Ionicons name="search-outline" size={20} color={colors.textMuted} />
             <TextInput
-              placeholder="Cari board game (UNO, Monopoly, Catur)..."
+              placeholder="Cari board game (UNO, Monopoly, Catur..."
               placeholderTextColor={colors.textMuted}
               style={styles.searchInput}
               value={searchQuery}
@@ -286,11 +286,8 @@ export default function LandingScreen({ navigation }) {
           )}
         </View>
       ) : (
-        /* Halaman About: Tentang Kafe & Informasi Operasional */
-        <ScrollView
-          contentContainerStyle={styles.aboutScrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+        /* Halaman About: Tentang Kafe & Informasi Operasional (Non-scrollable) */
+        <View style={styles.aboutContainer}>
           {/* Card: Tentang MeepleCafe */}
           <View style={styles.aboutCard}>
             <View style={styles.cardHeader}>
@@ -336,7 +333,7 @@ export default function LandingScreen({ navigation }) {
           </View>
 
           {/* Card: Informasi Operasional Kafe */}
-          <View style={[styles.aboutCard, { marginBottom: 30 }]}>
+          <View style={[styles.aboutCard, { marginBottom: 0 }]}>
             <View style={styles.cardHeader}>
               <Ionicons name="storefront" size={22} color={colors.primary} />
               <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
@@ -368,7 +365,7 @@ export default function LandingScreen({ navigation }) {
               </View>
             </View>
           </View>
-        </ScrollView>
+        </View>
       )}
     </View>
   );
@@ -640,16 +637,17 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 15
   },
-  aboutScrollContent: {
-    padding: 16,
-    paddingTop: 14,
-    paddingBottom: 36
+  aboutContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16
   },
   aboutCard: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    padding: 18,
-    marginBottom: 14,
+    padding: 16,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 2,

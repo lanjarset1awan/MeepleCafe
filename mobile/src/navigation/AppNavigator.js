@@ -52,14 +52,6 @@ function GameStackNavigator() {
           title: route.params?.title || "Detail Permainan"
         })}
       />
-      <GameStack.Screen
-        name="About"
-        component={AboutScreen}
-        options={{
-          title: "Tentang MeepleCafe",
-          headerShown: true
-        }}
-      />
     </GameStack.Navigator>
   );
 }
@@ -85,14 +77,6 @@ function InventoryStackNavigator() {
         options={({ route }) => ({
           title: route.params?.title || "Detail Permainan"
         })}
-      />
-      <InventoryStack.Screen
-        name="About"
-        component={AboutScreen}
-        options={{
-          title: "Tentang MeepleCafe",
-          headerShown: true
-        }}
       />
     </InventoryStack.Navigator>
   );
@@ -127,14 +111,6 @@ function TableStackNavigator() {
           title: "Form Reservasi Meja"
         }}
       />
-      <TableStack.Screen
-        name="About"
-        component={AboutScreen}
-        options={{
-          title: "Tentang MeepleCafe",
-          headerShown: true
-        }}
-      />
     </TableStack.Navigator>
   );
 }
@@ -153,14 +129,6 @@ function TicketStackNavigator() {
         name="MyTickets"
         component={MyTicketsScreen}
         options={{ headerShown: false }}
-      />
-      <TicketStack.Screen
-        name="About"
-        component={AboutScreen}
-        options={{
-          title: "Tentang MeepleCafe",
-          headerShown: true
-        }}
       />
     </TicketStack.Navigator>
   );
@@ -186,14 +154,6 @@ function ProfileStackNavigator() {
         component={EditProfileScreen}
         options={{
           title: "Edit Profil Pengguna",
-          headerShown: true
-        }}
-      />
-      <ProfileStack.Screen
-        name="About"
-        component={AboutScreen}
-        options={{
-          title: "Tentang MeepleCafe",
           headerShown: true
         }}
       />
@@ -296,8 +256,22 @@ export default function AppNavigator() {
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false, animation: "fade" }}>
       {user ? (
-        // Pengguna sudah login -> Masuk ke 5 Tab Utama
-        <RootStack.Screen name="MainApp" component={MainTabNavigator} />
+        // Pengguna sudah login -> Masuk ke 5 Tab Utama & Screen Full (tanpa bottom navbar)
+        <RootStack.Group>
+          <RootStack.Screen name="MainApp" component={MainTabNavigator} />
+          <RootStack.Screen
+            name="About"
+            component={AboutScreen}
+            options={{
+              headerShown: true,
+              animation: "slide_from_right",
+              title: "Tentang MeepleCafe",
+              headerStyle: { backgroundColor: colors.darkBg },
+              headerTintColor: "#FFFFFF",
+              headerTitleStyle: { fontWeight: "bold" }
+            }}
+          />
+        </RootStack.Group>
       ) : (
         // Pengguna belum login -> Katalog Game (Landing) & Autentikasi
         <RootStack.Group>
@@ -307,6 +281,7 @@ export default function AppNavigator() {
             component={GameDetailScreen}
             options={({ route }) => ({
               headerShown: true,
+              animation: "slide_from_right",
               title: route.params?.title || "Detail Permainan",
               headerStyle: { backgroundColor: colors.darkBg },
               headerTintColor: "#FFFFFF",
@@ -315,6 +290,18 @@ export default function AppNavigator() {
           />
           <RootStack.Screen name="Login" component={LoginScreen} />
           <RootStack.Screen name="Register" component={RegisterScreen} />
+          <RootStack.Screen
+            name="About"
+            component={AboutScreen}
+            options={{
+              headerShown: true,
+              animation: "slide_from_right",
+              title: "Tentang MeepleCafe",
+              headerStyle: { backgroundColor: colors.darkBg },
+              headerTintColor: "#FFFFFF",
+              headerTitleStyle: { fontWeight: "bold" }
+            }}
+          />
         </RootStack.Group>
       )}
     </RootStack.Navigator>
