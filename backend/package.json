@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "backup": "node src/scripts/generate_backup.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
