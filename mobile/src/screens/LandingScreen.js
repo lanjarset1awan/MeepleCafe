@@ -121,7 +121,7 @@ export default function LandingScreen({ navigation }) {
               style={styles.headerLogo}
               resizeMode="contain"
             />
-            <Text style={styles.headerTitle}>Katalog Koleksi Game</Text>
+            <Text style={styles.headerTitle}>MeepleCafe</Text>
           </View>
 
           {/* Tombol Masuk & Daftar di Kanan Header */}
@@ -143,6 +143,22 @@ export default function LandingScreen({ navigation }) {
               <Text style={styles.headerBtnLoginText}>Masuk</Text>
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Informasi Harus Login untuk Bermain / Pesan Meja */}
+        <View style={styles.noticeBox}>
+          <Ionicons name="information-circle-outline" size={17} color="#93C5FD" style={{ marginRight: 6 }} />
+          <Text style={styles.noticeText}>
+            Jelajahi koleksi game kami. Silakan{" "}
+            <Text style={styles.noticeHighlight} onPress={() => navigation.navigate("Login")}>
+              Masuk
+            </Text>{" "}
+            atau{" "}
+            <Text style={styles.noticeHighlight} onPress={() => navigation.navigate("Register")}>
+              Daftar
+            </Text>{" "}
+            terlebih dahulu untuk memesan meja dan mulai bermain di kafe.
+          </Text>
         </View>
       </View>
 
@@ -232,13 +248,36 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 46,
-    paddingBottom: 36,
+    paddingBottom: 28,
     paddingHorizontal: 20
   },
   headerBrandRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    marginBottom: 10
+  },
+  noticeBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.09)",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.12)",
+    marginTop: 2
+  },
+  noticeText: {
+    flex: 1,
+    fontSize: 12,
+    color: "#E2E8F0",
+    lineHeight: 17
+  },
+  noticeHighlight: {
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    textDecorationLine: "underline"
   },
   headerLeft: {
     flexDirection: "row",
