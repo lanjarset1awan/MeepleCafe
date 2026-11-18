@@ -92,7 +92,7 @@ export default function LoginScreen({ navigation }) {
           {/* Form Input */}
           <View style={styles.form}>
             {/* Input Identifier */}
-            <Text style={styles.inputLabel}>Username, Email, atau NIM</Text>
+            <Text style={styles.inputLabel}>Username atau Email</Text>
             <View style={styles.inputWrapper}>
               <Ionicons name="person-outline" size={18} color={colors.primary} style={styles.inputIcon} />
               <TextInput

@@ -5,7 +5,7 @@ export const AuthController = {
   // POST /api/auth/register
   async register(req, res) {
     try {
-      const { name, username, email, phone, nim, major, password } = req.body;
+      const { name, username, email, phone, password } = req.body;
 
       if (!name || !name.trim()) {
         return res.status(400).json({ error: "Nama lengkap wajib diisi" });
@@ -35,8 +35,6 @@ export const AuthController = {
         username,
         email,
         phone,
-        nim,
-        major,
         password
       });
 
@@ -99,13 +97,13 @@ export const AuthController = {
   async updateProfile(req, res) {
     try {
       const { id } = req.params;
-      const { name, phone, nim, major, avatar } = req.body;
+      const { name, phone, avatar } = req.body;
 
       if (!name || !name.trim()) {
         return res.status(400).json({ error: "Nama lengkap wajib diisi" });
       }
 
-      const updated = await UserModel.update(id, { name, phone, nim, major, avatar });
+      const updated = await UserModel.update(id, { name, phone, avatar });
       if (!updated) {
         return res.status(404).json({ error: "Pengguna tidak ditemukan" });
       }

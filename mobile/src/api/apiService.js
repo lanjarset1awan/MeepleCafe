@@ -189,7 +189,7 @@ export const ApiService = {
 
     // 2. Direct Fallback: Supabase Cloud tabel users
     try {
-      const filter = `or=(username.ilike.${encodeURIComponent(trimmedId)},email.ilike.${encodeURIComponent(trimmedId)},nim.ilike.${encodeURIComponent(trimmedId)})`;
+      const filter = `or=(username.ilike.${encodeURIComponent(trimmedId)},email.ilike.${encodeURIComponent(trimmedId)})`;
       const supabaseRes = await fetch(`${SUPABASE_URL}/rest/v1/users?${filter}&limit=1`, {
         headers: {
           "Content-Type": "application/json",
@@ -229,8 +229,6 @@ export const ApiService = {
       username: userData.username.trim().toLowerCase(),
       email: userData.email ? userData.email.trim().toLowerCase() : `${userData.username.trim().toLowerCase()}@meeplecafe.com`,
       phone: userData.phone ? userData.phone.trim() : "081234567890",
-      nim: userData.nim ? userData.nim.trim() : "",
-      major: userData.major ? userData.major.trim() : "Member Umum",
       password: userData.password.trim(),
       avatar: userData.avatar || `https://api.dicebear.com/7.x/bottts/png?seed=${userData.username}&backgroundColor=287ab8`,
       role: "Member"
@@ -294,7 +292,7 @@ export const ApiService = {
       if (backendRes.ok) return await backendRes.json();
     } catch (e) {}
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${id}&select=id,name,username,email,phone,nim,major,avatar,role,created_at`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${id}&select=id,name,username,email,phone,avatar,role,created_at`, {
       headers: {
         "Content-Type": "application/json",
         "apikey": SUPABASE_KEY,
@@ -313,8 +311,6 @@ export const ApiService = {
     const payload = {};
     if (profileData.name !== undefined) payload.name = profileData.name ? profileData.name.trim() : "";
     if (profileData.phone !== undefined) payload.phone = profileData.phone ? profileData.phone.trim() : "";
-    if (profileData.nim !== undefined) payload.nim = profileData.nim ? profileData.nim.trim() : "";
-    if (profileData.major !== undefined) payload.major = profileData.major ? profileData.major.trim() : "";
     if (profileData.avatar !== undefined) {
       payload.avatar = profileData.avatar && profileData.avatar.trim() ? profileData.avatar.trim() : null;
     }

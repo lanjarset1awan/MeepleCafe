@@ -13,12 +13,10 @@ export const DEFAULT_USERS = [
     username: "lanjar",
     email: "lanjar@meeplecafe.com",
     phone: "081234567890",
-    nim: "21120124120023",
-    major: "Teknik Komputer",
     password: "123",
     avatar:
       "https://mmdrzvvnmoplbdfaiixx.supabase.co/storage/v1/object/public/avatar/2/avatar.png?t=1779476174261",
-    role: "Mahasiswa / Member",
+    role: "Member",
     createdAt: "2026-11-13T09:00:00.000Z"
   }
 ];
@@ -64,7 +62,7 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Login dengan Email/Username/NIM & Password
+  // Login dengan Email/Username & Password
   const login = async (identifier, password) => {
     const trimmedId = (identifier || "").trim().toLowerCase();
     const trimmedPass = (password || "").trim();
@@ -93,8 +91,7 @@ export function AuthProvider({ children }) {
     const foundUser = allUsers.find((u) => {
       const matchId =
         (u.email && u.email.toLowerCase() === trimmedId) ||
-        (u.username && u.username.toLowerCase() === trimmedId) ||
-        (u.nim && u.nim.toLowerCase() === trimmedId);
+        (u.username && u.username.toLowerCase() === trimmedId);
       const matchPass = u.password === trimmedPass;
       return matchId && matchPass;
     });
@@ -111,7 +108,7 @@ export function AuthProvider({ children }) {
 
   // Registrasi Akun Baru
   const register = async (userData) => {
-    const { name, username, email, phone, nim, major, password } = userData;
+    const { name, username, email, phone, password } = userData;
 
     if (!name || !name.trim()) {
       throw new Error("Nama lengkap wajib diisi.");
@@ -133,8 +130,6 @@ export function AuthProvider({ children }) {
         username: cleanUsername,
         email: cleanEmail,
         phone: phone ? phone.trim() : "081234567890",
-        nim: nim ? nim.trim() : "",
-        major: major ? major.trim() : "Member Umum",
         password: password.trim()
       });
 
@@ -174,8 +169,6 @@ export function AuthProvider({ children }) {
       username: cleanUsername,
       email: cleanEmail,
       phone: phone ? phone.trim() : "081234567890",
-      nim: nim ? nim.trim() : "",
-      major: major ? major.trim() : "Member Umum",
       password: password.trim(),
       avatar: `https://api.dicebear.com/7.x/bottts/png?seed=${cleanUsername}&backgroundColor=287ab8`,
       role: "Member",
@@ -204,8 +197,6 @@ export function AuthProvider({ children }) {
       ...user,
       name: profileData.name ? profileData.name.trim() : user.name,
       phone: profileData.phone ? profileData.phone.trim() : (user.phone || ""),
-      nim: profileData.nim !== undefined ? profileData.nim.trim() : (user.nim || ""),
-      major: profileData.major ? profileData.major.trim() : (user.major || "Member Umum"),
       avatar: profileData.avatar !== undefined ? profileData.avatar : (user.avatar || null)
     };
 
@@ -215,8 +206,6 @@ export function AuthProvider({ children }) {
         const res = await ApiService.updateProfile(user.id, {
           name: updatedUser.name,
           phone: updatedUser.phone,
-          nim: updatedUser.nim,
-          major: updatedUser.major,
           avatar: updatedUser.avatar
         });
         if (res && res.user) {

@@ -24,8 +24,6 @@ export default function ProfileScreen({ navigation }) {
   const userUsername = user?.username || "lanjar";
   const userEmail = user?.email || `${userUsername}@meeplecafe.com`;
   const userPhone = user?.phone || "0812-3456-7890";
-  const userNim = user?.nim ? user.nim : "";
-  const userMajor = user?.major || "Teknik Komputer";
   const userRole = user?.role || "Member MeepleCafe";
 
   // Ambil 2 huruf awal dari username pengguna sebagai inisial avatar
@@ -124,35 +122,13 @@ export default function ProfileScreen({ navigation }) {
               </View>
             </View>
 
-            <View style={styles.infoRow}>
+            <View style={[styles.infoRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
               <View style={styles.infoIconBox}>
                 <Ionicons name="call-outline" size={18} color={colors.primary} />
               </View>
               <View style={styles.infoTextBox}>
                 <Text style={styles.infoItemLabel}>Nomor Telepon</Text>
                 <Text style={styles.infoItemValue}>{userPhone}</Text>
-              </View>
-            </View>
-
-            {userNim ? (
-              <View style={styles.infoRow}>
-                <View style={styles.infoIconBox}>
-                  <Ionicons name="id-card-outline" size={18} color={colors.primary} />
-                </View>
-                <View style={styles.infoTextBox}>
-                  <Text style={styles.infoItemLabel}>NIM Mahasiswa</Text>
-                  <Text style={styles.infoItemValue}>{userNim}</Text>
-                </View>
-              </View>
-            ) : null}
-
-            <View style={[styles.infoRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
-              <View style={styles.infoIconBox}>
-                <Ionicons name="school-outline" size={18} color={colors.primary} />
-              </View>
-              <View style={styles.infoTextBox}>
-                <Text style={styles.infoItemLabel}>Program Studi / Kategori</Text>
-                <Text style={styles.infoItemValue}>{userMajor}</Text>
               </View>
             </View>
           </View>

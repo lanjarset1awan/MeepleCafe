@@ -33,7 +33,7 @@ Tugas Akhir Praktikum Pemrograman Perangkat Bergerak (PPB) 2026.
    * **Tentang Kafe**: Profil kafe, jam operasional, alamat lengkap, dan fasilitas kafe.
    * Tombol masuk (*Login*) dan daftar (*Register*) di header.
 2. **Sistem Autentikasi Pengguna & Keamanan**:
-   * Registrasi akun baru dengan validasi username, email, nama, nomor telepon, NIM, dan program studi.
+   * Registrasi akun baru dengan validasi username, email, nama lengkap, nomor telepon, dan kata sandi.
    * Login aman dengan sinkronisasi database Supabase Cloud & *local fallback cache*.
 3. **5 Tab Utama Aplikasi**:
    * 🃏 **Katalog**: Tampilan visual kartu board game, detail sinopsis, aturan main, dan jumlah pemain.
@@ -162,7 +162,7 @@ Aplikasi telah dikonfigurasi dengan **EAS Build** untuk menghasilkan file `.apk`
 
 | Peran | Username / Identifier | Kata Sandi | Keterangan |
 | :--- | :--- | :--- | :--- |
-| **Admin / Mahasiswa** | `lanjar` atau `21120124120023` | `123` | Akun praktikan dengan data lengkap |
+| **Admin / Mahasiswa** | `lanjar` atau `lanjar@meeplecafe.com` | `123` | Akun praktikan dengan data lengkap |
 | **Pendaftaran Baru** | *(Daftar via form)* | Bebas | Pengguna dapat membuat akun baru |
 
 ---
@@ -171,6 +171,6 @@ Aplikasi telah dikonfigurasi dengan **EAS Build** untuk menghasilkan file `.apk`
 
 * **Nama:** Lanjar Setiawan
 * **NIM:** 21120124120023
-* **Program Studi:** Teknik Komputer
+* **Kelompok:** Kelompok 16
+* **Shift:** Shift 3
 * **Mata Kuliah:** Praktikum Pemrograman Perangkat Bergerak (PPB) 2026
-* **Kelompok:** 16

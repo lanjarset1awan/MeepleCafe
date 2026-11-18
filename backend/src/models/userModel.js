@@ -8,8 +8,6 @@ export const DEFAULT_USERS = [
     username: "lanjar",
     email: "lanjar@meeplecafe.com",
     phone: "081234567890",
-    nim: "21120124120023",
-    major: "Teknik Komputer",
     password: "123",
     avatar:
       "https://mmdrzvvnmoplbdfaiixx.supabase.co/storage/v1/object/public/avatar/2/avatar.png?t=1779476174261",
@@ -27,7 +25,7 @@ export const UserModel = {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("id, name, username, email, phone, nim, major, avatar, role, created_at")
+        .select("id, name, username, email, phone, avatar, role, created_at")
         .order("created_at", { ascending: true });
 
       if (!error && Array.isArray(data) && data.length > 0) {
@@ -40,7 +38,7 @@ export const UserModel = {
     return fallbackMemoryUsers.map(({ password, ...u }) => u);
   },
 
-  // Cari pengguna berdasarkan username, email, atau NIM (termasuk password untuk login)
+  // Cari pengguna berdasarkan username atau email (termasuk password untuk login)
   async findByIdentifier(identifier) {
     const cleanId = (identifier || "").trim().toLowerCase();
 
@@ -49,7 +47,7 @@ export const UserModel = {
       const { data, error } = await supabase
         .from("users")
         .select("*")
-        .or(`username.ilike.${cleanId},email.ilike.${cleanId},nim.ilike.${cleanId}`)
+        .or(`username.ilike.${cleanId},email.ilike.${cleanId}`)
         .limit(1);
 
       if (!error && Array.isArray(data) && data.length > 0) {
@@ -64,8 +62,7 @@ export const UserModel = {
       fallbackMemoryUsers.find(
         (u) =>
           u.username.toLowerCase() === cleanId ||
-          (u.email && u.email.toLowerCase() === cleanId) ||
-          (u.nim && u.nim.toLowerCase() === cleanId)
+          (u.email && u.email.toLowerCase() === cleanId)
       ) || null
     );
   },
@@ -75,7 +72,7 @@ export const UserModel = {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("id, name, username, email, phone, nim, major, avatar, role, created_at")
+        .select("id, name, username, email, phone, avatar, role, created_at")
         .eq("id", id)
         .single();
 
@@ -101,8 +98,6 @@ export const UserModel = {
       username: payload.username.trim().toLowerCase(),
       email: payload.email ? payload.email.trim().toLowerCase() : `${payload.username.trim().toLowerCase()}@meeplecafe.com`,
       phone: payload.phone ? payload.phone.trim() : "081234567890",
-      nim: payload.nim ? payload.nim.trim() : "",
-      major: payload.major ? payload.major.trim() : "Member Umum",
       password: payload.password.trim(),
       avatar:
         payload.avatar ||
@@ -115,7 +110,7 @@ export const UserModel = {
       const { data, error } = await supabase
         .from("users")
         .insert([newUser])
-        .select("id, name, username, email, phone, nim, major, avatar, role, created_at");
+        .select("id, name, username, email, phone, avatar, role, created_at");
 
       if (!error && Array.isArray(data) && data.length > 0) {
         return data[0];
@@ -141,8 +136,6 @@ export const UserModel = {
     const updateData = {};
     if (payload.name !== undefined) updateData.name = payload.name.trim();
     if (payload.phone !== undefined) updateData.phone = payload.phone.trim();
-    if (payload.nim !== undefined) updateData.nim = payload.nim.trim();
-    if (payload.major !== undefined) updateData.major = payload.major.trim();
     if (payload.avatar !== undefined) {
       updateData.avatar = payload.avatar && payload.avatar.trim() ? payload.avatar.trim() : null;
     }
@@ -153,7 +146,7 @@ export const UserModel = {
         .from("users")
         .update(updateData)
         .eq("id", id)
-        .select("id, name, username, email, phone, nim, major, avatar, role, created_at");
+        .select("id, name, username, email, phone, avatar, role, created_at");
 
       if (!error && Array.isArray(data) && data.length > 0) {
         return data[0];

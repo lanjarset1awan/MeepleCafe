@@ -22,8 +22,6 @@ export default function EditProfileScreen({ navigation }) {
 
   const [name, setName] = useState(user?.name || "");
   const [phone, setPhone] = useState(user?.phone || "");
-  const [nim, setNim] = useState(user?.nim || "");
-  const [major, setMajor] = useState(user?.major || "");
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
@@ -163,9 +161,7 @@ export default function EditProfileScreen({ navigation }) {
       setIsSaving(true);
       await updateProfile({
         name: name.trim(),
-        phone: phone.trim(),
-        nim: nim.trim(),
-        major: major.trim()
+        phone: phone.trim()
       });
 
       showDialog({
@@ -295,37 +291,6 @@ export default function EditProfileScreen({ navigation }) {
                 placeholder="Contoh: 081234567890"
                 placeholderTextColor={colors.textMuted}
                 keyboardType="phone-pad"
-                style={styles.inputField}
-              />
-            </View>
-          </View>
-
-          {/* NIM Mahasiswa (Editable) */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>NIM Mahasiswa (Opsional)</Text>
-            <View style={styles.inputBox}>
-              <Ionicons name="id-card-outline" size={19} color={colors.primary} style={styles.inputIcon} />
-              <TextInput
-                value={nim}
-                onChangeText={setNim}
-                placeholder="Contoh: 21120124120023"
-                placeholderTextColor={colors.textMuted}
-                keyboardType="numeric"
-                style={styles.inputField}
-              />
-            </View>
-          </View>
-
-          {/* Program Studi / Kategori (Editable) */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Program Studi / Kategori Member</Text>
-            <View style={styles.inputBox}>
-              <Ionicons name="school-outline" size={19} color={colors.primary} style={styles.inputIcon} />
-              <TextInput
-                value={major}
-                onChangeText={setMajor}
-                placeholder="Contoh: Teknik Komputer / Member Umum"
-                placeholderTextColor={colors.textMuted}
                 style={styles.inputField}
               />
             </View>

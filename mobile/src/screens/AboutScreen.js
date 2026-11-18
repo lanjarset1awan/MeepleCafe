@@ -147,6 +147,63 @@ export default function AboutScreen() {
         </View>
       </View>
 
+      {/* Card 4: Informasi Pembuat Aplikasi */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Ionicons name="code-slash" size={20} color={colors.primary} />
+          <Text style={styles.cardTitle}>Informasi Pembuat Aplikasi</Text>
+        </View>
+
+        <View style={styles.creatorBadgeRow}>
+          <View style={styles.creatorBadge}>
+            <Ionicons name="school" size={13} color={colors.primaryDark} style={{ marginRight: 5 }} />
+            <Text style={styles.creatorBadgeText}>Praktikum PPB 2026</Text>
+          </View>
+        </View>
+
+        <View style={styles.creatorList}>
+          <View style={styles.creatorRow}>
+            <View style={styles.creatorIconBox}>
+              <Ionicons name="person-outline" size={16} color={colors.primary} />
+            </View>
+            <View style={styles.creatorInfo}>
+              <Text style={styles.creatorLabel}>Nama Pengembang</Text>
+              <Text style={styles.creatorValue}>Lanjar Setiawan</Text>
+            </View>
+          </View>
+
+          <View style={styles.creatorRow}>
+            <View style={styles.creatorIconBox}>
+              <Ionicons name="id-card-outline" size={16} color={colors.primary} />
+            </View>
+            <View style={styles.creatorInfo}>
+              <Text style={styles.creatorLabel}>NIM</Text>
+              <Text style={styles.creatorValue}>21120124120023</Text>
+            </View>
+          </View>
+
+          <View style={styles.creatorRow}>
+            <View style={styles.creatorIconBox}>
+              <Ionicons name="people-outline" size={16} color={colors.primary} />
+            </View>
+            <View style={styles.creatorInfo}>
+              <Text style={styles.creatorLabel}>Kelompok</Text>
+              <Text style={styles.creatorValue}>Kelompok 16</Text>
+            </View>
+          </View>
+
+          <View style={[styles.creatorRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
+            <View style={styles.creatorIconBox}>
+              <Ionicons name="time-outline" size={16} color={colors.primary} />
+            </View>
+            <View style={styles.creatorInfo}>
+              <Text style={styles.creatorLabel}>Shift</Text>
+              <Text style={styles.creatorValue}>Shift 3</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
       <Text style={styles.footerNote}>© 2026 MeepleCafe. All rights reserved.</Text>
     </ScrollView>
   );
@@ -311,6 +368,59 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: colors.primaryDark
+  },
+  creatorBadgeRow: {
+    marginBottom: 14
+  },
+  creatorBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CCE3F5"
+  },
+  creatorBadgeText: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: colors.primaryDark
+  },
+  creatorList: {
+    marginTop: 2
+  },
+  creatorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingBottom: 10,
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9"
+  },
+  creatorIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12
+  },
+  creatorInfo: {
+    flex: 1
+  },
+  creatorLabel: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: "500",
+    marginBottom: 2
+  },
+  creatorValue: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.text
   },
   footerNote: {
     textAlign: "center",

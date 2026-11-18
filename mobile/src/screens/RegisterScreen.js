@@ -25,8 +25,6 @@ export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [nim, setNim] = useState("");
-  const [major, setMajor] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -65,8 +63,6 @@ export default function RegisterScreen({ navigation }) {
         username,
         email,
         phone,
-        nim,
-        major,
         password
       });
 
@@ -191,34 +187,6 @@ export default function RegisterScreen({ navigation }) {
                 value={phone}
                 onChangeText={setPhone}
               />
-            </View>
-
-            {/* NIM & Program Studi (Opsional) */}
-            <View style={styles.twoColRow}>
-              <View style={{ flex: 1, marginRight: 6 }}>
-                <Text style={styles.inputLabel}>NIM (Opsional)</Text>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="211201..."
-                    placeholderTextColor={colors.textMuted}
-                    value={nim}
-                    onChangeText={setNim}
-                  />
-                </View>
-              </View>
-              <View style={{ flex: 1.2, marginLeft: 6 }}>
-                <Text style={styles.inputLabel}>Program Studi</Text>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Teknik Komputer"
-                    placeholderTextColor={colors.textMuted}
-                    value={major}
-                    onChangeText={setMajor}
-                  />
-                </View>
-              </View>
             </View>
 
             {/* Kata Sandi */}
