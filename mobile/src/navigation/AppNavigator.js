@@ -18,6 +18,7 @@ import BookingFormScreen from "../screens/BookingFormScreen";
 import MyTicketsScreen from "../screens/MyTicketsScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
+import AboutScreen from "../screens/AboutScreen";
 
 import { colors } from "../theme/colors";
 
@@ -50,6 +51,14 @@ function GameStackNavigator() {
         options={({ route }) => ({
           title: route.params?.title || "Detail Permainan"
         })}
+      />
+      <GameStack.Screen
+        name="About"
+        component={AboutScreen}
+        options={{
+          title: "Tentang MeepleCafe",
+          headerShown: true
+        }}
       />
     </GameStack.Navigator>
   );
@@ -153,6 +162,14 @@ function ProfileStackNavigator() {
         component={EditProfileScreen}
         options={{
           title: "Edit Profil Pengguna",
+          headerShown: true
+        }}
+      />
+      <ProfileStack.Screen
+        name="About"
+        component={AboutScreen}
+        options={{
+          title: "Tentang MeepleCafe",
           headerShown: true
         }}
       />

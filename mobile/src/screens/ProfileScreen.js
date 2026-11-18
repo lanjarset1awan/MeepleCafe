@@ -53,12 +53,24 @@ export default function ProfileScreen({ navigation }) {
       {/* Header Banner Konsisten */}
       <View style={styles.header}>
         <View style={styles.headerBrandRow}>
-          <Image
-            source={require("../../assets/Logo-MeepleCafe.jpeg")}
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
-          <Text style={styles.headerTitle}>Profil Pengguna</Text>
+          <View style={styles.headerLeft}>
+            <Image
+              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            <Text style={styles.headerTitle}>Profil Pengguna</Text>
+          </View>
+
+          {/* Tombol Info / About di Kanan Atas */}
+          <TouchableOpacity
+            style={styles.headerInfoBtn}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate("About")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -149,57 +161,6 @@ export default function ProfileScreen({ navigation }) {
             </View>
           </View>
 
-          {/* About Application */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Image
-                source={require("../../assets/Logo-MeepleCafe.jpeg")}
-                style={styles.cardLogo}
-                resizeMode="contain"
-              />
-              <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
-            </View>
-            <Text style={styles.aboutText}>
-              MeepleCafe adalah aplikasi mobile terintegrasi untuk pecinta board game.
-              Aplikasi ini memadukan katalog koleksi permainan fisik terlengkap dengan
-              sistem pemesanan meja dan ruangan bermain di kafe secara instan.
-            </Text>
-          </View>
-
-          {/* Cafe Information */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="storefront" size={22} color={colors.secondary} />
-              <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
-            </View>
-
-            <View style={styles.infoItem}>
-              <Ionicons name="location-outline" size={20} color={colors.primary} />
-              <View style={styles.infoContent}>
-                <Text style={styles.infoHeading}>Alamat Kafe</Text>
-                <Text style={styles.infoDesc}>
-                  Jl. Graha Prasetya IV No.65, Pedalangan, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50268
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.infoItem}>
-              <Ionicons name="time-outline" size={20} color={colors.primary} />
-              <View style={styles.infoContent}>
-                <Text style={styles.infoHeading}>Jam Buka</Text>
-                <Text style={styles.infoDesc}>Setiap Hari: 10.00 – 21.00 WIB</Text>
-              </View>
-            </View>
-
-            <View style={[styles.infoItem, { marginBottom: 0 }]}>
-              <Ionicons name="call-outline" size={20} color={colors.primary} />
-              <View style={styles.infoContent}>
-                <Text style={styles.infoHeading}>Kontak Layanan</Text>
-                <Text style={styles.infoDesc}>WhatsApp: +62 812-3456-7890</Text>
-              </View>
-            </View>
-          </View>
-
           {/* Tombol Logout di Paling Bawah */}
           <TouchableOpacity
             style={styles.btnLogout}
@@ -228,6 +189,11 @@ const styles = StyleSheet.create({
   },
   headerBrandRow: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  headerLeft: {
+    flexDirection: "row",
     alignItems: "center"
   },
   headerLogo: {
@@ -241,6 +207,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#FFFFFF"
+  },
+  headerInfoBtn: {
+    padding: 4
   },
   scrollView: {
     flex: 1,
@@ -386,31 +355,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontWeight: "700",
     marginTop: 1
-  },
-  aboutText: {
-    fontSize: 13,
-    color: colors.textMuted,
-    lineHeight: 20
-  },
-  infoItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 10
-  },
-  infoContent: {
-    marginLeft: 10,
-    flex: 1
-  },
-  infoHeading: {
-    fontSize: 12.5,
-    fontWeight: "700",
-    color: colors.text
-  },
-  infoDesc: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 2,
-    lineHeight: 18
   },
   btnLogout: {
     flexDirection: "row",
