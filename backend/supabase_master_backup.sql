@@ -444,7 +444,7 @@ ON CONFLICT (id) DO UPDATE SET
 -- 7. DATA SEED / BACKUP: AKUN PENGGUNA (users)
 -- ==============================================================================
 INSERT INTO public.users (id, name, username, email, phone, password, avatar, role, created_at)
-VALUES ('2d688ca5-1dbf-4e9a-bd4c-84d3f0527d2c', 'Lanjar Setiawan', 'lanjar', 'lanjar@meeplecafe.com', '081234567890', '123', 'https://inavrmjnfpsveippxbqj.supabase.co/storage/v1/object/public/avatars/2d688ca5-1dbf-4e9a-bd4c-84d3f0527d2c/avatar-1794997908414.jpg', 'Mahasiswa / Member', '2026-11-18T09:23:57.003435+00:00')
+VALUES ('2d688ca5-1dbf-4e9a-bd4c-84d3f0527d2c', 'Lanjar Setiawan', 'lanjar', 'lanjar@meeplecafe.com', '081234567890', '123', 'https://inavrmjnfpsveippxbqj.supabase.co/storage/v1/object/public/avatars/2d688ca5-1dbf-4e9a-bd4c-84d3f0527d2c/avatar-1794997908414.jpg', 'Member', '2026-11-18T09:23:57.003435+00:00')
 ON CONFLICT (username) DO UPDATE SET
   name = EXCLUDED.name,
   email = EXCLUDED.email,

@@ -11,7 +11,7 @@ export const DEFAULT_USERS = [
     password: "123",
     avatar:
       "https://mmdrzvvnmoplbdfaiixx.supabase.co/storage/v1/object/public/avatar/2/avatar.png?t=1779476174261",
-    role: "Mahasiswa / Member",
+    role: "Member",
     created_at: "2026-11-13T09:00:00.000Z"
   }
 ];

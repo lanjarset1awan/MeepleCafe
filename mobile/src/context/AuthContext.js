@@ -39,7 +39,12 @@ export function AuthProvider({ children }) {
       try {
         const storedUser = await AsyncStorage.getItem(ACTIVE_USER_STORAGE_KEY);
         if (storedUser) {
-          setUser(JSON.parse(storedUser));
+          const parsed = JSON.parse(storedUser);
+          if (parsed && (parsed.role === "Mahasiswa / Member" || !parsed.role)) {
+            parsed.role = "Member";
+            await AsyncStorage.setItem(ACTIVE_USER_STORAGE_KEY, JSON.stringify(parsed));
+          }
+          setUser(parsed);
         }
       } catch (err) {
         console.error("Gagal membaca sesi aktif:", err);

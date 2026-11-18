@@ -24,7 +24,8 @@ export default function ProfileScreen({ navigation }) {
   const userUsername = user?.username || "lanjar";
   const userEmail = user?.email || `${userUsername}@meeplecafe.com`;
   const userPhone = user?.phone || "0812-3456-7890";
-  const userRole = user?.role || "Member";
+  const rawRole = user?.role || "Member";
+  const userRole = (rawRole === "Mahasiswa / Member" || rawRole === "Member MeepleCafe") ? "Member" : rawRole;
 
   // Ambil 2 huruf awal dari username pengguna sebagai inisial avatar
   const userInitials = (
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
     paddingVertical: 22,
     paddingHorizontal: 20,
     alignItems: "center",
-    marginBottom: 14,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 3,
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: 18,
-    marginBottom: 14,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 2,
