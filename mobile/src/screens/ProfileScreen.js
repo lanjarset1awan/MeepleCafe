@@ -83,15 +83,6 @@ export default function ProfileScreen({ navigation }) {
           </TouchableOpacity>
 
           <Text style={styles.studentName}>{userName}</Text>
-
-          <TouchableOpacity
-            style={styles.btnEditProfileHeader}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("EditProfile")}
-          >
-            <Ionicons name="create-outline" size={15} color={colors.primaryDark} style={{ marginRight: 6 }} />
-            <Text style={styles.btnEditProfileHeaderText}>Edit Profil</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={styles.bodyContent}>
@@ -132,6 +123,16 @@ export default function ProfileScreen({ navigation }) {
               </View>
             </View>
           </View>
+
+          {/* Tombol Besar Edit Profil di Atas Tombol Keluar */}
+          <TouchableOpacity
+            style={styles.btnEditProfile}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate("EditProfile")}
+          >
+            <Ionicons name="create-outline" size={19} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text style={styles.btnEditProfileText}>Edit Profil</Text>
+          </TouchableOpacity>
 
           {/* Tombol Logout di Paling Bawah */}
           <TouchableOpacity
@@ -332,20 +333,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.text
   },
-  btnEditProfileHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 16,
-    paddingVertical: 7,
-    borderRadius: 20,
-    marginTop: 12
-  },
-  btnEditProfileHeaderText: {
-    fontSize: 12.5,
-    fontWeight: "700",
-    color: colors.primaryDark
-  },
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
@@ -409,6 +396,26 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: 1
   },
+  btnEditProfile: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    paddingVertical: 13,
+    borderRadius: 14,
+    marginTop: 14,
+    marginBottom: 8,
+    elevation: 2,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  btnEditProfileText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700"
+  },
   btnLogout: {
     flexDirection: "row",
     alignItems: "center",
@@ -418,7 +425,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: "#DC2626",
-    marginTop: 6,
+    marginTop: 2,
     marginBottom: 24
   },
   btnLogoutText: {
