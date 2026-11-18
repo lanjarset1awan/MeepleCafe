@@ -402,8 +402,7 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   actionButtonsWrapper: {
-    width: "100%",
-    marginTop: "auto"
+    width: "100%"
   },
   btnEditProfile: {
     flexDirection: "row",
