@@ -63,7 +63,7 @@ export default function ProfileScreen({ navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Kotakan Header Profil (Avatar 2 Huruf & Info Utama) */}
+        {/* Kotakan Header Profil (Avatar 2 Huruf, Nama, Username, dan Tombol Edit Profil) */}
         <View style={styles.profileHeaderCard}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatarBadge}>
@@ -74,37 +74,23 @@ export default function ProfileScreen({ navigation }) {
 
           <Text style={styles.studentName}>{userName}</Text>
           <Text style={styles.studentUsername}>@{userUsername}</Text>
-          <View style={styles.deptBadge}>
-            <Ionicons name="shield-checkmark" size={14} color={colors.primary} style={{ marginRight: 6 }} />
-            <Text style={styles.deptText}>{userRole}</Text>
-          </View>
 
           <TouchableOpacity
             style={styles.btnEditProfileHeader}
             activeOpacity={0.8}
             onPress={() => navigation.navigate("EditProfile")}
           >
-            <Ionicons name="create-outline" size={14} color={colors.primary} style={{ marginRight: 5 }} />
+            <Ionicons name="create-outline" size={15} color={colors.primaryDark} style={{ marginRight: 6 }} />
             <Text style={styles.btnEditProfileHeaderText}>Edit Profil</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.bodyContent}>
-          {/* Card: Informasi Akun Pengguna */}
+          {/* Card: Informasi Akun Pengguna (Tanpa Tombol Edit) */}
           <View style={styles.card}>
-            <View style={styles.cardHeaderRow}>
-              <View style={styles.cardHeaderLeft}>
-                <Ionicons name="person-circle-outline" size={22} color={colors.primary} />
-                <Text style={styles.cardTitle}>Informasi Akun Pengguna</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.btnCardEdit}
-                activeOpacity={0.8}
-                onPress={() => navigation.navigate("EditProfile")}
-              >
-                <Ionicons name="pencil" size={13} color={colors.primary} style={{ marginRight: 4 }} />
-                <Text style={styles.btnCardEditText}>Ubah</Text>
-              </TouchableOpacity>
+            <View style={styles.cardHeader}>
+              <Ionicons name="person-circle-outline" size={22} color={colors.primary} />
+              <Text style={styles.cardTitle}>Informasi Akun Pengguna</Text>
             </View>
 
             <View style={styles.infoRow}>
@@ -234,7 +220,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 46,
-    paddingBottom: 36,
+    paddingBottom: 20,
     paddingHorizontal: 20
   },
   headerBrandRow: {
@@ -263,16 +249,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: "center",
     marginHorizontal: 16,
-    marginTop: -16,
-    marginBottom: 12,
+    marginTop: 16,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: colors.border,
-    elevation: 3,
+    elevation: 2,
     shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    zIndex: 10
+    shadowOpacity: 0.06,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 }
   },
   bodyContent: {
     paddingHorizontal: 16
@@ -324,35 +309,19 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginTop: 2
   },
-  deptBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 12,
-    marginTop: 8
-  },
-  deptText: {
-    fontSize: 12.5,
-    fontWeight: "700",
-    color: colors.primaryDark
-  },
   btnEditProfileHeader: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: colors.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
     borderRadius: 20,
-    marginTop: 10
+    marginTop: 12
   },
   btnEditProfileHeaderText: {
     fontSize: 12.5,
     fontWeight: "700",
-    color: colors.primary
+    color: colors.primaryDark
   },
   card: {
     backgroundColor: colors.card,
@@ -366,29 +335,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 }
-  },
-  cardHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 14
-  },
-  cardHeaderLeft: {
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  btnCardEdit: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12
-  },
-  btnCardEditText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: colors.primary
   },
   cardHeader: {
     flexDirection: "row",
