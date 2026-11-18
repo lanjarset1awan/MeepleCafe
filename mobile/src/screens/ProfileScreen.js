@@ -65,7 +65,7 @@ export default function ProfileScreen({ navigation }) {
 
       {/* Konten Profil (Non-scrollable, Pas Satu Layar) */}
       <View style={styles.contentWrapper}>
-        {/* Kotakan Header Profil (Avatar 2 Huruf, Nama, dan Tombol Edit Profil) */}
+        {/* Kotakan Header Profil (Avatar & Nama) */}
         <View style={styles.profileHeaderCard}>
           <TouchableOpacity
             style={styles.avatarContainer}
@@ -85,45 +85,46 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.studentName}>{userName}</Text>
         </View>
 
-        <View style={styles.bodyContent}>
-          {/* Card: Informasi Akun Pengguna (Tanpa Tombol Edit) */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="person-circle-outline" size={22} color={colors.primary} />
-              <Text style={styles.cardTitle}>Informasi Akun Pengguna</Text>
-            </View>
+        {/* Card: Informasi Akun Pengguna */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="person-circle-outline" size={22} color={colors.primary} />
+            <Text style={styles.cardTitle}>Informasi Akun Pengguna</Text>
+          </View>
 
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconBox}>
-                <Ionicons name="at-outline" size={18} color={colors.primary} />
-              </View>
-              <View style={styles.infoTextBox}>
-                <Text style={styles.infoItemLabel}>Username</Text>
-                <Text style={styles.infoItemValue}>@{userUsername}</Text>
-              </View>
+          <View style={styles.infoRow}>
+            <View style={styles.infoIconBox}>
+              <Ionicons name="at-outline" size={18} color={colors.primary} />
             </View>
-
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconBox}>
-                <Ionicons name="mail-outline" size={18} color={colors.primary} />
-              </View>
-              <View style={styles.infoTextBox}>
-                <Text style={styles.infoItemLabel}>Email</Text>
-                <Text style={styles.infoItemValue}>{userEmail}</Text>
-              </View>
-            </View>
-
-            <View style={[styles.infoRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
-              <View style={styles.infoIconBox}>
-                <Ionicons name="call-outline" size={18} color={colors.primary} />
-              </View>
-              <View style={styles.infoTextBox}>
-                <Text style={styles.infoItemLabel}>Nomor Telepon</Text>
-                <Text style={styles.infoItemValue}>{userPhone}</Text>
-              </View>
+            <View style={styles.infoTextBox}>
+              <Text style={styles.infoItemLabel}>Username</Text>
+              <Text style={styles.infoItemValue}>@{userUsername}</Text>
             </View>
           </View>
 
+          <View style={styles.infoRow}>
+            <View style={styles.infoIconBox}>
+              <Ionicons name="mail-outline" size={18} color={colors.primary} />
+            </View>
+            <View style={styles.infoTextBox}>
+              <Text style={styles.infoItemLabel}>Email</Text>
+              <Text style={styles.infoItemValue}>{userEmail}</Text>
+            </View>
+          </View>
+
+          <View style={[styles.infoRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
+            <View style={styles.infoIconBox}>
+              <Ionicons name="call-outline" size={18} color={colors.primary} />
+            </View>
+            <View style={styles.infoTextBox}>
+              <Text style={styles.infoItemLabel}>Nomor Telepon</Text>
+              <Text style={styles.infoItemValue}>{userPhone}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Action Buttons di Bagian Bawah */}
+        <View style={styles.actionButtonsWrapper}>
           {/* Tombol Besar Edit Profil di Atas Tombol Keluar */}
           <TouchableOpacity
             style={styles.btnEditProfile}
@@ -262,7 +263,10 @@ const styles = StyleSheet.create({
   },
   contentWrapper: {
     flex: 1,
-    marginTop: -16
+    marginTop: -16,
+    paddingHorizontal: 16,
+    justifyContent: "space-between",
+    paddingBottom: 18
   },
   profileHeaderCard: {
     backgroundColor: colors.card,
@@ -270,9 +274,6 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 20,
     alignItems: "center",
-    marginHorizontal: 16,
-    marginTop: 0,
-    marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 3,
@@ -281,8 +282,17 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 }
   },
-  bodyContent: {
-    paddingHorizontal: 16
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }
   },
   avatarContainer: {
     position: "relative",
@@ -334,19 +344,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginTop: 4
   },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 }
-  },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -397,6 +394,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: 2
   },
+  actionButtonsWrapper: {
+    width: "100%"
+  },
   btnEditProfile: {
     flexDirection: "row",
     alignItems: "center",
@@ -426,8 +426,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: "#DC2626",
-    marginTop: 0,
-    marginBottom: 26
+    marginTop: 0
   },
   btnLogoutText: {
     color: "#DC2626",
