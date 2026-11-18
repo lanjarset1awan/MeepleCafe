@@ -48,12 +48,6 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
-  const handleQuickFillDemo = () => {
-    setIdentifier("lanjar");
-    setPassword("123");
-    setErrorMessage("");
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -157,16 +151,6 @@ export default function LoginScreen({ navigation }) {
                   <Ionicons name="log-in-outline" size={20} color="#FFFFFF" style={{ marginLeft: 6 }} />
                 </>
               )}
-            </TouchableOpacity>
-
-            {/* Tombol Isi Otomatis Akun Demo */}
-            <TouchableOpacity
-              style={styles.btnQuickDemo}
-              onPress={handleQuickFillDemo}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="flash-outline" size={15} color={colors.primaryDark} style={{ marginRight: 5 }} />
-              <Text style={styles.btnQuickDemoText}>Gunakan Akun Demo Bawaan (Lanjar / 123)</Text>
             </TouchableOpacity>
           </View>
 
@@ -322,21 +306,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "bold"
-  },
-  btnQuickDemo: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.primaryLight,
-    paddingVertical: 9,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#CCE3F5"
-  },
-  btnQuickDemoText: {
-    fontSize: 12,
-    color: colors.primaryDark,
-    fontWeight: "600"
   },
   footerRow: {
     flexDirection: "row",
