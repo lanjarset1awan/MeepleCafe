@@ -47,6 +47,18 @@ export default function RegisterScreen({ navigation }) {
       setErrorMessage("Username tidak boleh mengandung spasi.");
       return;
     }
+    if (!email.trim()) {
+      setErrorMessage("Alamat email wajib diisi.");
+      return;
+    }
+    if (!email.trim().includes("@")) {
+      setErrorMessage("Format email tidak valid (harus mengandung '@').");
+      return;
+    }
+    if (!phone.trim()) {
+      setErrorMessage("Nomor WhatsApp / HP wajib diisi.");
+      return;
+    }
     if (!password.trim() || password.trim().length < 3) {
       setErrorMessage("Kata sandi minimal 3 karakter.");
       return;
@@ -161,7 +173,9 @@ export default function RegisterScreen({ navigation }) {
             </View>
 
             {/* Email */}
-            <Text style={styles.inputLabel}>Email</Text>
+            <Text style={styles.inputLabel}>
+              Email <Text style={styles.required}>*</Text>
+            </Text>
             <View style={styles.inputWrapper}>
               <Ionicons name="mail-outline" size={18} color={colors.primary} style={styles.inputIcon} />
               <TextInput
@@ -176,7 +190,9 @@ export default function RegisterScreen({ navigation }) {
             </View>
 
             {/* Nomor Telepon / WA */}
-            <Text style={styles.inputLabel}>Nomor WhatsApp / HP</Text>
+            <Text style={styles.inputLabel}>
+              Nomor WhatsApp / HP <Text style={styles.required}>*</Text>
+            </Text>
             <View style={styles.inputWrapper}>
               <Ionicons name="call-outline" size={18} color={colors.primary} style={styles.inputIcon} />
               <TextInput

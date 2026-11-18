@@ -177,11 +177,29 @@ export default function EditProfileScreen({ navigation }) {
       return;
     }
 
-    if (email.trim() && !email.trim().includes("@")) {
+    if (!email.trim()) {
+      showDialog({
+        type: "warning",
+        title: "Perhatian",
+        message: "Alamat email tidak boleh kosong."
+      });
+      return;
+    }
+
+    if (!email.trim().includes("@")) {
       showDialog({
         type: "warning",
         title: "Perhatian",
         message: "Format alamat email tidak valid (harus mengandung '@')."
+      });
+      return;
+    }
+
+    if (!phone.trim()) {
+      showDialog({
+        type: "warning",
+        title: "Perhatian",
+        message: "Nomor telepon / WhatsApp tidak boleh kosong."
       });
       return;
     }
@@ -286,7 +304,9 @@ export default function EditProfileScreen({ navigation }) {
 
           {/* Email (Editable) */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Alamat Email</Text>
+            <Text style={styles.inputLabel}>
+              Alamat Email <Text style={styles.requiredStar}>*</Text>
+            </Text>
             <View style={styles.inputBox}>
               <Ionicons name="mail-outline" size={19} color={colors.primary} style={styles.inputIcon} />
               <TextInput
@@ -322,7 +342,9 @@ export default function EditProfileScreen({ navigation }) {
 
           {/* Nomor Telepon / WA (Editable) */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Nomor Telepon / WhatsApp</Text>
+            <Text style={styles.inputLabel}>
+              Nomor Telepon / WhatsApp <Text style={styles.requiredStar}>*</Text>
+            </Text>
             <View style={styles.inputBox}>
               <Ionicons name="call-outline" size={19} color={colors.primary} style={styles.inputIcon} />
               <TextInput
