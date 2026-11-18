@@ -93,13 +93,13 @@ export default function TableDetailScreen({ route, navigation }) {
             </View>
 
             <View style={styles.specBox}>
-              <Ionicons name="wifi" size={24} color={colors.secondary} />
+              <Ionicons name="wifi" size={24} color={colors.primary} />
               <Text style={styles.specTitle}>Fasilitas</Text>
               <Text style={styles.specSub}>High-Speed WiFi</Text>
             </View>
 
             <View style={styles.specBox}>
-              <Ionicons name="fast-food" size={24} color={colors.accent} />
+              <Ionicons name="fast-food" size={24} color={colors.primary} />
               <Text style={styles.specTitle}>Layanan</Text>
               <Text style={styles.specSub}>Dine-in Menu</Text>
             </View>
