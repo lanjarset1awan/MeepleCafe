@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   profileHeaderCard: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    paddingVertical: 22,
+    paddingVertical: 24,
     paddingHorizontal: 20,
     alignItems: "center",
     marginHorizontal: 16,
@@ -289,21 +289,21 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   avatarImage: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
-    borderWidth: 4,
+    width: 124,
+    height: 124,
+    borderRadius: 62,
+    borderWidth: 4.5,
     borderColor: "#E8F2FA",
     backgroundColor: colors.border
   },
   avatarBadge: {
-    width: 92,
-    height: 92,
-    borderRadius: 46,
+    width: 124,
+    height: 124,
+    borderRadius: 62,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 4,
+    borderWidth: 4.5,
     borderColor: "#E8F2FA",
     elevation: 5,
     shadowColor: colors.primary,
@@ -312,32 +312,33 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 }
   },
   avatarInitials: {
-    fontSize: 34,
+    fontSize: 44,
     fontWeight: "800",
     color: "#FFFFFF",
     letterSpacing: 2
   },
   onlineBadge: {
     position: "absolute",
-    bottom: 2,
-    right: 4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    bottom: 3,
+    right: 6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: colors.success,
-    borderWidth: 2.5,
+    borderWidth: 3,
     borderColor: "#FFFFFF"
   },
   studentName: {
-    fontSize: 21,
+    fontSize: 22,
     fontWeight: "bold",
-    color: colors.text
+    color: colors.text,
+    marginTop: 4
   },
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    padding: 18,
-    marginBottom: 12,
+    padding: 20,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 2,
@@ -368,43 +369,43 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingBottom: 11,
-    marginBottom: 11,
+    paddingBottom: 13,
+    marginBottom: 13,
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6"
   },
   infoIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.primaryLight,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12
+    marginRight: 14
   },
   infoTextBox: {
     flex: 1
   },
   infoItemLabel: {
-    fontSize: 11.5,
+    fontSize: 12,
     color: colors.textMuted,
     fontWeight: "500"
   },
   infoItemValue: {
-    fontSize: 13.5,
+    fontSize: 14.5,
     color: colors.text,
     fontWeight: "700",
-    marginTop: 1
+    marginTop: 2
   },
   btnEditProfile: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.primary,
-    paddingVertical: 13,
+    paddingVertical: 14.5,
     borderRadius: 14,
     marginTop: 14,
-    marginBottom: 8,
+    marginBottom: 10,
     elevation: 2,
     shadowColor: colors.primary,
     shadowOpacity: 0.25,
@@ -413,7 +414,7 @@ const styles = StyleSheet.create({
   },
   btnEditProfileText: {
     color: "#FFFFFF",
-    fontSize: 15,
+    fontSize: 15.5,
     fontWeight: "700"
   },
   btnLogout: {
@@ -421,16 +422,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#FFFFFF",
-    paddingVertical: 13,
+    paddingVertical: 14,
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: "#DC2626",
     marginTop: 2,
-    marginBottom: 24
+    marginBottom: 26
   },
   btnLogoutText: {
     color: "#DC2626",
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: "700"
   },
   modalBackdrop: {
