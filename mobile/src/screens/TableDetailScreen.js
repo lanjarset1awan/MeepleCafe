@@ -59,9 +59,12 @@ export default function TableDetailScreen({ route, navigation }) {
   }
 
   // Parse facilities string into an array
-  const facilityList = table.facilities
+  const facilityList = (table.facilities
     ? table.facilities.split(",").map((f) => f.trim())
-    : ["Meja luas khusus board game", "Papan skor & dadu", "Free WiFi Kafe"];
+    : ["Meja luas khusus board game", "Papan skor & dadu", "Wi-Fi Kafe"]
+  )
+    .map((f) => f.replace(/Free Snack\s*(&\s*)?/i, "").trim())
+    .filter(Boolean);
 
   return (
     <View style={styles.container}>

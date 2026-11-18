@@ -838,11 +838,6 @@ export default function BookingFormScreen({ route, navigation }) {
           <Text style={[styles.priceRowValue, { color: colors.primaryDark }]}>GRATIS</Text>
         </View>
 
-        <View style={styles.priceRow}>
-          <Text style={styles.priceRowLabel}>Fasilitas Wi-Fi & Snack Kafe:</Text>
-          <Text style={[styles.priceRowValue, { color: colors.primaryDark }]}>GRATIS</Text>
-        </View>
-
         <View style={styles.priceDivider} />
 
         <View style={styles.totalRow}>
