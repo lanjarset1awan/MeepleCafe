@@ -452,9 +452,12 @@ export default function BookingFormScreen({ route, navigation }) {
       else if (selectedPaymentMethod === "cash") paymentMethodName = "Bayar di Kasir";
 
       // Format metadata
+      const bookingUsername = (user?.username || "").trim().toLowerCase();
+      const userTag = bookingUsername ? ` [User: ${bookingUsername}]` : "";
+
       const combinedName = `${customerName.trim()} [Game: ${gameTitle}] [Total: ${formatRupiah(
         totalPrice
-      )}] [Metode: ${paymentMethodName}]`;
+      )}] [Metode: ${paymentMethodName}]${userTag}`;
 
       const payload = {
         customer_name: combinedName,

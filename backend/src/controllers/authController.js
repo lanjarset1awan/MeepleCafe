@@ -13,8 +13,12 @@ export const AuthController = {
       if (!username || !username.trim()) {
         return res.status(400).json({ error: "Username wajib diisi" });
       }
-      if (!password || password.trim().length < 3) {
-        return res.status(400).json({ error: "Kata sandi minimal 3 karakter" });
+      const trimmedPass = (password || "").trim();
+      if (!trimmedPass || trimmedPass.length < 8) {
+        return res.status(400).json({ error: "Kata sandi minimal 8 karakter" });
+      }
+      if (!/[^A-Za-z0-9]/.test(trimmedPass)) {
+        return res.status(400).json({ error: "Kata sandi harus mengandung minimal 1 karakter unik (contoh: @, #, $, !, *)" });
       }
 
       // Cek apakah username atau email sudah digunakan

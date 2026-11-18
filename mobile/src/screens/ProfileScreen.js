@@ -26,6 +26,11 @@ export default function ProfileScreen({ navigation }) {
   const userPhone = user?.phone || "0812-3456-7890";
   const rawRole = user?.role || "Member";
   const userRole = (rawRole === "Mahasiswa / Member" || rawRole === "Member MeepleCafe") ? "Member" : rawRole;
+  const hasCustomAvatar = Boolean(
+    user?.avatar &&
+    !user.avatar.includes("dicebear.com") &&
+    user.avatar.trim() !== ""
+  );
 
   // Ambil 2 huruf awal dari username pengguna sebagai inisial avatar
   const userInitials = (
@@ -73,11 +78,11 @@ export default function ProfileScreen({ navigation }) {
             activeOpacity={0.85}
             onPress={() => setIsPhotoModalVisible(true)}
           >
-            {user?.avatar ? (
+            {hasCustomAvatar ? (
               <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatarBadge}>
-                <Text style={styles.avatarInitials}>{userInitials}</Text>
+                <Ionicons name="person-outline" size={68} color="#FFFFFF" />
               </View>
             )}
           </TouchableOpacity>
@@ -188,7 +193,7 @@ export default function ProfileScreen({ navigation }) {
             activeOpacity={1}
             onPress={() => setIsPhotoModalVisible(false)}
           >
-            {user?.avatar ? (
+            {hasCustomAvatar ? (
               <Image
                 source={{ uri: user.avatar }}
                 style={styles.fullscreenAvatar}
@@ -197,10 +202,10 @@ export default function ProfileScreen({ navigation }) {
             ) : (
               <View style={styles.fullscreenInitialsContainer}>
                 <View style={styles.fullscreenAvatarBadge}>
-                  <Text style={styles.fullscreenAvatarInitials}>{userInitials}</Text>
+                  <Ionicons name="person-outline" size={72} color="#FFFFFF" />
                 </View>
                 <Text style={styles.fullscreenName}>{userName}</Text>
-                <Text style={styles.fullscreenNote}>Profil menggunakan inisial nama</Text>
+                <Text style={styles.fullscreenNote}>Profil menggunakan avatar bawaan</Text>
               </View>
             )}
           </TouchableOpacity>

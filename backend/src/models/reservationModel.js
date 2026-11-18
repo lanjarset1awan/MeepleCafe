@@ -21,7 +21,7 @@ function doOverlap(s1, s2) {
 }
 
 export const ReservationModel = {
-  async getAll() {
+  async getAll(filter = {}) {
     // Select standard columns first to guarantee compatibility with or without new columns
     let query = supabase
       .from("reservations")
@@ -35,6 +35,25 @@ export const ReservationModel = {
 
     let { data, error } = await query;
     if (error) throw error;
+
+    if (data && (filter.username || filter.customer_name || filter.customer_phone)) {
+      const uName = (filter.username || "").toLowerCase();
+      const cName = (filter.customer_name || "").toLowerCase();
+      const cPhone = (filter.customer_phone || "").replace(/\D/g, "");
+
+      data = data.filter((item) => {
+        const rawName = (item.customer_name || "").toLowerCase();
+        const rawPhone = (item.customer_phone || "").replace(/\D/g, "");
+
+        if (uName && rawName.includes(`[user: ${uName}]`)) return true;
+        const clean = rawName.replace(/\[.+?\]/g, "").trim();
+        if (uName && clean === uName) return true;
+        if (cName && (clean === cName || clean.includes(cName))) return true;
+        if (cPhone.length >= 7 && rawPhone.length >= 7 && cPhone === rawPhone) return true;
+        return false;
+      });
+    }
+
     return data;
   },
 

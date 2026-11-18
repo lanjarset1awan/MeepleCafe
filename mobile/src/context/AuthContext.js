@@ -40,9 +40,19 @@ export function AuthProvider({ children }) {
         const storedUser = await AsyncStorage.getItem(ACTIVE_USER_STORAGE_KEY);
         if (storedUser) {
           const parsed = JSON.parse(storedUser);
-          if (parsed && (parsed.role === "Mahasiswa / Member" || !parsed.role)) {
-            parsed.role = "Member";
-            await AsyncStorage.setItem(ACTIVE_USER_STORAGE_KEY, JSON.stringify(parsed));
+          if (parsed) {
+            let changed = false;
+            if (parsed.role === "Mahasiswa / Member" || !parsed.role) {
+              parsed.role = "Member";
+              changed = true;
+            }
+            if (parsed.avatar && parsed.avatar.includes("dicebear.com")) {
+              parsed.avatar = null;
+              changed = true;
+            }
+            if (changed) {
+              await AsyncStorage.setItem(ACTIVE_USER_STORAGE_KEY, JSON.stringify(parsed));
+            }
           }
           setUser(parsed);
         }
@@ -121,8 +131,12 @@ export function AuthProvider({ children }) {
     if (!username || !username.trim()) {
       throw new Error("Username wajib diisi.");
     }
-    if (!password || password.trim().length < 3) {
-      throw new Error("Kata sandi minimal 3 karakter.");
+    const trimmedPass = (password || "").trim();
+    if (!trimmedPass || trimmedPass.length < 8) {
+      throw new Error("Kata sandi minimal 8 karakter.");
+    }
+    if (!/[^A-Za-z0-9]/.test(trimmedPass)) {
+      throw new Error("Kata sandi harus mengandung minimal 1 karakter unik (contoh: @, #, $, !, *).");
     }
 
     const cleanUsername = username.trim().toLowerCase();
@@ -175,7 +189,7 @@ export function AuthProvider({ children }) {
       email: cleanEmail,
       phone: phone ? phone.trim() : "081234567890",
       password: password.trim(),
-      avatar: `https://api.dicebear.com/7.x/bottts/png?seed=${cleanUsername}&backgroundColor=287ab8`,
+      avatar: null,
       role: "Member",
       createdAt: new Date().toISOString()
     };

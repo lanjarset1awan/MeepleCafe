@@ -99,9 +99,7 @@ export const UserModel = {
       email: payload.email ? payload.email.trim().toLowerCase() : `${payload.username.trim().toLowerCase()}@meeplecafe.com`,
       phone: payload.phone ? payload.phone.trim() : "081234567890",
       password: payload.password.trim(),
-      avatar:
-        payload.avatar ||
-        `https://api.dicebear.com/7.x/bottts/png?seed=${payload.username}&backgroundColor=287ab8`,
+      avatar: payload.avatar || null,
       role: "Member"
     };
 

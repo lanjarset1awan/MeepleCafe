@@ -119,9 +119,13 @@ export const ApiService = {
   },
 
   // 3. Reservasi / Booking Meja
-  async getReservations() {
+  async getReservations(filter = {}) {
+    let endpoint = "/api/reservations";
+    if (filter.username) {
+      endpoint += `?username=${encodeURIComponent(filter.username)}`;
+    }
     return fetchWithFallback(
-      "/api/reservations",
+      endpoint,
       "reservations?select=*,cafe_tables(*)&order=created_at.desc"
     );
   },
@@ -230,7 +234,7 @@ export const ApiService = {
       email: userData.email ? userData.email.trim().toLowerCase() : `${userData.username.trim().toLowerCase()}@meeplecafe.com`,
       phone: userData.phone ? userData.phone.trim() : "081234567890",
       password: userData.password.trim(),
-      avatar: userData.avatar || `https://api.dicebear.com/7.x/bottts/png?seed=${userData.username}&backgroundColor=287ab8`,
+      avatar: userData.avatar || null,
       role: "Member"
     };
 

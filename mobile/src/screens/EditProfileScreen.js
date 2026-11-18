@@ -27,6 +27,12 @@ export default function EditProfileScreen({ navigation }) {
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
+  const hasCustomAvatar = Boolean(
+    user?.avatar &&
+    !user.avatar.includes("dicebear.com") &&
+    user.avatar.trim() !== ""
+  );
+
   // Dialog State
   const [dialogConfig, setDialogConfig] = useState({
     visible: false,
@@ -244,11 +250,11 @@ export default function EditProfileScreen({ navigation }) {
         {/* Banner Preview Avatar Inisial & Foto Profil */}
         <View style={styles.avatarCard}>
           <View style={styles.avatarWrapper}>
-            {user?.avatar ? (
+            {hasCustomAvatar ? (
               <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
             ) : (
               <View style={styles.avatarBadge}>
-                <Text style={styles.avatarInitials}>{userInitials}</Text>
+                <Ionicons name="person-outline" size={54} color="#FFFFFF" />
               </View>
             )}
 

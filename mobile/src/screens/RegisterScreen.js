@@ -59,8 +59,14 @@ export default function RegisterScreen({ navigation }) {
       setErrorMessage("Nomor WhatsApp / HP wajib diisi.");
       return;
     }
-    if (!password.trim() || password.trim().length < 3) {
-      setErrorMessage("Kata sandi minimal 3 karakter.");
+    const trimmedPass = password.trim();
+    if (!trimmedPass || trimmedPass.length < 8) {
+      setErrorMessage("Kata sandi minimal 8 karakter.");
+      return;
+    }
+    const hasUniqueChar = /[^A-Za-z0-9]/.test(trimmedPass);
+    if (!hasUniqueChar) {
+      setErrorMessage("Kata sandi harus mengandung minimal 1 karakter unik (contoh: @, #, $, !, %, *, ?).");
       return;
     }
     if (password !== confirmPassword) {
@@ -213,7 +219,7 @@ export default function RegisterScreen({ navigation }) {
               <Ionicons name="lock-closed-outline" size={18} color={colors.primary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Minimal 3 karakter..."
+                placeholder="Min. 8 karakter & 1 karakter unik..."
                 placeholderTextColor={colors.textMuted}
                 secureTextEntry={!showPassword}
                 value={password}

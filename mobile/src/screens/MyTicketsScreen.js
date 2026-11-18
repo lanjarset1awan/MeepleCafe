@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
+import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
 import CustomDialog from "../components/CustomDialog";
 import GameImage from "../components/GameImage";
@@ -52,6 +53,7 @@ export function isReservationExpired(reservationDateStr, sessionTimeStr) {
 }
 
 export default function MyTicketsScreen({ navigation }) {
+  const { user } = useAuth();
   const [tickets, setTickets] = useState([]);
   const [gamesLookup, setGamesLookup] = useState({});
   const [loading, setLoading] = useState(true);
@@ -78,7 +80,7 @@ export default function MyTicketsScreen({ navigation }) {
   const loadTickets = async () => {
     try {
       setLoading(true);
-      const data = await ApiService.getReservations();
+      const data = await ApiService.getReservations({ username: user?.username });
       setTickets(data || []);
     } catch (err) {
       console.error(err);
@@ -133,12 +135,53 @@ export default function MyTicketsScreen({ navigation }) {
     setDialogConfig((prev) => ({ ...prev, visible: false }));
   };
 
+  // Filter tiket khusus milik akun pengguna yang sedang login
+  const myUserTickets = useMemo(() => {
+    if (!user) return [];
+
+    const currentUsername = (user.username || "").toLowerCase().trim();
+    const currentName = (user.name || "").toLowerCase().trim();
+    const currentPhone = (user.phone || "").replace(/\D/g, "");
+
+    return (tickets || []).filter((t) => {
+      const rawName = (t.customer_name || "").toLowerCase();
+      const rawPhone = (t.customer_phone || "").replace(/\D/g, "");
+
+      // 1. Cek tag [User: username]
+      const userMatch = rawName.match(/\[user:\s*(.+?)\]/);
+      if (userMatch) {
+        return userMatch[1].trim() === currentUsername;
+      }
+
+      // 2. Cek tag [UserId: id]
+      const userIdMatch = rawName.match(/\[userid:\s*(.+?)\]/);
+      if (userIdMatch && user.id) {
+        return userIdMatch[1].trim() === String(user.id).toLowerCase();
+      }
+
+      // 3. Cek nama pemesan bersih (setelah tag metadata dibersihkan)
+      const cleanName = rawName.replace(/\[.+?\]/g, "").trim();
+      if (cleanName) {
+        if (currentUsername && cleanName === currentUsername) return true;
+        if (currentName && cleanName === currentName) return true;
+        if (currentName.length >= 3 && cleanName.includes(currentName)) return true;
+      }
+
+      // 4. Cek nomor telepon pemesan
+      if (currentPhone.length >= 7 && rawPhone.length >= 7 && currentPhone === rawPhone) {
+        return true;
+      }
+
+      return false;
+    });
+  }, [tickets, user]);
+
   // Pisahkan tiket aktif (belum lewat) dan tiket yang sudah kedaluwarsa (lewat jamnya)
   const { activeTickets, expiredTickets } = useMemo(() => {
     const active = [];
     const expired = [];
 
-    (tickets || []).forEach((t) => {
+    myUserTickets.forEach((t) => {
       if (isReservationExpired(t.reservation_date, t.session_time)) {
         expired.push(t);
       } else {
@@ -147,7 +190,7 @@ export default function MyTicketsScreen({ navigation }) {
     });
 
     return { activeTickets: active, expiredTickets: expired };
-  }, [tickets]);
+  }, [myUserTickets]);
 
   const displayedTickets = activeTab === "active" ? activeTickets : expiredTickets;
 

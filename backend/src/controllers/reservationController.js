@@ -3,7 +3,8 @@ import { ReservationModel } from "../models/reservationModel.js";
 export const ReservationController = {
   async getAll(req, res) {
     try {
-      const reservations = await ReservationModel.getAll();
+      const { user_id, username, customer_name, customer_phone } = req.query;
+      const reservations = await ReservationModel.getAll({ user_id, username, customer_name, customer_phone });
       res.json(reservations);
     } catch (err) {
       res.status(500).json({ error: err.message });
