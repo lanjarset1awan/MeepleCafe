@@ -92,7 +92,7 @@ export default function ProfileScreen({ navigation }) {
         {/* Card: Informasi Akun Pengguna */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="person-circle-outline" size={22} color={colors.primary} />
+            <Ionicons name="person-circle-outline" size={28} color={colors.primary} />
             <Text style={styles.cardTitle}>Informasi Akun Pengguna</Text>
           </View>
 
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12
+    marginBottom: 14
   },
   cardLogo: {
     width: 26,
@@ -366,16 +366,16 @@ const styles = StyleSheet.create({
     borderColor: colors.border
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "bold",
     color: colors.text,
-    marginLeft: 8
+    marginLeft: 10
   },
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingBottom: 12,
-    marginBottom: 12,
+    paddingBottom: 13,
+    marginBottom: 13,
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6"
   },
@@ -392,15 +392,15 @@ const styles = StyleSheet.create({
     flex: 1
   },
   infoItemLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textMuted,
     fontWeight: "500"
   },
   infoItemValue: {
-    fontSize: 14.5,
+    fontSize: 15.5,
     color: colors.text,
     fontWeight: "700",
-    marginTop: 2
+    marginTop: 2.5
   },
   actionButtonsWrapper: {
     width: "100%"
