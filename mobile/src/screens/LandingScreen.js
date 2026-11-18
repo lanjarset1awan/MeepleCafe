@@ -11,7 +11,7 @@ import {
   Image,
   ScrollView
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
@@ -286,16 +286,32 @@ export default function LandingScreen({ navigation }) {
           )}
         </View>
       ) : (
-        /* Halaman About: Tentang Kafe & Informasi Operasional (Non-scrollable) */
-        <View style={styles.aboutContainer}>
-          {/* Card: Tentang MeepleCafe */}
+        /* Halaman About: Tentang Kafe & Informasi Operasional (Sama persis dengan AboutScreen di dalam apps) */
+        <ScrollView
+          style={styles.aboutContainer}
+          contentContainerStyle={styles.aboutScrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Brand Hero */}
+          <View style={styles.heroCard}>
+            <Image
+              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.heroTitle}>MeepleCafe</Text>
+            <Text style={styles.heroTagline}>
+              Platform Board Game Cafe & Reservasi Meja
+            </Text>
+            <View style={styles.versionBadge}>
+              <Text style={styles.versionText}>Versi 1.0.0 • Mobile App</Text>
+            </View>
+          </View>
+
+          {/* Card 1: Tentang MeepleCafe */}
           <View style={styles.aboutCard}>
             <View style={styles.cardHeader}>
-              <Image
-                source={require("../../assets/Logo-MeepleCafe.jpeg")}
-                style={styles.cardLogo}
-                resizeMode="contain"
-              />
+              <Ionicons name="information-circle" size={22} color={colors.primary} />
               <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
             </View>
             <Text style={styles.aboutText}>
@@ -304,36 +320,47 @@ export default function LandingScreen({ navigation }) {
               sistem pemesanan meja dan ruangan bermain di kafe secara instan.
             </Text>
 
-            {/* Fitur Utama */}
-            <View style={styles.featuresRow}>
-              <View style={styles.featureItem}>
-                <View style={styles.featureIconCircle}>
+            <View style={styles.featuresList}>
+              <View style={styles.featureRow}>
+                <View style={styles.featureIcon}>
                   <Ionicons name="albums-outline" size={18} color={colors.primary} />
                 </View>
-                <Text style={styles.featureTitle}>Ratusan Game</Text>
-                <Text style={styles.featureDesc}>Koleksi terupdate dari berbagai genre</Text>
-              </View>
-
-              <View style={styles.featureItem}>
-                <View style={styles.featureIconCircle}>
-                  <Ionicons name="calendar-outline" size={18} color={colors.primary} />
+                <View style={styles.featureInfo}>
+                  <Text style={styles.featureName}>Ratusan Koleksi Board Game</Text>
+                  <Text style={styles.featureDesc}>
+                    Mulai dari genre strategi, pesta, keluarga, hingga deduksi sosial.
+                  </Text>
                 </View>
-                <Text style={styles.featureTitle}>Pesan Meja</Text>
-                <Text style={styles.featureDesc}>Booking instan meja Reguler hingga VIP</Text>
               </View>
 
-              <View style={styles.featureItem}>
-                <View style={styles.featureIconCircle}>
+              <View style={styles.featureRow}>
+                <View style={styles.featureIcon}>
+                  <MaterialCommunityIcons name="table-chair" size={18} color={colors.primary} />
+                </View>
+                <View style={styles.featureInfo}>
+                  <Text style={styles.featureName}>Reservasi Meja Instan</Text>
+                  <Text style={styles.featureDesc}>
+                    Pilihan meja Reguler, Premium, hingga Ruang VIP privat tanpa antre.
+                  </Text>
+                </View>
+              </View>
+
+              <View style={[styles.featureRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+                <View style={styles.featureIcon}>
                   <Ionicons name="people-outline" size={18} color={colors.primary} />
                 </View>
-                <Text style={styles.featureTitle}>Game Master</Text>
-                <Text style={styles.featureDesc}>Pemandu ramah siap mengajari aturan</Text>
+                <View style={styles.featureInfo}>
+                  <Text style={styles.featureName}>Game Master Ramah</Text>
+                  <Text style={styles.featureDesc}>
+                    Pemandu berpengalaman siap mengajari aturan bermain game baru.
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
 
-          {/* Card: Informasi Operasional Kafe */}
-          <View style={[styles.aboutCard, { marginBottom: 0 }]}>
+          {/* Card 2: Informasi Operasional Kafe */}
+          <View style={styles.aboutCard}>
             <View style={styles.cardHeader}>
               <Ionicons name="storefront" size={22} color={colors.primary} />
               <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
@@ -365,7 +392,39 @@ export default function LandingScreen({ navigation }) {
               </View>
             </View>
           </View>
-        </View>
+
+          {/* Card 3: Fasilitas Kafe */}
+          <View style={styles.aboutCard}>
+            <View style={styles.cardHeader}>
+              <Ionicons name="sparkles" size={20} color={colors.primary} />
+              <Text style={styles.cardTitle}>Fasilitas & Kenyamanan</Text>
+            </View>
+
+            <View style={styles.facilityGrid}>
+              <View style={styles.facilityBadge}>
+                <Ionicons name="wifi" size={15} color={colors.primary} style={{ marginRight: 6 }} />
+                <Text style={styles.facilityText}>High-Speed Wi-Fi</Text>
+              </View>
+
+              <View style={styles.facilityBadge}>
+                <Ionicons name="snow-outline" size={15} color={colors.primary} style={{ marginRight: 6 }} />
+                <Text style={styles.facilityText}>Ruang Ber-AC Sejuk</Text>
+              </View>
+
+              <View style={styles.facilityBadge}>
+                <Ionicons name="fast-food-outline" size={15} color={colors.primary} style={{ marginRight: 6 }} />
+                <Text style={styles.facilityText}>Snack & Minuman Kafe</Text>
+              </View>
+
+              <View style={styles.facilityBadge}>
+                <Ionicons name="shield-checkmark-outline" size={15} color={colors.primary} style={{ marginRight: 6 }} />
+                <Text style={styles.facilityText}>Komponen Game Terawat</Text>
+              </View>
+            </View>
+          </View>
+
+          <Text style={styles.footerNote}>© 2026 MeepleCafe. All rights reserved.</Text>
+        </ScrollView>
       )}
     </View>
   );
@@ -638,21 +697,68 @@ const styles = StyleSheet.create({
     fontSize: 15
   },
   aboutContainer: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16
+    flex: 1
   },
-  aboutCard: {
+  aboutScrollContent: {
+    padding: 16,
+    paddingTop: 14,
+    paddingBottom: 36
+  },
+  heroCard: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 2,
     shadowColor: "#000",
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  logoImage: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    marginBottom: 10,
+    backgroundColor: "#FFFFFF"
+  },
+  heroTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.text
+  },
+  heroTagline: {
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 3,
+    textAlign: "center"
+  },
+  versionBadge: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 10
+  },
+  versionText: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: colors.primaryDark
+  },
+  aboutCard: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 }
   },
@@ -660,14 +766,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12
-  },
-  cardLogo: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: colors.border
   },
   cardTitle: {
     fontSize: 16,
@@ -678,45 +776,45 @@ const styles = StyleSheet.create({
   aboutText: {
     fontSize: 13,
     color: colors.textMuted,
-    lineHeight: 20
+    lineHeight: 20,
+    marginBottom: 14
   },
-  featuresRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 14,
-    paddingTop: 14,
+  featuresList: {
     borderTopWidth: 1,
-    borderColor: "#F3F4F6",
-    gap: 8
+    borderTopColor: "#F3F4F6",
+    paddingTop: 12
   },
-  featureItem: {
-    flex: 1,
-    alignItems: "center",
-    backgroundColor: "#F8FAFC",
-    paddingVertical: 10,
-    paddingHorizontal: 6,
-    borderRadius: 10
+  featureRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F8FAFC"
   },
-  featureIconCircle: {
+  featureIcon: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: colors.primaryLight,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 6
+    marginRight: 10,
+    marginTop: 1
   },
-  featureTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.text,
-    textAlign: "center"
+  featureInfo: {
+    flex: 1
+  },
+  featureName: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.text
   },
   featureDesc: {
-    fontSize: 9.5,
+    fontSize: 11.5,
     color: colors.textMuted,
-    textAlign: "center",
-    marginTop: 2
+    marginTop: 2,
+    lineHeight: 16
   },
   infoItem: {
     flexDirection: "row",
@@ -737,5 +835,31 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 2,
     lineHeight: 18
+  },
+  facilityGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 4
+  },
+  facilityBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 10
+  },
+  facilityText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.primaryDark
+  },
+  footerNote: {
+    textAlign: "center",
+    fontSize: 11.5,
+    color: colors.textMuted,
+    marginTop: 4,
+    marginBottom: 20
   }
 });
