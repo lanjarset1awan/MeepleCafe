@@ -159,5 +159,152 @@ export const ApiService = {
     return fetchWithFallback(`/api/reservations/${id}`, `reservations?id=eq.${id}`, {
       method: "DELETE"
     });
+  },
+
+  // Autentikasi Pengguna (Login via Backend REST API & Supabase)
+  async login(identifier, password) {
+    const trimmedId = (identifier || "").trim().toLowerCase();
+    const trimmedPass = (password || "").trim();
+
+    // 1. Coba via Express Backend API
+    try {
+      const backendRes = await fetch(`${DEFAULT_BACKEND_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: trimmedId, password: trimmedPass })
+      });
+      if (backendRes.ok) {
+        return await backendRes.json();
+      }
+      const errData = await backendRes.json().catch(() => ({}));
+      if (backendRes.status === 400 || backendRes.status === 401) {
+        throw new Error(errData.error || "Username atau kata sandi salah");
+      }
+    } catch (e) {
+      if (e.message && (e.message.includes("salah") || e.message.includes("tidak ditemukan"))) {
+        throw e;
+      }
+      // Backend lokal tidak aktif, lanjut ke Supabase Cloud
+    }
+
+    // 2. Direct Fallback: Supabase Cloud tabel users
+    try {
+      const filter = `or=(username.ilike.${encodeURIComponent(trimmedId)},email.ilike.${encodeURIComponent(trimmedId)},nim.ilike.${encodeURIComponent(trimmedId)})`;
+      const supabaseRes = await fetch(`${SUPABASE_URL}/rest/v1/users?${filter}&limit=1`, {
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`
+        }
+      });
+      if (supabaseRes.ok) {
+        const users = await supabaseRes.json();
+        if (Array.isArray(users) && users.length > 0) {
+          const u = users[0];
+          if (u.password === trimmedPass) {
+            const { password: _, ...safeUser } = u;
+            return {
+              message: "Login berhasil!",
+              user: safeUser,
+              token: `sb-${safeUser.id}`
+            };
+          } else {
+            throw new Error("Kata sandi salah. Silakan coba lagi.");
+          }
+        }
+      }
+    } catch (sbErr) {
+      if (sbErr.message && sbErr.message.includes("salah")) {
+        throw sbErr;
+      }
+    }
+
+    throw new Error("Pengguna tidak ditemukan di database cloud.");
+  },
+
+  // Registrasi Akun Pengguna Baru
+  async register(userData) {
+    const payload = {
+      name: userData.name.trim(),
+      username: userData.username.trim().toLowerCase(),
+      email: userData.email ? userData.email.trim().toLowerCase() : `${userData.username.trim().toLowerCase()}@meeplecafe.com`,
+      phone: userData.phone ? userData.phone.trim() : "081234567890",
+      nim: userData.nim ? userData.nim.trim() : "",
+      major: userData.major ? userData.major.trim() : "Member Umum",
+      password: userData.password.trim(),
+      avatar: userData.avatar || `https://api.dicebear.com/7.x/bottts/png?seed=${userData.username}&backgroundColor=287ab8`,
+      role: "Member"
+    };
+
+    // 1. Coba daftarkan via Express Backend API
+    try {
+      const backendRes = await fetch(`${DEFAULT_BACKEND_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (backendRes.ok) {
+        return await backendRes.json();
+      }
+      const errData = await backendRes.json().catch(() => ({}));
+      if (backendRes.status === 400) {
+        throw new Error(errData.error || "Data registrasi tidak valid");
+      }
+    } catch (e) {
+      if (e.message && e.message.includes("terdaftar")) {
+        throw e;
+      }
+      // Backend lokal tidak aktif, lanjut coba langsung ke Supabase Cloud
+    }
+
+    // 2. Direct Fallback: Supabase Cloud tabel users
+    const supabaseRes = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`,
+        "Prefer": "return=representation"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (supabaseRes.ok) {
+      const data = await supabaseRes.json();
+      const created = Array.isArray(data) ? data[0] : data;
+      const { password: _, ...safeUser } = created;
+      return {
+        message: "Registrasi berhasil!",
+        user: safeUser,
+        token: `sb-${safeUser.id}`
+      };
+    } else {
+      const errText = await supabaseRes.text();
+      if (errText.includes("users_username_key") || errText.includes("duplicate")) {
+        throw new Error(`Username "${payload.username}" sudah terdaftar.`);
+      }
+      throw new Error(`Gagal menyimpan ke database Supabase: ${errText}`);
+    }
+  },
+
+  // Ambil Profil Pengguna
+  async getUserProfile(id) {
+    try {
+      const backendRes = await fetch(`${DEFAULT_BACKEND_URL}/api/auth/profile/${id}`);
+      if (backendRes.ok) return await backendRes.json();
+    } catch (e) {}
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${id}&select=id,name,username,email,phone,nim,major,avatar,role,created_at`, {
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Array.isArray(data) && data.length > 0 ? data[0] : null;
+    }
+    return null;
   }
 };

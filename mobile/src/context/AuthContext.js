@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ApiService } from "../api/apiService";
 
 const ACTIVE_USER_STORAGE_KEY = "@meeple_active_user";
 const REGISTERED_USERS_STORAGE_KEY = "@meeple_registered_users";
@@ -72,6 +73,22 @@ export function AuthProvider({ children }) {
       throw new Error("Mohon isi username/email dan kata sandi.");
     }
 
+    // 1. Coba login melalui Backend REST API / Database Supabase
+    try {
+      const response = await ApiService.login(trimmedId, trimmedPass);
+      if (response && response.user) {
+        await AsyncStorage.setItem(ACTIVE_USER_STORAGE_KEY, JSON.stringify(response.user));
+        setUser(response.user);
+        return response.user;
+      }
+    } catch (apiErr) {
+      console.log("Database login fallback to offline cache:", apiErr.message);
+      if (apiErr.message && apiErr.message.includes("Kata sandi salah")) {
+        throw apiErr;
+      }
+    }
+
+    // 2. Fallback: Autentikasi lokal offline
     const allUsers = await getAllUsers();
     const foundUser = allUsers.find((u) => {
       const matchId =
@@ -109,6 +126,37 @@ export function AuthProvider({ children }) {
     const cleanUsername = username.trim().toLowerCase();
     const cleanEmail = email ? email.trim().toLowerCase() : `${cleanUsername}@meeplecafe.com`;
 
+    // 1. Coba daftarkan ke Backend REST API / Database Supabase
+    try {
+      const response = await ApiService.register({
+        name: name.trim(),
+        username: cleanUsername,
+        email: cleanEmail,
+        phone: phone ? phone.trim() : "081234567890",
+        nim: nim ? nim.trim() : "",
+        major: major ? major.trim() : "Member Umum",
+        password: password.trim()
+      });
+
+      if (response && response.user) {
+        await AsyncStorage.setItem(ACTIVE_USER_STORAGE_KEY, JSON.stringify(response.user));
+        setUser(response.user);
+
+        const stored = await AsyncStorage.getItem(REGISTERED_USERS_STORAGE_KEY);
+        const customUsers = stored ? JSON.parse(stored) : [];
+        customUsers.push(response.user);
+        await AsyncStorage.setItem(REGISTERED_USERS_STORAGE_KEY, JSON.stringify(customUsers));
+
+        return response.user;
+      }
+    } catch (apiErr) {
+      console.log("Database register fallback to offline storage:", apiErr.message);
+      if (apiErr.message && apiErr.message.includes("sudah terdaftar")) {
+        throw apiErr;
+      }
+    }
+
+    // 2. Fallback: Simpan lokal jika backend belum terjangkau
     const allUsers = await getAllUsers();
     const isDuplicate = allUsers.some(
       (u) =>

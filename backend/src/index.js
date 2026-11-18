@@ -6,6 +6,7 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
 import tableRoutes from "./routes/tableRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
     app: "MeepleCafe RESTful API",
     version: "1.0.0",
     endpoints: [
+      "/api/auth",
       "/api/categories",
       "/api/games",
       "/api/tables",
@@ -30,6 +32,7 @@ app.get("/", (req, res) => {
 });
 
 // Mount Routes according to Modul 1
+app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/tables", tableRoutes);
