@@ -63,7 +63,7 @@ export default function TableDetailScreen({ route, navigation }) {
     ? table.facilities.split(",").map((f) => f.trim())
     : ["Meja luas khusus board game", "Papan skor & dadu", "Wi-Fi Kafe"]
   )
-    .map((f) => f.replace(/Free Snack\s*(&\s*)?/i, "").trim())
+    .map((f) => f.replace(/Free (Snack|Welcome Drink)\s*(&\s*)?/i, "").trim())
     .filter(Boolean);
 
   return (
