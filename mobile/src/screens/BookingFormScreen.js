@@ -89,9 +89,14 @@ export default function BookingFormScreen({ route, navigation }) {
   const initialDate = currentHourNow >= 20 ? getFormattedDate(1) : todayStr;
 
   const { user } = useAuth();
-  const [customerName, setCustomerName] = useState(user?.name || "");
-  const [customerPhone, setCustomerPhone] = useState(user?.phone || "");
+  const [customerName, setCustomerName] = useState(user?.name || "Lanjar Setiawan");
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || "081234567890");
   const [reservationDate, setReservationDate] = useState(initialDate);
+
+  useEffect(() => {
+    if (user?.name) setCustomerName(user.name);
+    if (user?.phone) setCustomerPhone(user.phone);
+  }, [user]);
 
   // Daftar opsi jam mulai (10.00 sampai 20.00 karena kafe tutup jam 21.00)
   const startHourOptions = useMemo(() => {
@@ -559,33 +564,60 @@ export default function BookingFormScreen({ route, navigation }) {
 
       {/* 2. Informasi Pemesan */}
       <View style={styles.cardSection}>
-        <Text style={styles.sectionHeaderLabel}>Data Pemesan</Text>
-
-        <View style={styles.inputField}>
-          <Text style={styles.inputLabel}>Nama Lengkap *</Text>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Contoh: Lanjar Setiawan"
-            placeholderTextColor={colors.textMuted}
-            value={customerName}
-            onChangeText={setCustomerName}
-          />
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionHeaderLabel}>Data Pemesan</Text>
+          <View style={styles.profileBadgeNotice}>
+            <Ionicons name="shield-checkmark" size={13} color={colors.primary} style={{ marginRight: 4 }} />
+            <Text style={styles.profileBadgeNoticeText}>Otomatis dari Profil</Text>
+          </View>
         </View>
 
+        {/* Nama Lengkap (Otomatis dari Profil - Read Only) */}
         <View style={styles.inputField}>
-          <Text style={styles.inputLabel}>Nomor WhatsApp / HP *</Text>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Contoh: 081234567890"
-            placeholderTextColor={colors.textMuted}
-            keyboardType="phone-pad"
-            value={customerPhone}
-            onChangeText={setCustomerPhone}
-          />
+          <View style={styles.inputLabelRow}>
+            <Text style={styles.inputLabel}>Nama Lengkap Pemesan</Text>
+            <View style={styles.lockedFieldBadge}>
+              <Ionicons name="lock-closed" size={11} color={colors.textMuted} style={{ marginRight: 3 }} />
+              <Text style={styles.lockedFieldText}>Terkunci</Text>
+            </View>
+          </View>
+          <View style={styles.lockedInputBox}>
+            <Ionicons name="person" size={16} color={colors.primary} style={styles.lockedInputIcon} />
+            <TextInput
+              style={styles.lockedTextInput}
+              value={customerName || user?.name || "Lanjar Setiawan"}
+              editable={false}
+            />
+          </View>
         </View>
 
+        {/* Nomor WhatsApp / HP (Otomatis dari Profil - Read Only) */}
         <View style={styles.inputField}>
-          <Text style={styles.inputLabel}>Jumlah Pemain *</Text>
+          <View style={styles.inputLabelRow}>
+            <Text style={styles.inputLabel}>Nomor WhatsApp / HP</Text>
+            <View style={styles.lockedFieldBadge}>
+              <Ionicons name="lock-closed" size={11} color={colors.textMuted} style={{ marginRight: 3 }} />
+              <Text style={styles.lockedFieldText}>Terkunci</Text>
+            </View>
+          </View>
+          <View style={styles.lockedInputBox}>
+            <Ionicons name="call" size={16} color={colors.primary} style={styles.lockedInputIcon} />
+            <TextInput
+              style={styles.lockedTextInput}
+              value={customerPhone || user?.phone || "081234567890"}
+              editable={false}
+            />
+          </View>
+        </View>
+
+        {/* Jumlah Pemain (Dapat Diubah) */}
+        <View style={styles.inputField}>
+          <View style={styles.inputLabelRow}>
+            <Text style={styles.inputLabel}>
+              Jumlah Pemain <Text style={{ color: colors.primary }}>*</Text>
+            </Text>
+            <Text style={styles.editableHintText}>Bisa Diubah</Text>
+          </View>
           <TextInput
             style={styles.textInput}
             placeholder={`Maksimal ${capacity} Orang`}
@@ -594,6 +626,9 @@ export default function BookingFormScreen({ route, navigation }) {
             value={guestCount}
             onChangeText={setGuestCount}
           />
+          <Text style={styles.fieldHelpText}>
+            Kapasitas Meja {tableNumber}: 1 – {capacity} orang pemain
+          </Text>
         </View>
       </View>
 
@@ -1413,6 +1448,67 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.text,
     marginBottom: 6
+  },
+  inputLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6
+  },
+  profileBadgeNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8
+  },
+  profileBadgeNoticeText: {
+    fontSize: 11,
+    color: colors.primaryDark,
+    fontWeight: "600"
+  },
+  lockedFieldBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3F4F6",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6
+  },
+  lockedFieldText: {
+    fontSize: 10,
+    color: colors.textMuted,
+    fontWeight: "600"
+  },
+  lockedInputBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    paddingHorizontal: 12
+  },
+  lockedInputIcon: {
+    marginRight: 8
+  },
+  lockedTextInput: {
+    flex: 1,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: "600"
+  },
+  editableHintText: {
+    fontSize: 11,
+    color: colors.primary,
+    fontWeight: "600"
+  },
+  fieldHelpText: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 4
   },
   labelWithSubRow: {
     flexDirection: "row",
