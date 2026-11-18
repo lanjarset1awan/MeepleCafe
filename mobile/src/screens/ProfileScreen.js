@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  ScrollView,
   Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -74,11 +73,8 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      {/* Konten Profil (Non-scrollable, Pas Satu Layar) */}
+      <View style={styles.contentWrapper}>
         {/* Kotakan Header Profil (Avatar 2 Huruf, Nama, dan Tombol Edit Profil) */}
         <View style={styles.profileHeaderCard}>
           <View style={styles.avatarContainer}>
@@ -171,7 +167,7 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.btnLogoutText}>Keluar</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -211,12 +207,9 @@ const styles = StyleSheet.create({
   headerInfoBtn: {
     padding: 4
   },
-  scrollView: {
+  contentWrapper: {
     flex: 1,
     marginTop: -16
-  },
-  scrollContent: {
-    paddingBottom: 36
   },
   profileHeaderCard: {
     backgroundColor: colors.card,

@@ -375,12 +375,22 @@ export default function MyTicketsScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerBrandRow}>
-          <Image
-            source={require("../../assets/Logo-MeepleCafe.jpeg")}
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
-          <Text style={styles.headerTitle}>Tiket Reservasi</Text>
+          <View style={styles.headerLeft}>
+            <Image
+              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            <Text style={styles.headerTitle}>Tiket Reservasi</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.headerInfoBtn}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate("About")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -505,6 +515,11 @@ const styles = StyleSheet.create({
   },
   headerBrandRow: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  headerLeft: {
+    flexDirection: "row",
     alignItems: "center"
   },
   headerLogo: {
@@ -518,6 +533,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#FFFFFF"
+  },
+  headerInfoBtn: {
+    padding: 4
   },
   tabsRow: {
     flexDirection: "row",

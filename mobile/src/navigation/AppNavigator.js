@@ -86,6 +86,14 @@ function InventoryStackNavigator() {
           title: route.params?.title || "Detail Permainan"
         })}
       />
+      <InventoryStack.Screen
+        name="About"
+        component={AboutScreen}
+        options={{
+          title: "Tentang MeepleCafe",
+          headerShown: true
+        }}
+      />
     </InventoryStack.Navigator>
   );
 }
@@ -119,6 +127,14 @@ function TableStackNavigator() {
           title: "Form Reservasi Meja"
         }}
       />
+      <TableStack.Screen
+        name="About"
+        component={AboutScreen}
+        options={{
+          title: "Tentang MeepleCafe",
+          headerShown: true
+        }}
+      />
     </TableStack.Navigator>
   );
 }
@@ -137,6 +153,14 @@ function TicketStackNavigator() {
         name="MyTickets"
         component={MyTicketsScreen}
         options={{ headerShown: false }}
+      />
+      <TicketStack.Screen
+        name="About"
+        component={AboutScreen}
+        options={{
+          title: "Tentang MeepleCafe",
+          headerShown: true
+        }}
       />
     </TicketStack.Navigator>
   );
