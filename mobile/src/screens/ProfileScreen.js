@@ -62,7 +62,11 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Kotakan Header Profil (Avatar 2 Huruf, Nama, Username, dan Tombol Edit Profil) */}
         <View style={styles.profileHeaderCard}>
           <View style={styles.avatarContainer}>
@@ -220,7 +224,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 46,
-    paddingBottom: 20,
+    paddingBottom: 36,
     paddingHorizontal: 20
   },
   headerBrandRow: {
@@ -239,6 +243,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#FFFFFF"
   },
+  scrollView: {
+    flex: 1,
+    marginTop: -16
+  },
   scrollContent: {
     paddingBottom: 36
   },
@@ -249,15 +257,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     alignItems: "center",
     marginHorizontal: 16,
-    marginTop: 16,
+    marginTop: 0,
     marginBottom: 14,
     borderWidth: 1,
     borderColor: colors.border,
-    elevation: 2,
+    elevation: 3,
     shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 }
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 }
   },
   bodyContent: {
     paddingHorizontal: 16
