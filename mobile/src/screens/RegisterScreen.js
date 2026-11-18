@@ -160,8 +160,8 @@ export default function RegisterScreen({ navigation }) {
               />
             </View>
 
-            {/* Email (Opsional) */}
-            <Text style={styles.inputLabel}>Email (Opsional)</Text>
+            {/* Email */}
+            <Text style={styles.inputLabel}>Email</Text>
             <View style={styles.inputWrapper}>
               <Ionicons name="mail-outline" size={18} color={colors.primary} style={styles.inputIcon} />
               <TextInput
