@@ -1,7 +1,13 @@
 import React from "react";
+import { View, Text, ActivityIndicator, Image, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+
+import { useAuth } from "../context/AuthContext";
+import LandingScreen from "../screens/LandingScreen";
+import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen";
 
 import GameListScreen from "../screens/GameListScreen";
 import GameDetailScreen from "../screens/GameDetailScreen";
@@ -14,6 +20,7 @@ import ProfileScreen from "../screens/ProfileScreen";
 
 import { colors } from "../theme/colors";
 
+const RootStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const GameStack = createNativeStackNavigator();
 const InventoryStack = createNativeStackNavigator();
@@ -144,8 +151,8 @@ function ProfileStackNavigator() {
   );
 }
 
-// Main Bottom Tab Navigator (5 Tab Sesuai Kebutuhan)
-export default function AppNavigator() {
+// Main Bottom Tab Navigator (5 Tab Utama Aplikasi)
+function MainTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -217,3 +224,59 @@ export default function AppNavigator() {
     </Tab.Navigator>
   );
 }
+
+// Root Navigator: Memisahkan Auth Flow (Landing, Login, Register) & Main App Flow
+export default function AppNavigator() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View style={styles.splashCenter}>
+        <Image
+          source={require("../../assets/Logo-MeepleCafe.jpeg")}
+          style={styles.splashLogo}
+          resizeMode="contain"
+        />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 16 }} />
+        <Text style={styles.splashText}>Menyiapkan sesi MeepleCafe...</Text>
+      </View>
+    );
+  }
+
+  return (
+    <RootStack.Navigator screenOptions={{ headerShown: false, animation: "fade" }}>
+      {user ? (
+        // Pengguna sudah login -> Masuk ke 5 Tab Utama
+        <RootStack.Screen name="MainApp" component={MainTabNavigator} />
+      ) : (
+        // Pengguna belum login -> Alur Onboarding & Autentikasi
+        <RootStack.Group>
+          <RootStack.Screen name="Landing" component={LandingScreen} />
+          <RootStack.Screen name="Login" component={LoginScreen} />
+          <RootStack.Screen name="Register" component={RegisterScreen} />
+        </RootStack.Group>
+      )}
+    </RootStack.Navigator>
+  );
+}
+
+const styles = StyleSheet.create({
+  splashCenter: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20
+  },
+  splashLogo: {
+    width: 80,
+    height: 80,
+    borderRadius: 40
+  },
+  splashText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: colors.textMuted,
+    fontWeight: "500"
+  }
+});

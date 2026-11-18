@@ -12,6 +12,7 @@ import {
   Image
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useAuth } from "../context/AuthContext";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import CustomDialog from "../components/CustomDialog";
@@ -87,8 +88,9 @@ export default function BookingFormScreen({ route, navigation }) {
   // Jika hari ini sudah jam 20.00 ke atas (kafe tutup jam 21.00), default otomatis ke Besok
   const initialDate = currentHourNow >= 20 ? getFormattedDate(1) : todayStr;
 
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
+  const { user } = useAuth();
+  const [customerName, setCustomerName] = useState(user?.name || "");
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || "");
   const [reservationDate, setReservationDate] = useState(initialDate);
 
   // Daftar opsi jam mulai (10.00 sampai 20.00 karena kafe tutup jam 21.00)

@@ -3,12 +3,42 @@ import {
   View,
   Text,
   StyleSheet,
-  Image
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
 
 export default function ProfileScreen() {
+  const { user, logout } = useAuth();
+
+  const userName = user?.name || "Lanjar Setiawan";
+  const userNim = user?.nim ? `NIM: ${user.nim}` : user?.email || "Member MeepleCafe";
+  const userMajor = user?.major || user?.role || "Teknik Komputer";
+  const userAvatar =
+    user?.avatar ||
+    "https://mmdrzvvnmoplbdfaiixx.supabase.co/storage/v1/object/public/avatar/2/avatar.png?t=1779476174261";
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Konfirmasi Keluar",
+      "Apakah Anda yakin ingin keluar dari akun MeepleCafe?",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Ya, Keluar",
+          style: "destructive",
+          onPress: async () => {
+            await logout();
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       {/* Header Banner Konsisten */}
@@ -23,78 +53,88 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Kotakan Profil (Avatar & Nama) - Melayang Menumpuk di Atas Kotak Biru */}
-      <View style={styles.profileHeaderCard}>
-        <View style={styles.avatarContainer}>
-          <Image
-            source={{
-              uri: "https://mmdrzvvnmoplbdfaiixx.supabase.co/storage/v1/object/public/avatar/2/avatar.png?t=1779476174261"
-            }}
-            style={styles.avatarImage}
-          />
-          <View style={styles.onlineBadge} />
-        </View>
-
-        <Text style={styles.studentName}>Lanjar Setiawan</Text>
-        <Text style={styles.studentNim}>NIM: 21120124120023</Text>
-        <View style={styles.deptBadge}>
-          <Ionicons name="school-outline" size={14} color={colors.primary} style={{ marginRight: 6 }} />
-          <Text style={styles.deptText}>Teknik Komputer</Text>
-        </View>
-      </View>
-
-      <View style={styles.bodyContent}>
-        {/* About Application */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Kotakan Profil (Avatar & Nama) - Melayang Menumpuk di Atas Kotak Biru */}
+        <View style={styles.profileHeaderCard}>
+          <View style={styles.avatarContainer}>
             <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
-              style={styles.cardLogo}
-              resizeMode="contain"
+              source={{ uri: userAvatar }}
+              style={styles.avatarImage}
             />
-            <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
+            <View style={styles.onlineBadge} />
           </View>
-          <Text style={styles.aboutText}>
-            MeepleCafe adalah aplikasi mobile terintegrasi untuk pecinta board game.
-            Aplikasi ini memadukan katalog koleksi permainan fisik terlengkap dengan
-            sistem pemesanan meja dan ruangan bermain di kafe secara instan.
-          </Text>
+
+          <Text style={styles.studentName}>{userName}</Text>
+          <Text style={styles.studentNim}>{userNim}</Text>
+          <View style={styles.deptBadge}>
+            <Ionicons name="school-outline" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+            <Text style={styles.deptText}>{userMajor}</Text>
+          </View>
         </View>
 
-        {/* Cafe Information */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="storefront" size={22} color={colors.secondary} />
-            <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
+        <View style={styles.bodyContent}>
+          {/* About Application */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Image
+                source={require("../../assets/Logo-MeepleCafe.jpeg")}
+                style={styles.cardLogo}
+                resizeMode="contain"
+              />
+              <Text style={styles.cardTitle}>Tentang MeepleCafe</Text>
+            </View>
+            <Text style={styles.aboutText}>
+              MeepleCafe adalah aplikasi mobile terintegrasi untuk pecinta board game.
+              Aplikasi ini memadukan katalog koleksi permainan fisik terlengkap dengan
+              sistem pemesanan meja dan ruangan bermain di kafe secara instan.
+            </Text>
           </View>
 
-          <View style={styles.infoItem}>
-            <Ionicons name="location-outline" size={20} color={colors.primary} />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoHeading}>Alamat Kafe</Text>
-              <Text style={styles.infoDesc}>
-                Jl. Graha Prasetya IV No.65, Pedalangan, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50268
-              </Text>
+          {/* Cafe Information */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Ionicons name="storefront" size={22} color={colors.secondary} />
+              <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
+            </View>
+
+            <View style={styles.infoItem}>
+              <Ionicons name="location-outline" size={20} color={colors.primary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoHeading}>Alamat Kafe</Text>
+                <Text style={styles.infoDesc}>
+                  Jl. Graha Prasetya IV No.65, Pedalangan, Kec. Banyumanik, Kota Semarang, Jawa Tengah 50268
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.infoItem}>
+              <Ionicons name="time-outline" size={20} color={colors.primary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoHeading}>Jam Buka</Text>
+                <Text style={styles.infoDesc}>Setiap Hari: 10.00 – 21.00 WIB</Text>
+              </View>
+            </View>
+
+            <View style={[styles.infoItem, { marginBottom: 0 }]}>
+              <Ionicons name="call-outline" size={20} color={colors.primary} />
+              <View style={styles.infoContent}>
+                <Text style={styles.infoHeading}>Kontak Layanan</Text>
+                <Text style={styles.infoDesc}>WhatsApp: +62 812-3456-7890</Text>
+              </View>
             </View>
           </View>
 
-          <View style={styles.infoItem}>
-            <Ionicons name="time-outline" size={20} color={colors.primary} />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoHeading}>Jam Buka</Text>
-              <Text style={styles.infoDesc}>Setiap Hari: 10.00 – 21.00 WIB</Text>
-            </View>
-          </View>
-
-          <View style={[styles.infoItem, { marginBottom: 0 }]}>
-            <Ionicons name="call-outline" size={20} color={colors.primary} />
-            <View style={styles.infoContent}>
-              <Text style={styles.infoHeading}>Kontak Layanan</Text>
-              <Text style={styles.infoDesc}>WhatsApp: +62 812-3456-7890</Text>
-            </View>
-          </View>
+          {/* Tombol Logout di Paling Bawah */}
+          <TouchableOpacity
+            style={styles.btnLogout}
+            activeOpacity={0.85}
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out-outline" size={20} color="#DC2626" style={{ marginRight: 8 }} />
+            <Text style={styles.btnLogoutText}>Keluar dari Akun</Text>
+          </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -126,6 +166,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#FFFFFF"
   },
+  scrollContent: {
+    paddingBottom: 36
+  },
   profileHeaderCard: {
     backgroundColor: colors.card,
     borderRadius: 16,
@@ -156,7 +199,8 @@ const styles = StyleSheet.create({
     height: 96,
     borderRadius: 48,
     borderWidth: 3.5,
-    borderColor: colors.primary
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight
   },
   onlineBadge: {
     position: "absolute",
@@ -249,6 +293,22 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 2,
     lineHeight: 18
+  },
+  btnLogout: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FEE2E2",
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    marginTop: 4,
+    marginBottom: 20
+  },
+  btnLogoutText: {
+    color: "#DC2626",
+    fontSize: 14.5,
+    fontWeight: "bold"
   }
 });
-
