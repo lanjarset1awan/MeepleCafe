@@ -8,7 +8,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ActivityIndicator,
   Image
 } from "react-native";
@@ -16,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
+import CustomDialog from "../components/CustomDialog";
 
 export default function EditProfileScreen({ navigation }) {
   const { user, updateProfile, uploadAvatar, deleteAvatar } = useAuth();
@@ -26,6 +26,37 @@ export default function EditProfileScreen({ navigation }) {
   const [major, setMajor] = useState(user?.major || "");
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  // Dialog State
+  const [dialogConfig, setDialogConfig] = useState({
+    visible: false,
+    type: "info",
+    iconName: null,
+    title: "",
+    message: "",
+    confirmText: "Mengerti",
+    cancelText: null,
+    onConfirm: null,
+    onCancel: null
+  });
+
+  const showDialog = (cfg) => {
+    setDialogConfig({
+      visible: true,
+      type: cfg.type || "info",
+      iconName: cfg.iconName || null,
+      title: cfg.title || "",
+      message: cfg.message || "",
+      confirmText: cfg.confirmText || "Mengerti",
+      cancelText: cfg.cancelText || null,
+      onConfirm: cfg.onConfirm || null,
+      onCancel: cfg.onCancel || null
+    });
+  };
+
+  const hideDialog = () => {
+    setDialogConfig((prev) => ({ ...prev, visible: false }));
+  };
 
   // Inisial 2 huruf dari username pengguna
   const userUsername = user?.username || "pengguna";
@@ -40,10 +71,11 @@ export default function EditProfileScreen({ navigation }) {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert(
-          "Izin Diperlukan",
-          "Aplikasi membutuhkan izin akses galeri untuk memilih foto profil."
-        );
+        showDialog({
+          type: "warning",
+          title: "Izin Diperlukan",
+          message: "Aplikasi membutuhkan izin akses galeri untuk memilih foto profil."
+        });
         return;
       }
 
@@ -59,14 +91,19 @@ export default function EditProfileScreen({ navigation }) {
         const asset = result.assets[0];
         setUploadingAvatar(true);
         await uploadAvatar(asset.base64, asset.mimeType || "image/jpeg");
-        Alert.alert("Berhasil", "Foto profil berhasil diperbarui!");
+        showDialog({
+          type: "success",
+          title: "Berhasil",
+          message: "Foto profil berhasil diperbarui!"
+        });
       }
     } catch (err) {
       console.error("Gagal memilih/mengunggah foto profil:", err);
-      Alert.alert(
-        "Gagal",
-        err.message || "Terjadi kesalahan saat mengunggah foto profil."
-      );
+      showDialog({
+        type: "error",
+        title: "Gagal Mengunggah",
+        message: err.message || "Terjadi kesalahan saat mengunggah foto profil."
+      });
     } finally {
       setUploadingAvatar(false);
     }
@@ -75,37 +112,50 @@ export default function EditProfileScreen({ navigation }) {
   // Hapus Foto Profil (Kembali ke inisial nama)
   const handleDeletePhoto = () => {
     if (!user?.avatar) {
-      Alert.alert("Informasi", "Profil Anda saat ini sudah menggunakan inisial nama.");
+      showDialog({
+        type: "info",
+        title: "Informasi",
+        message: "Profil Anda saat ini sudah menggunakan inisial nama bawaan."
+      });
       return;
     }
 
-    Alert.alert(
-      "Hapus Foto Profil",
-      "Apakah Anda yakin ingin menghapus foto profil dan kembali menggunakan inisial nama?",
-      [
-        { text: "Batal", style: "cancel" },
-        {
-          text: "Hapus",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setUploadingAvatar(true);
-              await deleteAvatar();
-              Alert.alert("Berhasil", "Foto profil berhasil dihapus.");
-            } catch (err) {
-              Alert.alert("Gagal", err.message || "Gagal menghapus foto profil.");
-            } finally {
-              setUploadingAvatar(false);
-            }
-          }
+    showDialog({
+      type: "danger",
+      iconName: "trash-outline",
+      title: "Hapus Foto Profil",
+      message: "Apakah Anda yakin ingin menghapus foto profil dan kembali menggunakan inisial nama?",
+      confirmText: "Ya, Hapus",
+      cancelText: "Batal",
+      onConfirm: async () => {
+        try {
+          setUploadingAvatar(true);
+          await deleteAvatar();
+          showDialog({
+            type: "success",
+            title: "Berhasil",
+            message: "Foto profil berhasil dihapus."
+          });
+        } catch (err) {
+          showDialog({
+            type: "error",
+            title: "Gagal Menghapus",
+            message: err.message || "Gagal menghapus foto profil."
+          });
+        } finally {
+          setUploadingAvatar(false);
         }
-      ]
-    );
+      }
+    });
   };
 
   const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert("Perhatian", "Nama lengkap tidak boleh kosong.");
+      showDialog({
+        type: "warning",
+        title: "Perhatian",
+        message: "Nama lengkap tidak boleh kosong."
+      });
       return;
     }
 
@@ -118,18 +168,19 @@ export default function EditProfileScreen({ navigation }) {
         major: major.trim()
       });
 
-      Alert.alert(
-        "Berhasil",
-        "Data profil Anda telah berhasil diperbarui!",
-        [
-          {
-            text: "OK",
-            onPress: () => navigation.goBack()
-          }
-        ]
-      );
+      showDialog({
+        type: "success",
+        title: "Berhasil",
+        message: "Data profil Anda telah berhasil diperbarui!",
+        confirmText: "Selesai",
+        onConfirm: () => navigation.goBack()
+      });
     } catch (err) {
-      Alert.alert("Gagal", err.message || "Terjadi kesalahan saat menyimpan profil.");
+      showDialog({
+        type: "error",
+        title: "Gagal Menyimpan",
+        message: err.message || "Terjadi kesalahan saat menyimpan profil."
+      });
     } finally {
       setIsSaving(false);
     }
@@ -307,6 +358,20 @@ export default function EditProfileScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Dialog Kustom Pengganti Alert.alert (CustomDialog) */}
+      <CustomDialog
+        visible={dialogConfig.visible}
+        type={dialogConfig.type}
+        iconName={dialogConfig.iconName}
+        title={dialogConfig.title}
+        message={dialogConfig.message}
+        confirmText={dialogConfig.confirmText}
+        cancelText={dialogConfig.cancelText}
+        onConfirm={dialogConfig.onConfirm}
+        onCancel={dialogConfig.onCancel}
+        onClose={hideDialog}
+      />
     </KeyboardAvoidingView>
   );
 }

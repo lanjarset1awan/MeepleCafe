@@ -15,6 +15,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
+import CustomDialog from "../components/CustomDialog";
 
 export default function LandingScreen({ navigation }) {
   const [activePage, setActivePage] = useState("katalog"); // "katalog" | "about"
@@ -23,6 +24,7 @@ export default function LandingScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("All");
+  const [noticeDialogVisible, setNoticeDialogVisible] = useState(false);
 
   const categories = ["All", "Strategy", "Party Game", "Family", "Social Deduction"];
 
@@ -148,20 +150,18 @@ export default function LandingScreen({ navigation }) {
         </View>
 
         {/* Informasi Harus Login untuk Bermain / Pesan Meja */}
-        <View style={styles.noticeBox}>
+        <TouchableOpacity
+          style={styles.noticeBox}
+          activeOpacity={0.85}
+          onPress={() => setNoticeDialogVisible(true)}
+        >
           <Ionicons name="information-circle-outline" size={17} color="#93C5FD" style={{ marginRight: 6 }} />
           <Text style={styles.noticeText}>
             Jelajahi koleksi game & profil kafe kami. Silakan{" "}
-            <Text style={styles.noticeHighlight} onPress={() => navigation.navigate("Login")}>
-              Masuk
-            </Text>{" "}
-            atau{" "}
-            <Text style={styles.noticeHighlight} onPress={() => navigation.navigate("Register")}>
-              Daftar
-            </Text>{" "}
+            <Text style={styles.noticeHighlight}>Masuk</Text> atau <Text style={styles.noticeHighlight}>Daftar</Text>{" "}
             untuk memesan meja dan bermain di kafe.
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* 2 Tab Segmented: Katalog Game & Tentang Kafe (About) */}
@@ -426,6 +426,28 @@ export default function LandingScreen({ navigation }) {
           <Text style={styles.footerNote}>© 2026 MeepleCafe. All rights reserved.</Text>
         </ScrollView>
       )}
+
+      {/* Dialog Kustom Ajakan Masuk / Daftar di Landing Page */}
+      <CustomDialog
+        visible={noticeDialogVisible}
+        type="info"
+        iconName="cafe"
+        title="Akses Bermain MeepleCafe"
+        message="Anda sedang berada di mode penjelajah tamu. Masuk ke akun Anda atau daftar baru untuk memilih meja favorit dan menikmati sesi bermain di kafe."
+        secondaryText="Daftar Akun Baru"
+        confirmText="Masuk Sekarang"
+        cancelText="Lanjut Menjelajah"
+        onConfirm={() => {
+          setNoticeDialogVisible(false);
+          navigation.navigate("Login");
+        }}
+        onSecondary={() => {
+          setNoticeDialogVisible(false);
+          navigation.navigate("Register");
+        }}
+        onCancel={() => setNoticeDialogVisible(false)}
+        onClose={() => setNoticeDialogVisible(false)}
+      />
     </View>
   );
 }

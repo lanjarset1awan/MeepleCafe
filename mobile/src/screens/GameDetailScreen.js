@@ -5,20 +5,21 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  TouchableOpacity,
-  Alert
+  TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
+import CustomDialog from "../components/CustomDialog";
 
 export default function GameDetailScreen({ route, navigation }) {
   const { gameId } = route.params;
   const { user } = useAuth();
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loginPromptVisible, setLoginPromptVisible] = useState(false);
 
   useEffect(() => {
     async function fetchDetail() {
@@ -68,22 +69,7 @@ export default function GameDetailScreen({ route, navigation }) {
 
   const handleSelectGameAndChooseTable = () => {
     if (!user) {
-      Alert.alert(
-        "Masuk untuk Bermain",
-        `Ingin memainkan "${game.title}"? Silakan masuk ke akun MeepleCafe Anda terlebih dahulu untuk reservasi meja.`,
-        [
-          { text: "Nanti Dulu", style: "cancel" },
-          {
-            text: "Daftar Akun",
-            onPress: () => navigation.navigate("Register")
-          },
-          {
-            text: "Masuk Sekarang",
-            style: "default",
-            onPress: () => navigation.navigate("Login")
-          }
-        ]
-      );
+      setLoginPromptVisible(true);
       return;
     }
 
@@ -234,6 +220,28 @@ export default function GameDetailScreen({ route, navigation }) {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Dialog Kustom Wajib Masuk Akun (CustomDialog) */}
+      <CustomDialog
+        visible={loginPromptVisible}
+        type="info"
+        iconName="game-controller"
+        title="Masuk untuk Bermain"
+        message={`Ingin memainkan "${game?.title || "game ini"}"? Silakan masuk ke akun MeepleCafe Anda atau daftar akun baru untuk memilih meja dan bermain di kafe.`}
+        secondaryText="Daftar Akun Baru"
+        confirmText="Masuk Sekarang"
+        cancelText="Nanti Dulu"
+        onConfirm={() => {
+          setLoginPromptVisible(false);
+          navigation.navigate("Login");
+        }}
+        onSecondary={() => {
+          setLoginPromptVisible(false);
+          navigation.navigate("Register");
+        }}
+        onCancel={() => setLoginPromptVisible(false)}
+        onClose={() => setLoginPromptVisible(false)}
+      />
     </View>
   );
 }

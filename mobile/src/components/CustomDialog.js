@@ -12,22 +12,33 @@ import { colors } from "../theme/colors";
 
 export default function CustomDialog({
   visible,
-  type = "info", // "warning", "error", "success", "info"
+  type = "info", // "warning", "error", "success", "info", "danger"
+  iconName: customIconName,
   title,
   message,
   confirmText = "Mengerti",
   cancelText,
+  secondaryText,
   onConfirm,
   onCancel,
+  onSecondary,
   onClose
 }) {
   if (!visible) return null;
 
   const getTypeStyle = () => {
     switch (type) {
+      case "danger":
+        return {
+          iconName: customIconName || "log-out-outline",
+          iconColor: "#DC2626",
+          badgeBg: "#FEE2E2",
+          borderColor: "#FECACA",
+          buttonBg: "#DC2626"
+        };
       case "warning":
         return {
-          iconName: "alert-circle",
+          iconName: customIconName || "alert-circle",
           iconColor: colors.secondary,
           badgeBg: colors.secondaryLight,
           borderColor: "#FED7AA",
@@ -35,7 +46,7 @@ export default function CustomDialog({
         };
       case "error":
         return {
-          iconName: "close-circle",
+          iconName: customIconName || "close-circle",
           iconColor: "#DC2626",
           badgeBg: "#FEE2E2",
           borderColor: "#FECACA",
@@ -43,7 +54,7 @@ export default function CustomDialog({
         };
       case "success":
         return {
-          iconName: "checkmark-circle",
+          iconName: customIconName || "checkmark-circle",
           iconColor: "#16A34A",
           badgeBg: "#DCFCE7",
           borderColor: "#BBF7D0",
@@ -51,7 +62,7 @@ export default function CustomDialog({
         };
       default:
         return {
-          iconName: "information-circle",
+          iconName: customIconName || "information-circle",
           iconColor: colors.primary,
           badgeBg: colors.primaryLight,
           borderColor: "#E0E7FF",
@@ -72,6 +83,11 @@ export default function CustomDialog({
     if (onClose) onClose();
   };
 
+  const handleSecondary = () => {
+    if (onSecondary) onSecondary();
+    if (onClose) onClose();
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
@@ -88,28 +104,40 @@ export default function CustomDialog({
               <Text style={styles.message}>{message}</Text>
 
               {/* Action Buttons */}
-              <View style={styles.buttonRow}>
-                {cancelText && (
+              <View style={styles.buttonContainer}>
+                {secondaryText && (
                   <TouchableOpacity
-                    style={styles.cancelBtn}
-                    onPress={handleCancel}
-                    activeOpacity={0.8}
+                    style={styles.secondaryBtn}
+                    onPress={handleSecondary}
+                    activeOpacity={0.85}
                   >
-                    <Text style={styles.cancelBtnText}>{cancelText}</Text>
+                    <Text style={styles.secondaryBtnText}>{secondaryText}</Text>
                   </TouchableOpacity>
                 )}
 
-                <TouchableOpacity
-                  style={[
-                    styles.confirmBtn,
-                    { backgroundColor: currentType.buttonBg },
-                    !cancelText && { flex: 1 }
-                  ]}
-                  onPress={handleConfirm}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.confirmBtnText}>{confirmText}</Text>
-                </TouchableOpacity>
+                <View style={styles.buttonRow}>
+                  {cancelText && (
+                    <TouchableOpacity
+                      style={styles.cancelBtn}
+                      onPress={handleCancel}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.cancelBtnText}>{cancelText}</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  <TouchableOpacity
+                    style={[
+                      styles.confirmBtn,
+                      { backgroundColor: currentType.buttonBg },
+                      !cancelText && { flex: 1 }
+                    ]}
+                    onPress={handleConfirm}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.confirmBtnText}>{confirmText}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -162,10 +190,29 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 20
   },
+  buttonContainer: {
+    width: "100%"
+  },
   buttonRow: {
     flexDirection: "row",
     width: "100%",
     justifyContent: "space-between"
+  },
+  secondaryBtn: {
+    width: "100%",
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10
+  },
+  secondaryBtnText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.primary
   },
   cancelBtn: {
     flex: 1,

@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  Alert,
   Modal,
   StatusBar,
   Platform
@@ -13,10 +12,12 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
+import CustomDialog from "../components/CustomDialog";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
   const [isPhotoModalVisible, setIsPhotoModalVisible] = useState(false);
+  const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
 
   // Ekstrak informasi pengguna aktif
   const userName = user?.name || "Lanjar Setiawan";
@@ -35,20 +36,7 @@ export default function ProfileScreen({ navigation }) {
   ).toUpperCase();
 
   const handleLogout = () => {
-    Alert.alert(
-      "Konfirmasi Keluar",
-      "Apakah Anda yakin ingin keluar dari akun MeepleCafe?",
-      [
-        { text: "Batal", style: "cancel" },
-        {
-          text: "Ya, Keluar",
-          style: "destructive",
-          onPress: async () => {
-            await logout();
-          }
-        }
-      ]
-    );
+    setLogoutDialogVisible(true);
   };
 
   return (
@@ -239,6 +227,23 @@ export default function ProfileScreen({ navigation }) {
           </View>
         </View>
       </Modal>
+
+      {/* Dialog Kustom Konfirmasi Keluar (CustomDialog) */}
+      <CustomDialog
+        visible={logoutDialogVisible}
+        type="danger"
+        iconName="log-out-outline"
+        title="Konfirmasi Keluar"
+        message="Apakah Anda yakin ingin keluar dari akun MeepleCafe?"
+        confirmText="Ya, Keluar"
+        cancelText="Batal"
+        onConfirm={async () => {
+          setLogoutDialogVisible(false);
+          await logout();
+        }}
+        onCancel={() => setLogoutDialogVisible(false)}
+        onClose={() => setLogoutDialogVisible(false)}
+      />
     </View>
   );
 }
