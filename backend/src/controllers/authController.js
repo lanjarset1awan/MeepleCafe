@@ -97,7 +97,7 @@ export const AuthController = {
   async updateProfile(req, res) {
     try {
       const { id } = req.params;
-      const { name, username, phone, avatar } = req.body;
+      const { name, username, email, phone, avatar } = req.body;
 
       if (!name || !name.trim()) {
         return res.status(400).json({ error: "Nama lengkap wajib diisi" });
@@ -111,7 +111,7 @@ export const AuthController = {
         return res.status(400).json({ error: "Username tidak boleh mengandung spasi" });
       }
 
-      const updated = await UserModel.update(id, { name, username, phone, avatar });
+      const updated = await UserModel.update(id, { name, username, email, phone, avatar });
       if (!updated) {
         return res.status(404).json({ error: "Pengguna tidak ditemukan" });
       }

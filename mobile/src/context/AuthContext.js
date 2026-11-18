@@ -197,6 +197,7 @@ export function AuthProvider({ children }) {
       ...user,
       name: profileData.name ? profileData.name.trim() : user.name,
       username: profileData.username ? profileData.username.trim().toLowerCase() : user.username,
+      email: profileData.email !== undefined ? profileData.email.trim().toLowerCase() : (user.email || ""),
       phone: profileData.phone ? profileData.phone.trim() : (user.phone || ""),
       avatar: profileData.avatar !== undefined ? profileData.avatar : (user.avatar || null)
     };
@@ -207,6 +208,7 @@ export function AuthProvider({ children }) {
         const res = await ApiService.updateProfile(user.id, {
           name: updatedUser.name,
           username: updatedUser.username,
+          email: updatedUser.email,
           phone: updatedUser.phone,
           avatar: updatedUser.avatar
         });

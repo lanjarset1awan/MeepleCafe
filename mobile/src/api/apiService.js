@@ -311,6 +311,7 @@ export const ApiService = {
     const payload = {};
     if (profileData.name !== undefined) payload.name = profileData.name ? profileData.name.trim() : "";
     if (profileData.username !== undefined) payload.username = profileData.username ? profileData.username.trim().toLowerCase() : "";
+    if (profileData.email !== undefined) payload.email = profileData.email ? profileData.email.trim().toLowerCase() : "";
     if (profileData.phone !== undefined) payload.phone = profileData.phone ? profileData.phone.trim() : "";
     if (profileData.avatar !== undefined) {
       payload.avatar = profileData.avatar && profileData.avatar.trim() ? profileData.avatar.trim() : null;

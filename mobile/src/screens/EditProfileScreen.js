@@ -22,6 +22,7 @@ export default function EditProfileScreen({ navigation }) {
 
   const [name, setName] = useState(user?.name || "");
   const [username, setUsername] = useState(user?.username || "");
+  const [email, setEmail] = useState(user?.email || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -176,11 +177,21 @@ export default function EditProfileScreen({ navigation }) {
       return;
     }
 
+    if (email.trim() && !email.trim().includes("@")) {
+      showDialog({
+        type: "warning",
+        title: "Perhatian",
+        message: "Format alamat email tidak valid (harus mengandung '@')."
+      });
+      return;
+    }
+
     try {
       setIsSaving(true);
       await updateProfile({
         name: name.trim(),
         username: username.trim().toLowerCase(),
+        email: email.trim().toLowerCase(),
         phone: phone.trim()
       });
 
@@ -273,19 +284,23 @@ export default function EditProfileScreen({ navigation }) {
             <Text style={styles.helperText}>Username unik untuk masuk ke akun</Text>
           </View>
 
-          {/* Email (Read Only) */}
+          {/* Email (Editable) */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email Terdaftar</Text>
-            <View style={[styles.inputBox, styles.inputBoxDisabled]}>
-              <Ionicons name="mail-outline" size={19} color={colors.textMuted} style={styles.inputIcon} />
+            <Text style={styles.inputLabel}>Alamat Email</Text>
+            <View style={styles.inputBox}>
+              <Ionicons name="mail-outline" size={19} color={colors.primary} style={styles.inputIcon} />
               <TextInput
-                value={user?.email || `${userUsername}@meeplecafe.com`}
-                editable={false}
-                style={[styles.inputField, styles.inputFieldDisabled]}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholder="Contoh: user@meeplecafe.com"
+                placeholderTextColor={colors.textMuted}
+                style={styles.inputField}
               />
-              <Ionicons name="lock-closed-outline" size={16} color={colors.textMuted} />
             </View>
-            <Text style={styles.helperText}>Email digunakan untuk verifikasi sistem</Text>
+            <Text style={styles.helperText}>Email untuk notifikasi akun dan pemesanan</Text>
           </View>
 
           {/* Nama Lengkap (Editable) */}

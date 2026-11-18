@@ -144,6 +144,17 @@ export const UserModel = {
       }
       updateData.username = cleanUsername;
     }
+    if (payload.email !== undefined) {
+      const cleanEmail = payload.email.trim().toLowerCase();
+      if (cleanEmail) {
+        // Cek apakah email sudah digunakan oleh orang lain
+        const existing = await UserModel.findByIdentifier(cleanEmail);
+        if (existing && existing.id !== id) {
+          throw new Error(`Email "${cleanEmail}" sudah digunakan oleh pengguna lain.`);
+        }
+      }
+      updateData.email = cleanEmail;
+    }
     if (payload.phone !== undefined) updateData.phone = payload.phone.trim();
     if (payload.avatar !== undefined) {
       updateData.avatar = payload.avatar && payload.avatar.trim() ? payload.avatar.trim() : null;
