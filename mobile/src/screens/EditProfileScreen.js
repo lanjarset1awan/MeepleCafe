@@ -21,6 +21,7 @@ export default function EditProfileScreen({ navigation }) {
   const { user, updateProfile, uploadAvatar, deleteAvatar } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
+  const [username, setUsername] = useState(user?.username || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -157,10 +158,29 @@ export default function EditProfileScreen({ navigation }) {
       return;
     }
 
+    if (!username.trim()) {
+      showDialog({
+        type: "warning",
+        title: "Perhatian",
+        message: "Username tidak boleh kosong."
+      });
+      return;
+    }
+
+    if (username.trim().includes(" ")) {
+      showDialog({
+        type: "warning",
+        title: "Perhatian",
+        message: "Username tidak boleh mengandung spasi."
+      });
+      return;
+    }
+
     try {
       setIsSaving(true);
       await updateProfile({
         name: name.trim(),
+        username: username.trim().toLowerCase(),
         phone: phone.trim()
       });
 
@@ -233,19 +253,24 @@ export default function EditProfileScreen({ navigation }) {
         <View style={styles.formCard}>
           <Text style={styles.sectionTitle}>Data Akun Pengguna</Text>
 
-          {/* Username (Read Only) */}
+          {/* Username (Editable) */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Username Akun</Text>
-            <View style={[styles.inputBox, styles.inputBoxDisabled]}>
-              <Ionicons name="at-outline" size={19} color={colors.textMuted} style={styles.inputIcon} />
+            <Text style={styles.inputLabel}>
+              Username Akun <Text style={styles.requiredStar}>*</Text>
+            </Text>
+            <View style={styles.inputBox}>
+              <Ionicons name="at-outline" size={19} color={colors.primary} style={styles.inputIcon} />
               <TextInput
-                value={`@${userUsername}`}
-                editable={false}
-                style={[styles.inputField, styles.inputFieldDisabled]}
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+                autoCorrect={false}
+                placeholder="Masukkan username Anda"
+                placeholderTextColor={colors.textMuted}
+                style={styles.inputField}
               />
-              <Ionicons name="lock-closed-outline" size={16} color={colors.textMuted} />
             </View>
-            <Text style={styles.helperText}>Username bersifat permanen</Text>
+            <Text style={styles.helperText}>Username unik untuk masuk ke akun</Text>
           </View>
 
           {/* Email (Read Only) */}

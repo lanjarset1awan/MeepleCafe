@@ -97,13 +97,21 @@ export const AuthController = {
   async updateProfile(req, res) {
     try {
       const { id } = req.params;
-      const { name, phone, avatar } = req.body;
+      const { name, username, phone, avatar } = req.body;
 
       if (!name || !name.trim()) {
         return res.status(400).json({ error: "Nama lengkap wajib diisi" });
       }
 
-      const updated = await UserModel.update(id, { name, phone, avatar });
+      if (username !== undefined && !username.trim()) {
+        return res.status(400).json({ error: "Username tidak boleh kosong" });
+      }
+
+      if (username !== undefined && username.trim().includes(" ")) {
+        return res.status(400).json({ error: "Username tidak boleh mengandung spasi" });
+      }
+
+      const updated = await UserModel.update(id, { name, username, phone, avatar });
       if (!updated) {
         return res.status(404).json({ error: "Pengguna tidak ditemukan" });
       }
@@ -114,7 +122,7 @@ export const AuthController = {
       });
     } catch (err) {
       console.error("Auth update error:", err);
-      return res.status(500).json({ error: err.message || "Gagal memperbarui profil" });
+      return res.status(400).json({ error: err.message || "Gagal memperbarui profil" });
     }
   },
 

@@ -310,6 +310,7 @@ export const ApiService = {
   async updateProfile(id, profileData) {
     const payload = {};
     if (profileData.name !== undefined) payload.name = profileData.name ? profileData.name.trim() : "";
+    if (profileData.username !== undefined) payload.username = profileData.username ? profileData.username.trim().toLowerCase() : "";
     if (profileData.phone !== undefined) payload.phone = profileData.phone ? profileData.phone.trim() : "";
     if (profileData.avatar !== undefined) {
       payload.avatar = profileData.avatar && profileData.avatar.trim() ? profileData.avatar.trim() : null;
@@ -325,7 +326,14 @@ export const ApiService = {
       if (backendRes.ok) {
         return await backendRes.json();
       }
+      const errJson = await backendRes.json().catch(() => ({}));
+      if (errJson && errJson.error) {
+        throw new Error(errJson.error);
+      }
     } catch (e) {
+      if (e.message && (e.message.includes("sudah digunakan") || e.message.includes("kosong") || e.message.includes("spasi"))) {
+        throw e;
+      }
       // Backend offline, lanjut ke Supabase Cloud
     }
 
@@ -350,8 +358,16 @@ export const ApiService = {
           message: "Profil berhasil diperbarui!",
           user: safeUser
         };
+      } else {
+        const errText = await supabaseRes.text();
+        if (errText.includes("users_username_key") || errText.includes("duplicate")) {
+          throw new Error(`Username "${payload.username}" sudah digunakan pengguna lain.`);
+        }
       }
     } catch (sbErr) {
+      if (sbErr.message && sbErr.message.includes("sudah digunakan")) {
+        throw sbErr;
+      }
       // Lanjut ke fallback
     }
 

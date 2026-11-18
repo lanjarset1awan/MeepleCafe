@@ -196,6 +196,7 @@ export function AuthProvider({ children }) {
     const updatedUser = {
       ...user,
       name: profileData.name ? profileData.name.trim() : user.name,
+      username: profileData.username ? profileData.username.trim().toLowerCase() : user.username,
       phone: profileData.phone ? profileData.phone.trim() : (user.phone || ""),
       avatar: profileData.avatar !== undefined ? profileData.avatar : (user.avatar || null)
     };
@@ -205,6 +206,7 @@ export function AuthProvider({ children }) {
       if (user.id) {
         const res = await ApiService.updateProfile(user.id, {
           name: updatedUser.name,
+          username: updatedUser.username,
           phone: updatedUser.phone,
           avatar: updatedUser.avatar
         });

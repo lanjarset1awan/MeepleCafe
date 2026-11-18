@@ -135,6 +135,15 @@ export const UserModel = {
   async update(id, payload) {
     const updateData = {};
     if (payload.name !== undefined) updateData.name = payload.name.trim();
+    if (payload.username !== undefined) {
+      const cleanUsername = payload.username.trim().toLowerCase();
+      // Validasi keunikan username
+      const existing = await UserModel.findByIdentifier(cleanUsername);
+      if (existing && existing.id !== id) {
+        throw new Error(`Username "${cleanUsername}" sudah digunakan oleh pengguna lain.`);
+      }
+      updateData.username = cleanUsername;
+    }
     if (payload.phone !== undefined) updateData.phone = payload.phone.trim();
     if (payload.avatar !== undefined) {
       updateData.avatar = payload.avatar && payload.avatar.trim() ? payload.avatar.trim() : null;
@@ -148,10 +157,20 @@ export const UserModel = {
         .eq("id", id)
         .select("id, name, username, email, phone, avatar, role, created_at");
 
-      if (!error && Array.isArray(data) && data.length > 0) {
+      if (error) {
+        if (error.message && error.message.includes("users_username_key")) {
+          throw new Error(`Username "${updateData.username}" sudah digunakan.`);
+        }
+        throw error;
+      }
+
+      if (Array.isArray(data) && data.length > 0) {
         return data[0];
       }
     } catch (e) {
+      if (e.message && e.message.includes("sudah digunakan")) {
+        throw e;
+      }
       // Lanjut ke fallback
     }
 
