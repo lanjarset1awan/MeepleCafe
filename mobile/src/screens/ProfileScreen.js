@@ -92,7 +92,9 @@ export default function ProfileScreen({ navigation }) {
         {/* Card: Informasi Akun Pengguna */}
         <View style={styles.card}>
           <View style={styles.cardHeader}>
-            <Ionicons name="person-circle-outline" size={28} color={colors.primary} />
+            <View style={styles.cardHeaderIconBox}>
+              <Ionicons name="person-circle-outline" size={20} color={colors.primary} />
+            </View>
             <Text style={styles.cardTitle}>Informasi Akun Pengguna</Text>
           </View>
 
@@ -277,7 +279,7 @@ const styles = StyleSheet.create({
     paddingVertical: 22,
     paddingHorizontal: 20,
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 3,
@@ -343,7 +345,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: 18,
-    marginBottom: 10,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 2,
@@ -357,19 +359,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 14
   },
-  cardLogo: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: colors.border
+  cardHeaderIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14
   },
   cardTitle: {
-    fontSize: 17,
+    fontSize: 16.5,
     fontWeight: "bold",
-    color: colors.text,
-    marginLeft: 10
+    color: colors.text
   },
   infoRow: {
     flexDirection: "row",
@@ -413,7 +415,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14.5,
     borderRadius: 14,
     marginTop: 0,
-    marginBottom: 10,
+    marginBottom: 14,
     elevation: 2,
     shadowColor: colors.primary,
     shadowOpacity: 0.25,
