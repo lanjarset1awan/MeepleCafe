@@ -8,8 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   TextInput,
-  Image,
-  Alert
+  Image
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
@@ -59,26 +58,7 @@ export default function LandingScreen({ navigation }) {
     return matchesCategory && matchesSearch;
   });
 
-  // Aksi ketika tombol "Main" ditekan -> Suruh login/daftar
-  const handlePlayGame = (item) => {
-    Alert.alert(
-      "Masuk untuk Bermain",
-      `Ingin memainkan "${item.title}"? Silakan masuk ke akun MeepleCafe Anda terlebih dahulu untuk reservasi meja.`,
-      [
-        { text: "Nanti Saja", style: "cancel" },
-        {
-          text: "Daftar Akun",
-          onPress: () => navigation.navigate("Register")
-        },
-        {
-          text: "Masuk",
-          style: "default",
-          onPress: () => navigation.navigate("Login")
-        }
-      ]
-    );
-  };
-
+  // Render Card dengan desain yang sama persis seperti katalog di dalam
   const renderGameCard = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
@@ -93,14 +73,14 @@ export default function LandingScreen({ navigation }) {
         </Text>
 
         <View style={styles.metaRow}>
-          {/* Kategori Game */}
+          {/* 1. Kategori (Bubble Kotak Biru) */}
           <View style={styles.categoryBadge}>
             <Text style={styles.categoryBadgeText}>
               {item.game_categories?.name || "General"}
             </Text>
           </View>
 
-          {/* Jumlah Pemain */}
+          {/* 2. Jumlah Pemain (Biru) */}
           <View style={styles.metaItem}>
             <Ionicons name="people-outline" size={13} color={colors.primary} />
             <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
@@ -108,7 +88,7 @@ export default function LandingScreen({ navigation }) {
             </Text>
           </View>
 
-          {/* Durasi */}
+          {/* 3. Durasi (Biru) */}
           <View style={styles.metaItem}>
             <Ionicons name="time-outline" size={13} color={colors.primary} />
             <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
@@ -121,24 +101,10 @@ export default function LandingScreen({ navigation }) {
           {item.description}
         </Text>
 
-        {/* Footer Card: Lihat Detail & Tombol Main */}
-        <View style={styles.cardFooter}>
-          <TouchableOpacity
-            style={styles.btnDetail}
-            onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title })}
-          >
-            <Text style={styles.btnDetailText}>Detail Game</Text>
-            <Ionicons name="chevron-forward" size={14} color={colors.textMuted} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.btnPlay}
-            activeOpacity={0.85}
-            onPress={() => handlePlayGame(item)}
-          >
-            <Ionicons name="play" size={13} color="#FFFFFF" style={{ marginRight: 4 }} />
-            <Text style={styles.btnPlayText}>Main</Text>
-          </TouchableOpacity>
+        {/* Footer Card: Desain identik dengan katalog internal */}
+        <View style={styles.actionFooter}>
+          <Text style={styles.actionFooterText}>Pelajari Aturan & Pilih Game</Text>
+          <Ionicons name="arrow-forward-circle" size={18} color={colors.primary} />
         </View>
       </View>
     </TouchableOpacity>
@@ -148,17 +114,17 @@ export default function LandingScreen({ navigation }) {
     <View style={styles.container}>
       {/* Header Banner Konsisten */}
       <View style={styles.header}>
-        <View style={styles.headerTopRow}>
-          <View style={styles.headerBrandRow}>
+        <View style={styles.headerBrandRow}>
+          <View style={styles.headerLeft}>
             <Image
               source={require("../../assets/Logo-MeepleCafe.jpeg")}
               style={styles.headerLogo}
               resizeMode="contain"
             />
-            <Text style={styles.headerTitle}>MeepleCafe</Text>
+            <Text style={styles.headerTitle}>Katalog Koleksi Game</Text>
           </View>
 
-          {/* Tombol Masuk & Daftar di Header */}
+          {/* Tombol Masuk & Daftar di Kanan Header */}
           <View style={styles.authButtonsRow}>
             <TouchableOpacity
               style={styles.headerBtnRegister}
@@ -170,7 +136,7 @@ export default function LandingScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.headerBtnLogin}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               onPress={() => navigation.navigate("Login")}
             >
               <Ionicons name="log-in-outline" size={15} color="#FFFFFF" style={{ marginRight: 4 }} />
@@ -178,21 +144,13 @@ export default function LandingScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Hero Welcoming Tagline */}
-        <View style={styles.heroBox}>
-          <Text style={styles.heroTitle}>Katalog Koleksi Board Game</Text>
-          <Text style={styles.heroSubtitle}>
-            Jelajahi ratusan permainan papan fisik. Tekan tombol <Text style={{ fontWeight: "bold", color: "#FFFFFF" }}>Main</Text> untuk memesan meja kafe!
-          </Text>
-        </View>
       </View>
 
-      {/* Search Bar */}
+      {/* Search Bar Melayang di Atas Banner (Sama persis seperti GameListScreen) */}
       <View style={styles.searchContainer}>
         <Ionicons name="search-outline" size={20} color={colors.textMuted} />
         <TextInput
-          placeholder="Cari board game (Catan, UNO, Catur, Dixit)..."
+          placeholder="Cari board game (UNO, Monopoly, Catur)..."
           placeholderTextColor={colors.textMuted}
           style={styles.searchInput}
           value={searchQuery}
@@ -206,39 +164,39 @@ export default function LandingScreen({ navigation }) {
       </View>
 
       {/* Category Filter Pills */}
-      <View style={styles.filterContainer}>
+      <View style={styles.filterWrapper}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
           data={categories}
           keyExtractor={(item) => item}
           contentContainerStyle={styles.filterList}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.filterChip,
-                selectedFilter === item && styles.filterChipActive
-              ]}
-              onPress={() => setSelectedFilter(item)}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  selectedFilter === item && styles.filterTextActive
-                ]}
+          renderItem={({ item }) => {
+            const active = selectedFilter === item;
+            return (
+              <TouchableOpacity
+                onPress={() => setSelectedFilter(item)}
+                style={[styles.filterChip, active && styles.filterChipActive]}
               >
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    active && styles.filterChipTextActive
+                  ]}
+                >
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            );
+          }}
         />
       </View>
 
-      {/* Game Cards List */}
+      {/* Daftar Koleksi Game */}
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Memuat katalog board game...</Text>
+          <Text style={styles.loadingText}>Memuat koleksi board game...</Text>
         </View>
       ) : (
         <FlatList
@@ -257,26 +215,11 @@ export default function LandingScreen({ navigation }) {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="cube-outline" size={48} color={colors.textMuted} />
-              <Text style={styles.emptyText}>Tidak ada board game yang cocok.</Text>
+              <Text style={styles.emptyText}>Tidak ada game yang sesuai pencarian.</Text>
             </View>
           }
         />
       )}
-
-      {/* Floating Bottom Bar: Ajakan Masuk / Demo */}
-      <View style={styles.bottomBar}>
-        <View style={styles.bottomBarInfo}>
-          <Text style={styles.bottomBarTitle}>Ingin bermain langsung di kafe?</Text>
-          <Text style={styles.bottomBarSubtitle}>Masuk atau daftar untuk reservasi meja.</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.bottomBtnLogin}
-          activeOpacity={0.85}
-          onPress={() => navigation.navigate("Login")}
-        >
-          <Text style={styles.bottomBtnLoginText}>Masuk Akun</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -289,28 +232,27 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 46,
-    paddingBottom: 16,
-    paddingHorizontal: 16
-  },
-  headerTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10
+    paddingBottom: 36,
+    paddingHorizontal: 20
   },
   headerBrandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  headerLeft: {
     flexDirection: "row",
     alignItems: "center"
   },
   headerLogo: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    marginRight: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 10,
     backgroundColor: "#FFFFFF"
   },
   headerTitle: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#FFFFFF"
   },
@@ -321,10 +263,10 @@ const styles = StyleSheet.create({
   headerBtnRegister: {
     paddingVertical: 5,
     paddingHorizontal: 10,
-    marginRight: 6
+    marginRight: 4
   },
   headerBtnRegisterText: {
-    color: "#E2E8F0",
+    color: "#CBD5E1",
     fontSize: 12.5,
     fontWeight: "600"
   },
@@ -334,60 +276,48 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 20
+    borderRadius: 18
   },
   headerBtnLoginText: {
     color: "#FFFFFF",
     fontSize: 12.5,
     fontWeight: "bold"
   },
-  heroBox: {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
-    borderRadius: 12,
-    padding: 10,
-    marginTop: 2
-  },
-  heroTitle: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "bold"
-  },
-  heroSubtitle: {
-    color: "#CBD5E1",
-    fontSize: 11.5,
-    marginTop: 2,
-    lineHeight: 16
-  },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.card,
     marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: -16,
     paddingHorizontal: 14,
-    height: 44,
-    borderRadius: 12,
+    paddingVertical: 10,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.border
+    borderColor: colors.border,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 }
   },
   searchInput: {
     flex: 1,
     marginLeft: 10,
-    fontSize: 13.5,
+    fontSize: 14,
     color: colors.text
   },
-  filterContainer: {
-    marginBottom: 8
+  filterWrapper: {
+    marginTop: 12,
+    marginBottom: 6
   },
   filterList: {
     paddingHorizontal: 16
   },
   filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
     backgroundColor: colors.card,
+    borderRadius: 20,
     marginRight: 8,
     borderWidth: 1,
     borderColor: colors.border
@@ -396,175 +326,108 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderColor: colors.primary
   },
-  filterText: {
-    fontSize: 12.5,
-    color: colors.textMuted,
-    fontWeight: "500"
+  filterChipText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textMuted
   },
-  filterTextActive: {
-    color: "#FFFFFF",
-    fontWeight: "bold"
+  filterChipTextActive: {
+    color: "#FFFFFF"
   },
   listContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 85
+    padding: 16,
+    paddingBottom: 24
   },
   card: {
-    flexDirection: "row",
     backgroundColor: colors.card,
-    borderRadius: 14,
-    marginBottom: 12,
-    padding: 12,
+    borderRadius: 16,
+    marginBottom: 16,
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 2,
     shadowColor: "#000",
     shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 }
   },
   cardImage: {
-    width: 90,
-    height: 105,
-    borderRadius: 10
+    width: "100%",
+    height: 160,
+    resizeMode: "cover"
   },
   cardContent: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: "space-between"
+    padding: 14
   },
   gameTitle: {
-    fontSize: 15.5,
+    fontSize: 22,
     fontWeight: "bold",
-    color: colors.text
+    color: colors.text,
+    marginBottom: 6
   },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
-    flexWrap: "wrap",
-    marginTop: 3,
-    marginBottom: 4,
-    gap: 5
+    marginBottom: 8,
+    flexWrap: "wrap"
   },
   categoryBadge: {
     backgroundColor: colors.primaryLight,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginRight: 11
   },
   categoryBadgeText: {
-    color: colors.primaryDark,
-    fontSize: 10.5,
-    fontWeight: "700"
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: colors.primaryDark
   },
   metaItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 3
+    marginRight: 11
   },
   metaText: {
-    fontSize: 11,
-    color: colors.textMuted
+    fontSize: 12,
+    marginLeft: 4
   },
   description: {
-    fontSize: 11.5,
+    fontSize: 13,
     color: colors.textMuted,
-    lineHeight: 16,
-    marginBottom: 6
+    lineHeight: 18
   },
-  cardFooter: {
+  actionFooter: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginTop: 10,
+    paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
-    paddingTop: 6
+    borderColor: colors.border
   },
-  btnDetail: {
-    flexDirection: "row",
-    alignItems: "center"
-  },
-  btnDetailText: {
-    fontSize: 11.5,
-    color: colors.textMuted,
-    fontWeight: "500",
-    marginRight: 2
-  },
-  btnPlay: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    paddingVertical: 5,
-    paddingHorizontal: 12,
-    borderRadius: 14
-  },
-  btnPlayText: {
-    color: "#FFFFFF",
+  actionFooterText: {
     fontSize: 12,
-    fontWeight: "bold"
+    fontWeight: "700",
+    color: colors.primary
   },
   centerContainer: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
-    paddingTop: 40
+    alignItems: "center"
   },
   loadingText: {
     marginTop: 10,
     color: colors.textMuted,
-    fontSize: 13
+    fontSize: 14
   },
   emptyContainer: {
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 50
+    marginTop: 60
   },
   emptyText: {
-    marginTop: 10,
+    marginTop: 12,
     color: colors.textMuted,
-    fontSize: 13
-  },
-  bottomBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: colors.card,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: colors.border,
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: -2 }
-  },
-  bottomBarInfo: {
-    flex: 1,
-    marginRight: 12
-  },
-  bottomBarTitle: {
-    fontSize: 12.5,
-    fontWeight: "bold",
-    color: colors.text
-  },
-  bottomBarSubtitle: {
-    fontSize: 11,
-    color: colors.textMuted
-  },
-  bottomBtnLogin: {
-    backgroundColor: colors.primary,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 10
-  },
-  bottomBtnLoginText: {
-    color: "#FFFFFF",
-    fontSize: 13,
-    fontWeight: "bold"
+    fontSize: 15
   }
 });
