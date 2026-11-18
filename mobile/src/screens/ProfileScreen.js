@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Modal,
   StatusBar,
-  Platform
+  Platform,
+  ScrollView
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
@@ -63,8 +64,12 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Konten Profil (Non-scrollable, Pas Satu Layar) */}
-      <View style={styles.contentWrapper}>
+      {/* Konten Profil */}
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Kotakan Header Profil (Avatar & Nama) */}
         <View style={styles.profileHeaderCard}>
           <TouchableOpacity
@@ -79,10 +84,13 @@ export default function ProfileScreen({ navigation }) {
                 <Text style={styles.avatarInitials}>{userInitials}</Text>
               </View>
             )}
-            <View style={styles.onlineBadge} />
           </TouchableOpacity>
 
           <Text style={styles.studentName}>{userName}</Text>
+          <View style={styles.roleBadge}>
+            <Ionicons name="shield-checkmark" size={13} color={colors.primary} style={{ marginRight: 5 }} />
+            <Text style={styles.roleBadgeText}>{userRole}</Text>
+          </View>
         </View>
 
         {/* Card: Informasi Akun Pengguna */}
@@ -112,13 +120,23 @@ export default function ProfileScreen({ navigation }) {
             </View>
           </View>
 
-          <View style={[styles.infoRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
+          <View style={styles.infoRow}>
             <View style={styles.infoIconBox}>
               <Ionicons name="call-outline" size={18} color={colors.primary} />
             </View>
             <View style={styles.infoTextBox}>
               <Text style={styles.infoItemLabel}>Nomor Telepon</Text>
               <Text style={styles.infoItemValue}>{userPhone}</Text>
+            </View>
+          </View>
+
+          <View style={[styles.infoRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
+            <View style={styles.infoIconBox}>
+              <Ionicons name="shield-checkmark-outline" size={18} color={colors.primary} />
+            </View>
+            <View style={styles.infoTextBox}>
+              <Text style={styles.infoItemLabel}>Status Akun</Text>
+              <Text style={styles.infoItemValue}>Member Aktif Terverifikasi</Text>
             </View>
           </View>
         </View>
@@ -145,7 +163,7 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.btnLogoutText}>Keluar</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
 
       {/* Modal Foto Profil Layar Penuh (Fullscreen Avatar Viewer) */}
       <Modal
@@ -261,12 +279,13 @@ const styles = StyleSheet.create({
   headerInfoBtn: {
     padding: 4
   },
-  contentWrapper: {
-    flex: 1,
+  scrollContainer: {
+    flex: 1
+  },
+  scrollContent: {
     marginTop: -16,
     paddingHorizontal: 16,
-    justifyContent: "space-between",
-    paddingBottom: 18
+    paddingBottom: 28
   },
   profileHeaderCard: {
     backgroundColor: colors.card,
@@ -274,6 +293,7 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 20,
     alignItems: "center",
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: colors.border,
     elevation: 3,
@@ -282,34 +302,22 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 }
   },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 }
-  },
   avatarContainer: {
     position: "relative",
     marginBottom: 12
   },
   avatarImage: {
-    width: 124,
-    height: 124,
-    borderRadius: 62,
+    width: 136,
+    height: 136,
+    borderRadius: 68,
     borderWidth: 4.5,
     borderColor: "#E8F2FA",
     backgroundColor: colors.border
   },
   avatarBadge: {
-    width: 124,
-    height: 124,
-    borderRadius: 62,
+    width: 136,
+    height: 136,
+    borderRadius: 68,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
@@ -322,27 +330,43 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 }
   },
   avatarInitials: {
-    fontSize: 44,
+    fontSize: 48,
     fontWeight: "800",
     color: "#FFFFFF",
     letterSpacing: 2
   },
-  onlineBadge: {
-    position: "absolute",
-    bottom: 3,
-    right: 6,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: colors.success,
-    borderWidth: 3,
-    borderColor: "#FFFFFF"
-  },
   studentName: {
-    fontSize: 22,
+    fontSize: 23,
     fontWeight: "bold",
     color: colors.text,
-    marginTop: 4
+    marginTop: 6
+  },
+  roleBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 12,
+    marginTop: 8
+  },
+  roleBadgeText: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    color: colors.primaryDark
+  },
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }
   },
   cardHeader: {
     flexDirection: "row",
@@ -358,7 +382,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border
   },
   cardTitle: {
-    fontSize: 15.5,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.text,
     marginLeft: 8
@@ -372,9 +396,9 @@ const styles = StyleSheet.create({
     borderBottomColor: "#F3F4F6"
   },
   infoIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.primaryLight,
     alignItems: "center",
     justifyContent: "center",
@@ -384,18 +408,19 @@ const styles = StyleSheet.create({
     flex: 1
   },
   infoItemLabel: {
-    fontSize: 12,
+    fontSize: 12.5,
     color: colors.textMuted,
     fontWeight: "500"
   },
   infoItemValue: {
-    fontSize: 14.5,
+    fontSize: 15,
     color: colors.text,
     fontWeight: "700",
     marginTop: 2
   },
   actionButtonsWrapper: {
-    width: "100%"
+    width: "100%",
+    marginBottom: 10
   },
   btnEditProfile: {
     flexDirection: "row",
