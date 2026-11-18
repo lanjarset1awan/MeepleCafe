@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
   TouchableOpacity,
-  Alert
+  Alert,
+  Modal,
+  StatusBar,
+  Platform
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
@@ -13,6 +16,7 @@ import { colors } from "../theme/colors";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
+  const [isPhotoModalVisible, setIsPhotoModalVisible] = useState(false);
 
   // Ekstrak informasi pengguna aktif
   const userName = user?.name || "Lanjar Setiawan";
@@ -77,7 +81,11 @@ export default function ProfileScreen({ navigation }) {
       <View style={styles.contentWrapper}>
         {/* Kotakan Header Profil (Avatar 2 Huruf, Nama, dan Tombol Edit Profil) */}
         <View style={styles.profileHeaderCard}>
-          <View style={styles.avatarContainer}>
+          <TouchableOpacity
+            style={styles.avatarContainer}
+            activeOpacity={0.85}
+            onPress={() => setIsPhotoModalVisible(true)}
+          >
             {user?.avatar ? (
               <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
             ) : (
@@ -86,7 +94,7 @@ export default function ProfileScreen({ navigation }) {
               </View>
             )}
             <View style={styles.onlineBadge} />
-          </View>
+          </TouchableOpacity>
 
           <Text style={styles.studentName}>{userName}</Text>
 
@@ -172,6 +180,65 @@ export default function ProfileScreen({ navigation }) {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Modal Foto Profil Layar Penuh (Fullscreen Avatar Viewer) */}
+      <Modal
+        visible={isPhotoModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsPhotoModalVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <StatusBar backgroundColor="#000000" barStyle="light-content" />
+
+          {/* Header Modal */}
+          <View style={styles.modalHeader}>
+            <View style={styles.modalHeaderInfo}>
+              <Text style={styles.modalTitle} numberOfLines={1}>
+                {userName}
+              </Text>
+              <Text style={styles.modalSubtitle}>Foto Profil MeepleCafe</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              activeOpacity={0.8}
+              onPress={() => setIsPhotoModalVisible(false)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Ionicons name="close" size={26} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Area Foto Layar Penuh */}
+          <TouchableOpacity
+            style={styles.modalImageContainer}
+            activeOpacity={1}
+            onPress={() => setIsPhotoModalVisible(false)}
+          >
+            {user?.avatar ? (
+              <Image
+                source={{ uri: user.avatar }}
+                style={styles.fullscreenAvatar}
+                resizeMode="contain"
+              />
+            ) : (
+              <View style={styles.fullscreenInitialsContainer}>
+                <View style={styles.fullscreenAvatarBadge}>
+                  <Text style={styles.fullscreenAvatarInitials}>{userInitials}</Text>
+                </View>
+                <Text style={styles.fullscreenName}>{userName}</Text>
+                <Text style={styles.fullscreenNote}>Profil menggunakan inisial nama</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Footer Modal */}
+          <View style={styles.modalFooter}>
+            <Text style={styles.modalFooterHint}>Ketuk di mana saja untuk menutup</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -377,5 +444,91 @@ const styles = StyleSheet.create({
     color: "#DC2626",
     fontSize: 14.5,
     fontWeight: "700"
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.95)",
+    justifyContent: "space-between"
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: Platform.OS === "android" ? (StatusBar.currentHeight || 24) + 14 : 48,
+    paddingBottom: 14,
+    paddingHorizontal: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.4)"
+  },
+  modalHeaderInfo: {
+    flex: 1,
+    marginRight: 12
+  },
+  modalTitle: {
+    color: "#FFFFFF",
+    fontSize: 17,
+    fontWeight: "bold"
+  },
+  modalSubtitle: {
+    color: "rgba(255, 255, 255, 0.7)",
+    fontSize: 12,
+    marginTop: 2
+  },
+  modalCloseBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  modalImageContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 12
+  },
+  fullscreenAvatar: {
+    width: "100%",
+    height: "100%",
+    maxHeight: 520
+  },
+  fullscreenInitialsContainer: {
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  fullscreenAvatarBadge: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 5,
+    borderColor: "#E8F2FA",
+    marginBottom: 16
+  },
+  fullscreenAvatarInitials: {
+    fontSize: 54,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    letterSpacing: 2
+  },
+  fullscreenName: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold"
+  },
+  fullscreenNote: {
+    color: "rgba(255, 255, 255, 0.6)",
+    fontSize: 13,
+    marginTop: 6
+  },
+  modalFooter: {
+    paddingBottom: Platform.OS === "ios" ? 36 : 24,
+    alignItems: "center"
+  },
+  modalFooterHint: {
+    color: "rgba(255, 255, 255, 0.5)",
+    fontSize: 12
   }
 });
