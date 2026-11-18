@@ -9,20 +9,23 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  Image
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
 
 export default function EditProfileScreen({ navigation }) {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, uploadAvatar, deleteAvatar } = useAuth();
 
   const [name, setName] = useState(user?.name || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [nim, setNim] = useState(user?.nim || "");
   const [major, setMajor] = useState(user?.major || "");
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Inisial 2 huruf dari username pengguna
   const userUsername = user?.username || "pengguna";
@@ -31,6 +34,74 @@ export default function EditProfileScreen({ navigation }) {
       ? userUsername.slice(0, 2)
       : name.slice(0, 2) || "MC"
   ).toUpperCase();
+
+  // Pilih & Unggah Foto Profil dari Galeri
+  const handlePickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Izin Diperlukan",
+          "Aplikasi membutuhkan izin akses galeri untuk memilih foto profil."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+        base64: true
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        setUploadingAvatar(true);
+        await uploadAvatar(asset.base64, asset.mimeType || "image/jpeg");
+        Alert.alert("Berhasil", "Foto profil berhasil diperbarui!");
+      }
+    } catch (err) {
+      console.error("Gagal memilih/mengunggah foto profil:", err);
+      Alert.alert(
+        "Gagal",
+        err.message || "Terjadi kesalahan saat mengunggah foto profil."
+      );
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  // Hapus Foto Profil (Kembali ke inisial nama)
+  const handleDeletePhoto = () => {
+    if (!user?.avatar) {
+      Alert.alert("Informasi", "Profil Anda saat ini sudah menggunakan inisial nama.");
+      return;
+    }
+
+    Alert.alert(
+      "Hapus Foto Profil",
+      "Apakah Anda yakin ingin menghapus foto profil dan kembali menggunakan inisial nama?",
+      [
+        { text: "Batal", style: "cancel" },
+        {
+          text: "Hapus",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setUploadingAvatar(true);
+              await deleteAvatar();
+              Alert.alert("Berhasil", "Foto profil berhasil dihapus.");
+            } catch (err) {
+              Alert.alert("Gagal", err.message || "Gagal menghapus foto profil.");
+            } finally {
+              setUploadingAvatar(false);
+            }
+          }
+        }
+      ]
+    );
+  };
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -74,11 +145,41 @@ export default function EditProfileScreen({ navigation }) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Banner Preview Avatar Inisial */}
+        {/* Banner Preview Avatar Inisial & Foto Profil */}
         <View style={styles.avatarCard}>
-          <View style={styles.avatarBadge}>
-            <Text style={styles.avatarInitials}>{userInitials}</Text>
+          <View style={styles.avatarWrapper}>
+            {user?.avatar ? (
+              <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatarBadge}>
+                <Text style={styles.avatarInitials}>{userInitials}</Text>
+              </View>
+            )}
+
+            {/* Tombol Kamera di Pojok Kanan Bawah Avatar */}
+            <TouchableOpacity
+              style={styles.cameraBtn}
+              activeOpacity={0.85}
+              onPress={handlePickImage}
+              disabled={uploadingAvatar}
+            >
+              {uploadingAvatar ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Ionicons name="camera" size={16} color="#FFFFFF" />
+              )}
+            </TouchableOpacity>
           </View>
+
+          {/* Tombol Tulisan Hapus Foto Profil di Bawah Avatar */}
+          <TouchableOpacity
+            style={styles.deletePhotoBtn}
+            activeOpacity={0.7}
+            onPress={handleDeletePhoto}
+            disabled={uploadingAvatar}
+          >
+            <Text style={styles.deletePhotoText}>Hapus Foto Profil</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Form Container */}
@@ -222,7 +323,7 @@ const styles = StyleSheet.create({
   avatarCard: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    paddingVertical: 18,
+    paddingVertical: 20,
     paddingHorizontal: 16,
     alignItems: "center",
     justifyContent: "center",
@@ -235,10 +336,16 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 }
   },
+  avatarWrapper: {
+    position: "relative",
+    width: 92,
+    height: 92,
+    marginBottom: 10
+  },
   avatarBadge: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
+    width: 92,
+    height: 92,
+    borderRadius: 46,
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
@@ -248,14 +355,50 @@ const styles = StyleSheet.create({
     shadowColor: colors.primary,
     shadowOpacity: 0.3,
     shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    marginBottom: 0
+    shadowOffset: { width: 0, height: 3 }
+  },
+  avatarImage: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    borderWidth: 4,
+    borderColor: "#E8F2FA",
+    backgroundColor: colors.border
   },
   avatarInitials: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: "800",
     color: "#FFFFFF",
     letterSpacing: 2
+  },
+  cameraBtn: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.primary,
+    borderWidth: 2.5,
+    borderColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  deletePhotoBtn: {
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    marginTop: 2
+  },
+  deletePhotoText: {
+    color: "#EF4444",
+    fontSize: 13.5,
+    fontWeight: "600",
+    textAlign: "center"
   },
   formCard: {
     backgroundColor: colors.card,

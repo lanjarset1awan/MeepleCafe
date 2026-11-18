@@ -311,10 +311,13 @@ export const ApiService = {
   // Perbarui Profil Pengguna
   async updateProfile(id, profileData) {
     const payload = {};
-    if (profileData.name !== undefined) payload.name = profileData.name.trim();
-    if (profileData.phone !== undefined) payload.phone = profileData.phone.trim();
-    if (profileData.nim !== undefined) payload.nim = profileData.nim.trim();
-    if (profileData.major !== undefined) payload.major = profileData.major.trim();
+    if (profileData.name !== undefined) payload.name = profileData.name ? profileData.name.trim() : "";
+    if (profileData.phone !== undefined) payload.phone = profileData.phone ? profileData.phone.trim() : "";
+    if (profileData.nim !== undefined) payload.nim = profileData.nim ? profileData.nim.trim() : "";
+    if (profileData.major !== undefined) payload.major = profileData.major ? profileData.major.trim() : "";
+    if (profileData.avatar !== undefined) {
+      payload.avatar = profileData.avatar && profileData.avatar.trim() ? profileData.avatar.trim() : null;
+    }
 
     // 1. Coba update via Express Backend REST API
     try {
@@ -360,5 +363,72 @@ export const ApiService = {
       message: "Profil diperbarui secara lokal",
       user: { id, ...payload }
     };
+  },
+
+  // Upload Foto Profil (Supabase Storage Bucket 'avatars' / Express Backend)
+  async uploadAvatar(userId, base64, mimeType = "image/jpeg") {
+    // 1. Coba upload via Express Backend API
+    try {
+      const backendRes = await fetch(`${DEFAULT_BACKEND_URL}/api/auth/upload-avatar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, base64, mimeType })
+      });
+      if (backendRes.ok) {
+        return await backendRes.json();
+      }
+    } catch (e) {
+      // Backend offline, lanjut ke direct storage Supabase
+    }
+
+    // 2. Direct Fallback ke Supabase Storage & Users Table
+    const cleanBase64 = base64.replace(/^data:image\/\w+;base64,/, "");
+    const ext = (mimeType.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const filePath = `${userId}/avatar-${Date.now()}.${ext}`;
+
+    let avatarUrl = null;
+
+    try {
+      // Convert base64 to binary byte array
+      const binaryString = atob(cleanBase64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const storageRes = await fetch(`${SUPABASE_URL}/storage/v1/object/avatars/${filePath}`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": mimeType
+        },
+        body: bytes
+      });
+
+      if (storageRes.ok) {
+        avatarUrl = `${SUPABASE_URL}/storage/v1/object/public/avatars/${filePath}`;
+      }
+    } catch (storageErr) {
+      // Storage error
+    }
+
+    // Jika upload bucket belum siap, simpan data URI agar tetap langsung tampil
+    if (!avatarUrl) {
+      avatarUrl = `data:${mimeType};base64,${cleanBase64}`;
+    }
+
+    // Simpan avatar URL ke record pengguna
+    const updateResult = await this.updateProfile(userId, { avatar: avatarUrl });
+    return {
+      message: "Foto profil berhasil diperbarui!",
+      avatarUrl,
+      user: updateResult.user || { avatar: avatarUrl }
+    };
+  },
+
+  // Hapus Foto Profil Pengguna
+  async deleteAvatar(userId) {
+    return this.updateProfile(userId, { avatar: null });
   }
 };

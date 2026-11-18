@@ -143,7 +143,9 @@ export const UserModel = {
     if (payload.phone !== undefined) updateData.phone = payload.phone.trim();
     if (payload.nim !== undefined) updateData.nim = payload.nim.trim();
     if (payload.major !== undefined) updateData.major = payload.major.trim();
-    if (payload.avatar !== undefined) updateData.avatar = payload.avatar.trim();
+    if (payload.avatar !== undefined) {
+      updateData.avatar = payload.avatar && payload.avatar.trim() ? payload.avatar.trim() : null;
+    }
 
     // 1. Coba update ke database Supabase
     try {

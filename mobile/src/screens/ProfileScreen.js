@@ -78,9 +78,13 @@ export default function ProfileScreen({ navigation }) {
         {/* Kotakan Header Profil (Avatar 2 Huruf, Nama, dan Tombol Edit Profil) */}
         <View style={styles.profileHeaderCard}>
           <View style={styles.avatarContainer}>
-            <View style={styles.avatarBadge}>
-              <Text style={styles.avatarInitials}>{userInitials}</Text>
-            </View>
+            {user?.avatar ? (
+              <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatarBadge}>
+                <Text style={styles.avatarInitials}>{userInitials}</Text>
+              </View>
+            )}
             <View style={styles.onlineBadge} />
           </View>
 
@@ -234,6 +238,14 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: "relative",
     marginBottom: 12
+  },
+  avatarImage: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    borderWidth: 4,
+    borderColor: "#E8F2FA",
+    backgroundColor: colors.border
   },
   avatarBadge: {
     width: 92,

@@ -205,7 +205,8 @@ export function AuthProvider({ children }) {
       name: profileData.name ? profileData.name.trim() : user.name,
       phone: profileData.phone ? profileData.phone.trim() : (user.phone || ""),
       nim: profileData.nim !== undefined ? profileData.nim.trim() : (user.nim || ""),
-      major: profileData.major ? profileData.major.trim() : (user.major || "Member Umum")
+      major: profileData.major ? profileData.major.trim() : (user.major || "Member Umum"),
+      avatar: profileData.avatar !== undefined ? profileData.avatar : (user.avatar || null)
     };
 
     // 1. Coba simpan ke Backend / Supabase
@@ -215,7 +216,8 @@ export function AuthProvider({ children }) {
           name: updatedUser.name,
           phone: updatedUser.phone,
           nim: updatedUser.nim,
-          major: updatedUser.major
+          major: updatedUser.major,
+          avatar: updatedUser.avatar
         });
         if (res && res.user) {
           Object.assign(updatedUser, res.user);
@@ -247,6 +249,64 @@ export function AuthProvider({ children }) {
     return updatedUser;
   };
 
+  // Upload Foto Profil
+  const uploadAvatar = async (base64, mimeType = "image/jpeg") => {
+    if (!user) {
+      throw new Error("Tidak ada sesi pengguna aktif.");
+    }
+    const res = await ApiService.uploadAvatar(user.id, base64, mimeType);
+    const updated = {
+      ...user,
+      avatar: res.avatarUrl
+    };
+    await AsyncStorage.setItem(ACTIVE_USER_STORAGE_KEY, JSON.stringify(updated));
+    setUser(updated);
+
+    // Update juga di registered users cache
+    try {
+      const stored = await AsyncStorage.getItem(REGISTERED_USERS_STORAGE_KEY);
+      if (stored) {
+        const customUsers = JSON.parse(stored);
+        const idx = customUsers.findIndex((u) => u.id === user.id || u.username === user.username);
+        if (idx >= 0) {
+          customUsers[idx] = { ...customUsers[idx], avatar: res.avatarUrl };
+          await AsyncStorage.setItem(REGISTERED_USERS_STORAGE_KEY, JSON.stringify(customUsers));
+        }
+      }
+    } catch (e) {}
+
+    return res;
+  };
+
+  // Hapus Foto Profil (kembali ke inisial nama)
+  const deleteAvatar = async () => {
+    if (!user) {
+      throw new Error("Tidak ada sesi pengguna aktif.");
+    }
+    await ApiService.deleteAvatar(user.id);
+    const updated = {
+      ...user,
+      avatar: null
+    };
+    await AsyncStorage.setItem(ACTIVE_USER_STORAGE_KEY, JSON.stringify(updated));
+    setUser(updated);
+
+    // Update juga di registered users cache
+    try {
+      const stored = await AsyncStorage.getItem(REGISTERED_USERS_STORAGE_KEY);
+      if (stored) {
+        const customUsers = JSON.parse(stored);
+        const idx = customUsers.findIndex((u) => u.id === user.id || u.username === user.username);
+        if (idx >= 0) {
+          customUsers[idx] = { ...customUsers[idx], avatar: null };
+          await AsyncStorage.setItem(REGISTERED_USERS_STORAGE_KEY, JSON.stringify(customUsers));
+        }
+      }
+    } catch (e) {}
+
+    return updated;
+  };
+
   // Logout / Keluar
   const logout = async () => {
     try {
@@ -258,7 +318,18 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        login,
+        register,
+        logout,
+        updateProfile,
+        uploadAvatar,
+        deleteAvatar
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
