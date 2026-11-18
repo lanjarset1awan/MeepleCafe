@@ -134,5 +134,43 @@ export const UserModel = {
 
     const { password, ...safeUser } = generatedUser;
     return safeUser;
+  },
+
+  // Perbarui profil pengguna
+  async update(id, payload) {
+    const updateData = {};
+    if (payload.name !== undefined) updateData.name = payload.name.trim();
+    if (payload.phone !== undefined) updateData.phone = payload.phone.trim();
+    if (payload.nim !== undefined) updateData.nim = payload.nim.trim();
+    if (payload.major !== undefined) updateData.major = payload.major.trim();
+    if (payload.avatar !== undefined) updateData.avatar = payload.avatar.trim();
+
+    // 1. Coba update ke database Supabase
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .update(updateData)
+        .eq("id", id)
+        .select("id, name, username, email, phone, nim, major, avatar, role, created_at");
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return data[0];
+      }
+    } catch (e) {
+      // Lanjut ke fallback
+    }
+
+    // 2. Fallback in-memory cache
+    const idx = fallbackMemoryUsers.findIndex((u) => u.id === id);
+    if (idx >= 0) {
+      fallbackMemoryUsers[idx] = {
+        ...fallbackMemoryUsers[idx],
+        ...updateData
+      };
+      const { password, ...safeUser } = fallbackMemoryUsers[idx];
+      return safeUser;
+    }
+
+    return null;
   }
 };

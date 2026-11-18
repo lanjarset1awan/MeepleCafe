@@ -306,5 +306,59 @@ export const ApiService = {
       return Array.isArray(data) && data.length > 0 ? data[0] : null;
     }
     return null;
+  },
+
+  // Perbarui Profil Pengguna
+  async updateProfile(id, profileData) {
+    const payload = {};
+    if (profileData.name !== undefined) payload.name = profileData.name.trim();
+    if (profileData.phone !== undefined) payload.phone = profileData.phone.trim();
+    if (profileData.nim !== undefined) payload.nim = profileData.nim.trim();
+    if (profileData.major !== undefined) payload.major = profileData.major.trim();
+
+    // 1. Coba update via Express Backend REST API
+    try {
+      const backendRes = await fetch(`${DEFAULT_BACKEND_URL}/api/auth/profile/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (backendRes.ok) {
+        return await backendRes.json();
+      }
+    } catch (e) {
+      // Backend offline, lanjut ke Supabase Cloud
+    }
+
+    // 2. Direct Fallback: Supabase Cloud tabel users
+    try {
+      const supabaseRes = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Prefer": "return=representation"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (supabaseRes.ok) {
+        const data = await supabaseRes.json();
+        const updated = Array.isArray(data) && data.length > 0 ? data[0] : payload;
+        const { password: _, ...safeUser } = updated;
+        return {
+          message: "Profil berhasil diperbarui!",
+          user: safeUser
+        };
+      }
+    } catch (sbErr) {
+      // Lanjut ke fallback
+    }
+
+    return {
+      message: "Profil diperbarui secara lokal",
+      user: { id, ...payload }
+    };
   }
 };

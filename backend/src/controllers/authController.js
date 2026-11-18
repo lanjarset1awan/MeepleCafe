@@ -94,6 +94,31 @@ export const AuthController = {
     }
   },
 
+  // PUT /api/auth/profile/:id
+  async updateProfile(req, res) {
+    try {
+      const { id } = req.params;
+      const { name, phone, nim, major } = req.body;
+
+      if (!name || !name.trim()) {
+        return res.status(400).json({ error: "Nama lengkap wajib diisi" });
+      }
+
+      const updated = await UserModel.update(id, { name, phone, nim, major });
+      if (!updated) {
+        return res.status(404).json({ error: "Pengguna tidak ditemukan" });
+      }
+
+      return res.json({
+        message: "Profil berhasil diperbarui!",
+        user: updated
+      });
+    } catch (err) {
+      console.error("Auth update error:", err);
+      return res.status(500).json({ error: err.message || "Gagal memperbarui profil" });
+    }
+  },
+
   // GET /api/auth/users
   async getAllUsers(req, res) {
     try {

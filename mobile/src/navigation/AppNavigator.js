@@ -17,6 +17,7 @@ import TableDetailScreen from "../screens/TableDetailScreen";
 import BookingFormScreen from "../screens/BookingFormScreen";
 import MyTicketsScreen from "../screens/MyTicketsScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import EditProfileScreen from "../screens/EditProfileScreen";
 
 import { colors } from "../theme/colors";
 
@@ -147,6 +148,14 @@ function ProfileStackNavigator() {
         component={ProfileScreen}
         options={{ headerShown: false }}
       />
+      <ProfileStack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{
+          title: "Edit Profil Pengguna",
+          headerShown: true
+        }}
+      />
     </ProfileStack.Navigator>
   );
 }
@@ -249,9 +258,20 @@ export default function AppNavigator() {
         // Pengguna sudah login -> Masuk ke 5 Tab Utama
         <RootStack.Screen name="MainApp" component={MainTabNavigator} />
       ) : (
-        // Pengguna belum login -> Alur Onboarding & Autentikasi
+        // Pengguna belum login -> Katalog Game (Landing) & Autentikasi
         <RootStack.Group>
           <RootStack.Screen name="Landing" component={LandingScreen} />
+          <RootStack.Screen
+            name="GameDetail"
+            component={GameDetailScreen}
+            options={({ route }) => ({
+              headerShown: true,
+              title: route.params?.title || "Detail Permainan",
+              headerStyle: { backgroundColor: colors.darkBg },
+              headerTintColor: "#FFFFFF",
+              headerTitleStyle: { fontWeight: "bold" }
+            })}
+          />
           <RootStack.Screen name="Login" component={LoginScreen} />
           <RootStack.Screen name="Register" component={RegisterScreen} />
         </RootStack.Group>

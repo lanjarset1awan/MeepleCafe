@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
 
   // Ekstrak informasi pengguna aktif
@@ -78,14 +78,33 @@ export default function ProfileScreen() {
             <Ionicons name="shield-checkmark" size={14} color={colors.primary} style={{ marginRight: 6 }} />
             <Text style={styles.deptText}>{userRole}</Text>
           </View>
+
+          <TouchableOpacity
+            style={styles.btnEditProfileHeader}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate("EditProfile")}
+          >
+            <Ionicons name="create-outline" size={14} color={colors.primary} style={{ marginRight: 5 }} />
+            <Text style={styles.btnEditProfileHeaderText}>Edit Profil</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.bodyContent}>
           {/* Card: Informasi Akun Pengguna */}
           <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="person-circle-outline" size={22} color={colors.primary} />
-              <Text style={styles.cardTitle}>Informasi Akun Pengguna</Text>
+            <View style={styles.cardHeaderRow}>
+              <View style={styles.cardHeaderLeft}>
+                <Ionicons name="person-circle-outline" size={22} color={colors.primary} />
+                <Text style={styles.cardTitle}>Informasi Akun Pengguna</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.btnCardEdit}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate("EditProfile")}
+              >
+                <Ionicons name="pencil" size={13} color={colors.primary} style={{ marginRight: 4 }} />
+                <Text style={styles.btnCardEditText}>Ubah</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.infoRow}>
@@ -319,6 +338,22 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.primaryDark
   },
+  btnEditProfileHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 10
+  },
+  btnEditProfileHeaderText: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    color: colors.primary
+  },
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
@@ -331,6 +366,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 }
+  },
+  cardHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14
+  },
+  cardHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  btnCardEdit: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12
+  },
+  btnCardEditText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.primary
   },
   cardHeader: {
     flexDirection: "row",

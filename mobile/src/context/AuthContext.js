@@ -194,6 +194,59 @@ export function AuthProvider({ children }) {
     return newUser;
   };
 
+  // Perbarui Profil Pengguna
+  const updateProfile = async (profileData) => {
+    if (!user) {
+      throw new Error("Tidak ada sesi pengguna aktif.");
+    }
+
+    const updatedUser = {
+      ...user,
+      name: profileData.name ? profileData.name.trim() : user.name,
+      phone: profileData.phone ? profileData.phone.trim() : (user.phone || ""),
+      nim: profileData.nim !== undefined ? profileData.nim.trim() : (user.nim || ""),
+      major: profileData.major ? profileData.major.trim() : (user.major || "Member Umum")
+    };
+
+    // 1. Coba simpan ke Backend / Supabase
+    try {
+      if (user.id) {
+        const res = await ApiService.updateProfile(user.id, {
+          name: updatedUser.name,
+          phone: updatedUser.phone,
+          nim: updatedUser.nim,
+          major: updatedUser.major
+        });
+        if (res && res.user) {
+          Object.assign(updatedUser, res.user);
+        }
+      }
+    } catch (apiErr) {
+      console.log("Database update profile fallback to local cache:", apiErr.message);
+    }
+
+    // 2. Simpan ke local active user
+    await AsyncStorage.setItem(ACTIVE_USER_STORAGE_KEY, JSON.stringify(updatedUser));
+    setUser(updatedUser);
+
+    // 3. Simpan juga ke cache registered users
+    try {
+      const stored = await AsyncStorage.getItem(REGISTERED_USERS_STORAGE_KEY);
+      if (stored) {
+        const customUsers = JSON.parse(stored);
+        const idx = customUsers.findIndex((u) => u.id === user.id || u.username === user.username);
+        if (idx >= 0) {
+          customUsers[idx] = { ...customUsers[idx], ...updatedUser };
+          await AsyncStorage.setItem(REGISTERED_USERS_STORAGE_KEY, JSON.stringify(customUsers));
+        }
+      }
+    } catch (cacheErr) {
+      console.log("Error updating registered users cache:", cacheErr);
+    }
+
+    return updatedUser;
+  };
+
   // Logout / Keluar
   const logout = async () => {
     try {
@@ -205,7 +258,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

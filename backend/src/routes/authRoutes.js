@@ -7,5 +7,6 @@ router.post("/register", AuthController.register);
 router.post("/login", AuthController.login);
 router.get("/users", AuthController.getAllUsers);
 router.get("/profile/:id", AuthController.getProfile);
+router.put("/profile/:id", AuthController.updateProfile);
 
 export default router;

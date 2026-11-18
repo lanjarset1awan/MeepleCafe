@@ -5,15 +5,18 @@ import {
   ScrollView,
   StyleSheet,
   ActivityIndicator,
-  TouchableOpacity
+  TouchableOpacity,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
+import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
 
 export default function GameDetailScreen({ route, navigation }) {
   const { gameId } = route.params;
+  const { user } = useAuth();
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -64,6 +67,26 @@ export default function GameDetailScreen({ route, navigation }) {
     route.params?.rackCode || game.rack_code || getRackCode(game.id);
 
   const handleSelectGameAndChooseTable = () => {
+    if (!user) {
+      Alert.alert(
+        "Masuk untuk Bermain",
+        `Ingin memainkan "${game.title}"? Silakan masuk ke akun MeepleCafe Anda terlebih dahulu untuk reservasi meja.`,
+        [
+          { text: "Nanti Dulu", style: "cancel" },
+          {
+            text: "Daftar Akun",
+            onPress: () => navigation.navigate("Register")
+          },
+          {
+            text: "Masuk Sekarang",
+            style: "default",
+            onPress: () => navigation.navigate("Login")
+          }
+        ]
+      );
+      return;
+    }
+
     navigation.navigate("TableTab", {
       screen: "TableList",
       params: {
@@ -200,8 +223,15 @@ export default function GameDetailScreen({ route, navigation }) {
           activeOpacity={0.88}
           onPress={handleSelectGameAndChooseTable}
         >
-          <Ionicons name="calendar-outline" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-          <Text style={styles.ctaText}>Pilih Game Ini & Lanjut Reservasi Meja</Text>
+          <Ionicons
+            name={user ? "calendar-outline" : "play-circle-outline"}
+            size={20}
+            color="#FFFFFF"
+            style={{ marginRight: 8 }}
+          />
+          <Text style={styles.ctaText}>
+            {user ? "Pilih Game Ini & Lanjut Reservasi Meja" : "Main Game Ini (Perlu Masuk Akun)"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
