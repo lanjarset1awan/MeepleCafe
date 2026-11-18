@@ -15,12 +15,21 @@ import { colors } from "../theme/colors";
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
 
+  // Ekstrak informasi pengguna aktif
   const userName = user?.name || "Lanjar Setiawan";
-  const userNim = user?.nim ? `NIM: ${user.nim}` : user?.email || "Member MeepleCafe";
-  const userMajor = user?.major || user?.role || "Teknik Komputer";
-  const userAvatar =
-    user?.avatar ||
-    "https://mmdrzvvnmoplbdfaiixx.supabase.co/storage/v1/object/public/avatar/2/avatar.png?t=1779476174261";
+  const userUsername = user?.username || "lanjar";
+  const userEmail = user?.email || `${userUsername}@meeplecafe.com`;
+  const userPhone = user?.phone || "0812-3456-7890";
+  const userNim = user?.nim ? user.nim : "";
+  const userMajor = user?.major || "Teknik Komputer";
+  const userRole = user?.role || "Member MeepleCafe";
+
+  // Ambil 2 huruf awal dari username pengguna sebagai inisial avatar
+  const userInitials = (
+    userUsername.length >= 2
+      ? userUsername.slice(0, 2)
+      : userName.slice(0, 2) || "MC"
+  ).toUpperCase();
 
   const handleLogout = () => {
     Alert.alert(
@@ -54,25 +63,84 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Kotakan Profil (Avatar & Nama) - Melayang Menumpuk di Atas Kotak Biru */}
+        {/* Kotakan Header Profil (Avatar 2 Huruf & Info Utama) */}
         <View style={styles.profileHeaderCard}>
           <View style={styles.avatarContainer}>
-            <Image
-              source={{ uri: userAvatar }}
-              style={styles.avatarImage}
-            />
+            <View style={styles.avatarBadge}>
+              <Text style={styles.avatarInitials}>{userInitials}</Text>
+            </View>
             <View style={styles.onlineBadge} />
           </View>
 
           <Text style={styles.studentName}>{userName}</Text>
-          <Text style={styles.studentNim}>{userNim}</Text>
+          <Text style={styles.studentUsername}>@{userUsername}</Text>
           <View style={styles.deptBadge}>
-            <Ionicons name="school-outline" size={14} color={colors.primary} style={{ marginRight: 6 }} />
-            <Text style={styles.deptText}>{userMajor}</Text>
+            <Ionicons name="shield-checkmark" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+            <Text style={styles.deptText}>{userRole}</Text>
           </View>
         </View>
 
         <View style={styles.bodyContent}>
+          {/* Card: Informasi Akun Pengguna */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Ionicons name="person-circle-outline" size={22} color={colors.primary} />
+              <Text style={styles.cardTitle}>Informasi Akun Pengguna</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconBox}>
+                <Ionicons name="at-outline" size={18} color={colors.primary} />
+              </View>
+              <View style={styles.infoTextBox}>
+                <Text style={styles.infoItemLabel}>Username</Text>
+                <Text style={styles.infoItemValue}>@{userUsername}</Text>
+              </View>
+            </View>
+
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconBox}>
+                <Ionicons name="mail-outline" size={18} color={colors.primary} />
+              </View>
+              <View style={styles.infoTextBox}>
+                <Text style={styles.infoItemLabel}>Email</Text>
+                <Text style={styles.infoItemValue}>{userEmail}</Text>
+              </View>
+            </View>
+
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconBox}>
+                <Ionicons name="call-outline" size={18} color={colors.primary} />
+              </View>
+              <View style={styles.infoTextBox}>
+                <Text style={styles.infoItemLabel}>Nomor Telepon</Text>
+                <Text style={styles.infoItemValue}>{userPhone}</Text>
+              </View>
+            </View>
+
+            {userNim ? (
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconBox}>
+                  <Ionicons name="id-card-outline" size={18} color={colors.primary} />
+                </View>
+                <View style={styles.infoTextBox}>
+                  <Text style={styles.infoItemLabel}>NIM Mahasiswa</Text>
+                  <Text style={styles.infoItemValue}>{userNim}</Text>
+                </View>
+              </View>
+            ) : null}
+
+            <View style={[styles.infoRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
+              <View style={styles.infoIconBox}>
+                <Ionicons name="school-outline" size={18} color={colors.primary} />
+              </View>
+              <View style={styles.infoTextBox}>
+                <Text style={styles.infoItemLabel}>Program Studi / Kategori</Text>
+                <Text style={styles.infoItemValue}>{userMajor}</Text>
+              </View>
+            </View>
+          </View>
+
           {/* About Application */}
           <View style={styles.card}>
             <View style={styles.cardHeader}>
@@ -127,11 +195,11 @@ export default function ProfileScreen() {
           {/* Tombol Logout di Paling Bawah */}
           <TouchableOpacity
             style={styles.btnLogout}
-            activeOpacity={0.85}
+            activeOpacity={0.7}
             onPress={handleLogout}
           >
-            <Ionicons name="log-out-outline" size={20} color="#DC2626" style={{ marginRight: 8 }} />
-            <Text style={styles.btnLogoutText}>Keluar dari Akun</Text>
+            <Ionicons name="log-out-outline" size={18} color="#DC2626" style={{ marginRight: 6 }} />
+            <Text style={styles.btnLogoutText}>Keluar</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -192,15 +260,28 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: "relative",
-    marginBottom: 10
+    marginBottom: 12
   },
-  avatarImage: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    borderWidth: 3.5,
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight
+  avatarBadge: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 4,
+    borderColor: "#E8F2FA",
+    elevation: 5,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 }
+  },
+  avatarInitials: {
+    fontSize: 34,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    letterSpacing: 2
   },
   onlineBadge: {
     position: "absolute",
@@ -218,9 +299,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.text
   },
-  studentNim: {
-    fontSize: 13.5,
-    color: colors.textMuted,
+  studentUsername: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.primary,
     marginTop: 2
   },
   deptBadge: {
@@ -228,9 +310,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.primaryLight,
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 12,
-    marginTop: 6
+    marginTop: 8
   },
   deptText: {
     fontSize: 12.5,
@@ -253,7 +335,7 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10
+    marginBottom: 14
   },
   cardLogo: {
     width: 26,
@@ -268,6 +350,37 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.text,
     marginLeft: 8
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingBottom: 11,
+    marginBottom: 11,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6"
+  },
+  infoIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12
+  },
+  infoTextBox: {
+    flex: 1
+  },
+  infoItemLabel: {
+    fontSize: 11.5,
+    color: colors.textMuted,
+    fontWeight: "500"
+  },
+  infoItemValue: {
+    fontSize: 13.5,
+    color: colors.text,
+    fontWeight: "700",
+    marginTop: 1
   },
   aboutText: {
     fontSize: 13,
@@ -298,17 +411,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FEE2E2",
-    paddingVertical: 14,
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 13,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-    marginTop: 4,
-    marginBottom: 20
+    borderWidth: 1.5,
+    borderColor: "#DC2626",
+    marginTop: 6,
+    marginBottom: 24
   },
   btnLogoutText: {
     color: "#DC2626",
     fontSize: 14.5,
-    fontWeight: "bold"
+    fontWeight: "700"
   }
 });
