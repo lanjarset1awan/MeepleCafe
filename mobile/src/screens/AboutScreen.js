@@ -86,7 +86,7 @@ export default function AboutScreen() {
       {/* Card 2: Informasi Operasional Kafe */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <Ionicons name="storefront" size={22} color={colors.secondary} />
+          <Ionicons name="storefront" size={22} color={colors.primary} />
           <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
         </View>
 

@@ -336,9 +336,9 @@ export default function LandingScreen({ navigation }) {
           </View>
 
           {/* Card: Informasi Operasional Kafe */}
-          <View style={styles.aboutCard}>
+          <View style={[styles.aboutCard, { marginBottom: 30 }]}>
             <View style={styles.cardHeader}>
-              <Ionicons name="storefront" size={22} color={colors.secondary} />
+              <Ionicons name="storefront" size={22} color={colors.primary} />
               <Text style={styles.cardTitle}>Informasi Operasional Kafe</Text>
             </View>
 
@@ -366,32 +366,6 @@ export default function LandingScreen({ navigation }) {
                 <Text style={styles.infoHeading}>Kontak Layanan</Text>
                 <Text style={styles.infoDesc}>WhatsApp: +62 812-3456-7890</Text>
               </View>
-            </View>
-          </View>
-
-          {/* Card Ajak Masuk Akun */}
-          <View style={styles.ctaBox}>
-            <Text style={styles.ctaBoxTitle}>Ingin bermain langsung di kafe?</Text>
-            <Text style={styles.ctaBoxSubtitle}>
-              Masuk ke akun Anda atau daftar sekarang untuk memilih meja favorit dan menikmati sesi bermain terbaik.
-            </Text>
-
-            <View style={styles.ctaButtonsRow}>
-              <TouchableOpacity
-                style={styles.ctaBtnLogin}
-                activeOpacity={0.85}
-                onPress={() => navigation.navigate("Login")}
-              >
-                <Text style={styles.ctaBtnLoginText}>Masuk Akun</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.ctaBtnRegister}
-                activeOpacity={0.85}
-                onPress={() => navigation.navigate("Register")}
-              >
-                <Text style={styles.ctaBtnRegisterText}>Daftar Akun Baru</Text>
-              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
@@ -765,61 +739,5 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 2,
     lineHeight: 18
-  },
-  ctaBox: {
-    backgroundColor: "#EFF6FF",
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
-    alignItems: "center",
-    marginTop: 2
-  },
-  ctaBoxTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: colors.primaryDark,
-    textAlign: "center"
-  },
-  ctaBoxSubtitle: {
-    fontSize: 12,
-    color: colors.textMuted,
-    textAlign: "center",
-    lineHeight: 18,
-    marginTop: 4,
-    marginBottom: 14
-  },
-  ctaButtonsRow: {
-    flexDirection: "row",
-    gap: 10,
-    width: "100%"
-  },
-  ctaBtnLogin: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  ctaBtnLoginText: {
-    color: "#FFFFFF",
-    fontSize: 13.5,
-    fontWeight: "bold"
-  },
-  ctaBtnRegister: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  ctaBtnRegisterText: {
-    color: colors.primary,
-    fontSize: 13.5,
-    fontWeight: "bold"
   }
 });
