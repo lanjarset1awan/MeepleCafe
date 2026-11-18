@@ -39,6 +39,12 @@
       "expo-image",
       "expo-font",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Aplikasi MeepleCafe membutuhkan akses galeri foto untuk mengubah foto profil Anda."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#FFFFFF",
