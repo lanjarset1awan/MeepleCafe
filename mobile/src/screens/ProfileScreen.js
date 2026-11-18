@@ -67,7 +67,7 @@ export default function ProfileScreen({ navigation }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Kotakan Header Profil (Avatar 2 Huruf, Nama, Username, dan Tombol Edit Profil) */}
+        {/* Kotakan Header Profil (Avatar 2 Huruf, Nama, dan Tombol Edit Profil) */}
         <View style={styles.profileHeaderCard}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatarBadge}>
@@ -77,7 +77,6 @@ export default function ProfileScreen({ navigation }) {
           </View>
 
           <Text style={styles.studentName}>{userName}</Text>
-          <Text style={styles.studentUsername}>@{userUsername}</Text>
 
           <TouchableOpacity
             style={styles.btnEditProfileHeader}
@@ -310,12 +309,6 @@ const styles = StyleSheet.create({
     fontSize: 21,
     fontWeight: "bold",
     color: colors.text
-  },
-  studentUsername: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.primary,
-    marginTop: 2
   },
   btnEditProfileHeader: {
     flexDirection: "row",
