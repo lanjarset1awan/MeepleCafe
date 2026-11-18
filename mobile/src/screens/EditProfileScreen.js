@@ -79,10 +79,6 @@ export default function EditProfileScreen({ navigation }) {
           <View style={styles.avatarBadge}>
             <Text style={styles.avatarInitials}>{userInitials}</Text>
           </View>
-          <Text style={styles.avatarTitle}>@{userUsername}</Text>
-          <Text style={styles.avatarSubtitle}>
-            Inisial profil dibuat otomatis dari 2 huruf username Anda
-          </Text>
         </View>
 
         {/* Form Container */}
@@ -226,9 +222,10 @@ const styles = StyleSheet.create({
   avatarCard: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    paddingVertical: 20,
+    paddingVertical: 18,
     paddingHorizontal: 16,
     alignItems: "center",
+    justifyContent: "center",
     marginBottom: 14,
     borderWidth: 1,
     borderColor: colors.border,
@@ -252,25 +249,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
-    marginBottom: 10
+    marginBottom: 0
   },
   avatarInitials: {
     fontSize: 30,
     fontWeight: "800",
     color: "#FFFFFF",
     letterSpacing: 2
-  },
-  avatarTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: colors.primary
-  },
-  avatarSubtitle: {
-    fontSize: 12,
-    color: colors.textMuted,
-    textAlign: "center",
-    marginTop: 4,
-    paddingHorizontal: 20
   },
   formCard: {
     backgroundColor: colors.card,
