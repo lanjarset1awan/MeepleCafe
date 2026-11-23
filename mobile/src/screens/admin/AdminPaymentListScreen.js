@@ -512,6 +512,15 @@ export default function AdminPaymentListScreen({ navigation }) {
     <View style={styles.container}>
       {/* Header Admin */}
       <View style={styles.header}>
+        {/* Eyebrow Pill Admin Panel */}
+        <View style={styles.adminPillWrapper}>
+          <View style={styles.adminRolePill}>
+            <Ionicons name="shield-checkmark" size={12} color="#38BDF8" style={{ marginRight: 4 }} />
+            <Text style={styles.adminRolePillText}>ADMIN PANEL</Text>
+          </View>
+        </View>
+
+        {/* Baris Judul & Tombol Back (Sejajar Sempurna) */}
         <View style={styles.headerTopRow}>
           <TouchableOpacity
             style={styles.backBtn}
@@ -521,13 +530,7 @@ export default function AdminPaymentListScreen({ navigation }) {
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
 
-          <View style={styles.headerTitleBox}>
-            <View style={styles.adminRolePill}>
-              <Ionicons name="shield-checkmark" size={12} color="#38BDF8" style={{ marginRight: 4 }} />
-              <Text style={styles.adminRolePillText}>ADMIN PANEL</Text>
-            </View>
-            <Text style={styles.headerTitle}>Verifikasi Pembayaran</Text>
-          </View>
+          <Text style={styles.headerTitle}>Verifikasi Pembayaran</Text>
 
           <View style={styles.headerRightPlaceholder} />
         </View>
@@ -751,19 +754,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between"
   },
+  adminPillWrapper: {
+    alignItems: "center",
+    marginBottom: 8
+  },
   backBtn: {
-    padding: 6
-  },
-  headerRightPlaceholder: {
-    width: 36
-  },
-  headerTitleBox: {
-    alignItems: "center"
+    padding: 6,
+    width: 36,
+    alignItems: "flex-start",
+    justifyContent: "center"
   },
   headerTitle: {
     fontSize: 20.5,
     fontWeight: "bold",
-    color: "#FFFFFF"
+    color: "#FFFFFF",
+    textAlign: "center",
+    flex: 1
   },
   adminRolePill: {
     flexDirection: "row",
@@ -772,7 +778,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9.5,
     paddingVertical: 3,
     borderRadius: 12,
-    marginBottom: 6,
     borderWidth: 1,
     borderColor: "rgba(56, 189, 248, 0.3)"
   },
@@ -781,6 +786,9 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     fontWeight: "800",
     letterSpacing: 0.6
+  },
+  headerRightPlaceholder: {
+    width: 36
   },
   searchContainer: {
     flexDirection: "row",
