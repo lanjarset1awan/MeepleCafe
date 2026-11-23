@@ -275,8 +275,74 @@ export const ApiService = {
     });
   },
 
+  // Upload Bukti Pembayaran Tiket Reservasi (Bucket Khusus: 'tickets')
   async uploadPaymentProof(base64, mimeType = "image/jpeg") {
-    return this.uploadGameImage(base64, mimeType);
+    // 1. Coba upload via Express Backend API
+    try {
+      const backendRes = await fetch(`${DEFAULT_BACKEND_URL}/api/reservations/upload-proof`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ base64, mimeType })
+      });
+      if (backendRes.ok) {
+        return await backendRes.json();
+      }
+    } catch (e) {
+      // Backend offline, lanjut direct ke Supabase
+    }
+
+    // 2. Direct Fallback ke Supabase Storage (Bucket 'tickets')
+    const cleanBase64 = base64.replace(/^data:image\/\w+;base64,/, "");
+    const ext = (mimeType.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const fileName = `ticket-proof-${Date.now()}.${ext}`;
+
+    try {
+      const binaryString = atob(cleanBase64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Coba upload ke bucket 'tickets'
+      let storageRes = await fetch(`${SUPABASE_URL}/storage/v1/object/tickets/proofs/${fileName}`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": mimeType
+        },
+        body: bytes
+      });
+
+      let bucketName = "tickets";
+      let objectPath = `proofs/${fileName}`;
+
+      if (!storageRes.ok) {
+        // Fallback ke bucket 'avatars' folder 'tickets' jika bucket 'tickets' belum aktif
+        storageRes = await fetch(`${SUPABASE_URL}/storage/v1/object/avatars/tickets/${fileName}`, {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": mimeType
+          },
+          body: bytes
+        });
+        bucketName = "avatars";
+        objectPath = `tickets/${fileName}`;
+      }
+
+      if (storageRes.ok) {
+        return {
+          imageUrl: `${SUPABASE_URL}/storage/v1/object/public/${bucketName}/${objectPath}`
+        };
+      }
+    } catch (e) {}
+
+    // Fallback data URI jika cloud storage offline
+    return {
+      imageUrl: `data:${mimeType};base64,${cleanBase64}`
+    };
   },
 
   // Autentikasi Pengguna (Login via Backend REST API & Supabase)

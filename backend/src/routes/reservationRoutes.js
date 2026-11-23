@@ -4,6 +4,7 @@ import { ReservationController } from "../controllers/reservationController.js";
 const router = express.Router();
 
 router.get("/availability", ReservationController.checkAvailability);
+router.post("/upload-proof", ReservationController.uploadProof);
 router.get("/", ReservationController.getAll);
 router.get("/:id", ReservationController.getById);
 router.post("/", ReservationController.create);
