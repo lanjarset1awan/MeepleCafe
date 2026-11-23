@@ -556,12 +556,12 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 19.5,
     fontWeight: "bold",
     color: "#FFFFFF"
   },
   headerSubtitle: {
-    fontSize: 11.5,
+    fontSize: 12,
     color: "rgba(255, 255, 255, 0.75)",
     marginTop: 2
   },

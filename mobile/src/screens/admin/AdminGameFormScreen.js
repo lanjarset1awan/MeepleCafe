@@ -820,12 +820,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: "700",
+    fontSize: 19,
+    fontWeight: "bold",
     color: "#FFFFFF"
   },
   headerSubtitle: {
-    fontSize: 11.5,
+    fontSize: 12,
     color: "#94A3B8",
     marginTop: 2
   },

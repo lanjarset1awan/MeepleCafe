@@ -524,6 +524,7 @@ export default function AdminPaymentListScreen({ navigation }) {
           <View style={styles.headerTitleBox}>
             <Text style={styles.headerTitle}>Verifikasi Pembayaran</Text>
             <View style={styles.adminRolePill}>
+              <Ionicons name="shield-checkmark" size={12.5} color="#38BDF8" style={{ marginRight: 4 }} />
               <Text style={styles.adminRolePillText}>ADMIN PANEL</Text>
             </View>
           </View>
@@ -760,7 +761,7 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20.5,
     fontWeight: "bold",
     color: "#FFFFFF"
   },
@@ -768,8 +769,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "rgba(56, 189, 248, 0.15)",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 9.5,
+    paddingVertical: 3,
     borderRadius: 12,
     marginTop: 4,
     borderWidth: 1,
@@ -777,9 +778,9 @@ const styles = StyleSheet.create({
   },
   adminRolePillText: {
     color: "#38BDF8",
-    fontSize: 10,
+    fontSize: 11.5,
     fontWeight: "800",
-    letterSpacing: 0.5
+    letterSpacing: 0.6
   },
   searchContainer: {
     flexDirection: "row",
