@@ -125,7 +125,10 @@ export default function GameListScreen({ navigation }) {
           </Text>
 
           <View style={styles.actionFooter}>
-            <Text style={[styles.actionFooterText, !isAvail && { color: colors.textMuted }]}>
+            <Text
+              style={[styles.actionFooterText, !isAvail && { color: colors.textMuted }]}
+              numberOfLines={1}
+            >
               {isAvail ? "Pelajari Aturan & Pilih Game" : "Stok Sedang Habis / Dipinjam"}
             </Text>
             <View style={styles.actionFooterRight}>
@@ -503,9 +506,11 @@ const styles = StyleSheet.create({
     color: "#DC2626"
   },
   actionFooterText: {
+    flex: 1,
     fontSize: 12,
     fontWeight: "700",
-    color: colors.primary
+    color: colors.primary,
+    marginRight: 8
   },
   centerContainer: {
     flex: 1,
