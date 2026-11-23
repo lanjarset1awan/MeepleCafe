@@ -155,7 +155,7 @@ export default function ProfileScreen({ navigation }) {
 
         {/* Action Buttons di Bagian Bawah */}
         <View style={styles.actionButtonsWrapper}>
-          {/* Tombol Akses Kelola Katalog Game (Khusus Role Admin) */}
+          {/* Tombol Akses Masuk Panel Admin (Khusus Role Admin) */}
           {userRole.toLowerCase() === "admin" && (
             <TouchableOpacity
               style={styles.btnAdminPanel}
@@ -164,11 +164,11 @@ export default function ProfileScreen({ navigation }) {
             >
               <View style={styles.adminBtnLeft}>
                 <View style={styles.adminIconBox}>
-                  <Ionicons name="cube-outline" size={19} color={colors.primary} />
+                  <Ionicons name="shield-checkmark" size={19} color={colors.primary} />
                 </View>
                 <View>
-                  <Text style={styles.btnAdminPanelTitle}>Kelola Katalog Game</Text>
-                  <Text style={styles.btnAdminPanelSubtitle}>Tambah, edit & hapus data board game</Text>
+                  <Text style={styles.btnAdminPanelTitle}>Masuk Panel Admin</Text>
+                  <Text style={styles.btnAdminPanelSubtitle}>Kelola game, meja & verifikasi tiket</Text>
                 </View>
               </View>
               <View style={styles.adminPillBadge}>
