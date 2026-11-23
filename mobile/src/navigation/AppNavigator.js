@@ -41,7 +41,8 @@ function GameStackNavigator() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.darkBg },
         headerTintColor: "#FFFFFF",
-        headerTitleStyle: { fontWeight: "bold" }
+        headerTitleStyle: { fontWeight: "bold" },
+        animation: "fade"
       }}
     >
       <GameStack.Screen
@@ -67,7 +68,8 @@ function InventoryStackNavigator() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.darkBg },
         headerTintColor: "#FFFFFF",
-        headerTitleStyle: { fontWeight: "bold" }
+        headerTitleStyle: { fontWeight: "bold" },
+        animation: "fade"
       }}
     >
       <InventoryStack.Screen
@@ -93,7 +95,8 @@ function TableStackNavigator() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.darkBg },
         headerTintColor: "#FFFFFF",
-        headerTitleStyle: { fontWeight: "bold" }
+        headerTitleStyle: { fontWeight: "bold" },
+        animation: "fade"
       }}
     >
       <TableStack.Screen
@@ -145,7 +148,8 @@ function ProfileStackNavigator() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.darkBg },
         headerTintColor: "#FFFFFF",
-        headerTitleStyle: { fontWeight: "bold" }
+        headerTitleStyle: { fontWeight: "bold" },
+        animation: "fade"
       }}
     >
       <ProfileStack.Screen
@@ -273,7 +277,7 @@ export default function AppNavigator() {
             component={GameDetailScreen}
             options={({ route }) => ({
               headerShown: true,
-              animation: "slide_from_right",
+              animation: "fade",
               title: route.params?.title || "Detail Permainan",
               headerStyle: { backgroundColor: colors.darkBg },
               headerTintColor: "#FFFFFF",
@@ -290,29 +294,29 @@ export default function AppNavigator() {
         <RootStack.Screen
           name="AdminGameList"
           component={AdminGameListScreen}
-          options={{ headerShown: false, animation: "slide_from_right" }}
+          options={{ headerShown: false, animation: "none" }}
         />
         <RootStack.Screen
           name="AdminGameForm"
           component={AdminGameFormScreen}
-          options={{ headerShown: false, animation: "slide_from_right" }}
+          options={{ headerShown: false, animation: "fade" }}
         />
         <RootStack.Screen
           name="AdminTableList"
           component={AdminTableListScreen}
-          options={{ headerShown: false, animation: "slide_from_right" }}
+          options={{ headerShown: false, animation: "none" }}
         />
         <RootStack.Screen
           name="AdminTableForm"
           component={AdminTableFormScreen}
-          options={{ headerShown: false, animation: "slide_from_right" }}
+          options={{ headerShown: false, animation: "fade" }}
         />
         <RootStack.Screen
           name="About"
           component={AboutScreen}
           options={{
             headerShown: true,
-            animation: "slide_from_right",
+            animation: "fade",
             title: "Tentang MeepleCafe",
             headerStyle: { backgroundColor: colors.darkBg },
             headerTintColor: "#FFFFFF",
