@@ -296,11 +296,11 @@ export default function MyTicketsScreen({ navigation }) {
       >
         {/* Ticket Header */}
         <View style={[styles.ticketHeader, isExpired && styles.ticketHeaderExpired]}>
-          <View>
-            <Text style={[styles.ticketBrand, isExpired && styles.ticketBrandExpired]}>
+          <View style={styles.ticketHeaderLeft}>
+            <Text style={[styles.ticketBrand, isExpired && styles.ticketBrandExpired]} numberOfLines={1}>
               {isExpired ? "MEEPLECAFE (EXPIRED)" : isPending ? "MEEPLECAFE (PENGAJUAN)" : "MEEPLECAFE PASS"}
             </Text>
-            <Text style={[styles.bookingCode, isExpired && styles.bookingCodeExpired]}>
+            <Text style={[styles.bookingCode, isExpired && styles.bookingCodeExpired]} numberOfLines={1}>
               {item.booking_code}
             </Text>
           </View>
@@ -308,12 +308,12 @@ export default function MyTicketsScreen({ navigation }) {
           <View style={styles.headerRightActions}>
             {isRejected ? (
               <View style={[styles.statusBadge, styles.statusBadgeRejected]}>
-                <Ionicons name="close-circle" size={13} color="#DC2626" style={{ marginRight: 3 }} />
+                <Ionicons name="close-circle" size={12} color="#DC2626" style={{ marginRight: 3 }} />
                 <Text style={[styles.statusText, styles.statusTextRejected]}>Ditolak</Text>
               </View>
             ) : isPending ? (
               <View style={[styles.statusBadge, styles.statusBadgePending]}>
-                <Ionicons name="time" size={13} color="#D97706" style={{ marginRight: 3 }} />
+                <Ionicons name="time" size={12} color="#D97706" style={{ marginRight: 3 }} />
                 <Text style={[styles.statusText, styles.statusTextPending]}>Menunggu Konfirmasi</Text>
               </View>
             ) : isExpired ? (
@@ -773,7 +773,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     backgroundColor: "#F8FAFC",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16
@@ -781,17 +782,22 @@ const styles = StyleSheet.create({
   ticketHeaderExpired: {
     backgroundColor: "#F1F5F9"
   },
+  ticketHeaderLeft: {
+    flex: 1,
+    marginRight: 10,
+    justifyContent: "center"
+  },
   ticketBrand: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: "700",
     color: colors.primary,
-    letterSpacing: 1.5
+    letterSpacing: 1.2
   },
   ticketBrandExpired: {
     color: colors.textMuted
   },
   bookingCode: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.text,
     marginTop: 2
@@ -802,12 +808,16 @@ const styles = StyleSheet.create({
   },
   headerRightActions: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    flexShrink: 0
   },
   statusBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 4,
-    borderRadius: 20
+    borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 0
   },
   statusBadgeActive: {
     backgroundColor: "#DCFCE7"

@@ -271,15 +271,14 @@ export default function AdminPaymentListScreen({ navigation }) {
       >
         {/* Ticket Header */}
         <View style={styles.ticketHeader}>
-          <View>
-            <Text style={styles.ticketBrand}>
-              {isPending
-                ? "MEEPLECAFE (PENGAJUAN TIKET)"
-                : isRejected
-                ? "MEEPLECAFE (TIKET DITOLAK)"
-                : "MEEPLECAFE PASS"}
+          <View style={styles.ticketHeaderLeft}>
+            <Text style={styles.ticketBrand} numberOfLines={1}>
+              MEEPLECAFE PASS
             </Text>
-            <Text style={[styles.bookingCode, isRejected && styles.bookingCodeRejected]}>
+            <Text
+              style={[styles.bookingCode, isRejected && styles.bookingCodeRejected]}
+              numberOfLines={1}
+            >
               {item.booking_code}
             </Text>
           </View>
@@ -287,17 +286,17 @@ export default function AdminPaymentListScreen({ navigation }) {
           <View style={styles.headerRightActions}>
             {isPending ? (
               <View style={styles.statusBadgePending}>
-                <Ionicons name="time" size={13} color="#D97706" style={{ marginRight: 4 }} />
+                <Ionicons name="time" size={12} color="#D97706" style={{ marginRight: 4 }} />
                 <Text style={styles.statusTextPending}>Menunggu Konfirmasi</Text>
               </View>
             ) : isConfirmed ? (
               <View style={styles.statusBadgeActive}>
-                <Ionicons name="checkmark-circle" size={13} color="#166534" style={{ marginRight: 4 }} />
+                <Ionicons name="checkmark-circle" size={12} color="#166534" style={{ marginRight: 4 }} />
                 <Text style={styles.statusTextActive}>Aktif</Text>
               </View>
             ) : (
               <View style={styles.statusBadgeRejected}>
-                <Ionicons name="close-circle" size={13} color="#DC2626" style={{ marginRight: 4 }} />
+                <Ionicons name="close-circle" size={12} color="#DC2626" style={{ marginRight: 4 }} />
                 <Text style={styles.statusTextRejected}>Ditolak</Text>
               </View>
             )}
@@ -873,19 +872,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     backgroundColor: "#F8FAFC",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16
   },
+  ticketHeaderLeft: {
+    flex: 1,
+    marginRight: 10,
+    justifyContent: "center"
+  },
   ticketBrand: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: "700",
     color: colors.primary,
-    letterSpacing: 1.5
+    letterSpacing: 1.2
   },
   bookingCode: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.text,
     marginTop: 2
@@ -896,15 +901,17 @@ const styles = StyleSheet.create({
   },
   headerRightActions: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    flexShrink: 0
   },
   statusBadgeActive: {
     backgroundColor: "#DCFCE7",
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: 14,
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    flexShrink: 0
   },
   statusTextActive: {
     color: "#166534",
@@ -913,11 +920,12 @@ const styles = StyleSheet.create({
   },
   statusBadgePending: {
     backgroundColor: "#FEF3C7",
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: 14,
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    flexShrink: 0
   },
   statusTextPending: {
     color: "#B45309",
@@ -926,11 +934,12 @@ const styles = StyleSheet.create({
   },
   statusBadgeRejected: {
     backgroundColor: "#FEE2E2",
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: 14,
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    flexShrink: 0
   },
   statusTextRejected: {
     color: "#DC2626",
