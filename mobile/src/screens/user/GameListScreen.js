@@ -97,17 +97,9 @@ export default function GameListScreen({ navigation }) {
       >
         <GameImage uri={item.image_url} style={styles.cardImage} />
         <View style={styles.cardContent}>
-          <View style={styles.gameTitleRow}>
-            <Text style={styles.gameTitle} numberOfLines={1}>
-              {item.title}
-            </Text>
-            {item.is_available === false && (
-              <View style={styles.unavailBadge}>
-                <Ionicons name="alert-circle" size={11} color="#B45309" style={{ marginRight: 3 }} />
-                <Text style={styles.unavailBadgeText}>Tidak Tersedia</Text>
-              </View>
-            )}
-          </View>
+          <Text style={styles.gameTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
 
           <View style={styles.metaRow}>
             {/* 1. Kategori (Bubble Kotak Biru) */}
@@ -408,33 +400,11 @@ const styles = StyleSheet.create({
   cardContent: {
     padding: 14
   },
-  gameTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 6
-  },
   gameTitle: {
-    flex: 1,
     fontSize: 20,
     fontWeight: "bold",
     color: colors.text,
-    marginRight: 8
-  },
-  unavailBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FEF3C7",
-    borderWidth: 1,
-    borderColor: "#FDE68A",
-    paddingHorizontal: 7,
-    paddingVertical: 2.5,
-    borderRadius: 8
-  },
-  unavailBadgeText: {
-    fontSize: 10.5,
-    fontWeight: "700",
-    color: "#B45309"
+    marginBottom: 6
   },
   badgeStockAvail: {
     flexDirection: "row",
