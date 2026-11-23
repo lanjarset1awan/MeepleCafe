@@ -119,6 +119,10 @@ export default function GameInventoryScreen({ navigation }) {
                 {item.game_categories?.name || "Game"}
               </Text>
             </View>
+            <View style={styles.rackBadge}>
+              <Ionicons name="grid-outline" size={12} color={colors.primary} style={{ marginRight: 3 }} />
+              <Text style={styles.rackText}>{rackCode}</Text>
+            </View>
           </View>
 
           <View style={styles.metaIconRow}>
@@ -133,13 +137,6 @@ export default function GameInventoryScreen({ navigation }) {
               <Ionicons name="time-outline" size={13} color={colors.primary} style={{ marginRight: 4 }} />
               <Text style={styles.playerText}>
                 {item.duration_minutes} mnt
-              </Text>
-            </View>
-            <Text style={styles.metaDivider}>•</Text>
-            <View style={styles.metaIconItem}>
-              <Ionicons name="grid-outline" size={12} color={colors.primary} style={{ marginRight: 4 }} />
-              <Text style={styles.playerText}>
-                {rackCode}
               </Text>
             </View>
           </View>
