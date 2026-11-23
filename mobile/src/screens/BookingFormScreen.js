@@ -52,6 +52,36 @@ function doOverlap(s1, s2) {
   return h1.start < h2.end && h2.start < h1.end;
 }
 
+// Nama Bulan & Hari dalam Bahasa Indonesia untuk Kalender Interaktif
+const INDO_MONTHS = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+];
+
+const INDO_DAYS = [
+  "Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"
+];
+
+const CALENDAR_WEEKDAYS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+
+// Format tanggal ke Bahasa Indonesia (Contoh: "Senin, 23 November 2026")
+function formatIndonesianDate(dateStr, includeDayName = true) {
+  if (!dateStr || typeof dateStr !== "string" || !dateStr.includes("-")) return dateStr || "-";
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return dateStr;
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10) - 1;
+  const d = parseInt(parts[2], 10);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return dateStr;
+  const dateObj = new Date(y, m, d);
+  const dayName = INDO_DAYS[dateObj.getDay()] || "";
+  const monthName = INDO_MONTHS[m] || "";
+  if (includeDayName) {
+    return `${dayName}, ${d} ${monthName} ${y}`;
+  }
+  return `${d} ${monthName} ${y}`;
+}
+
 // Helper tanggal
 function getFormattedDate(daysOffset = 0) {
   const d = new Date();
@@ -181,6 +211,95 @@ export default function BookingFormScreen({ route, navigation }) {
   const hideDialog = () => {
     setDialogConfig((prev) => ({ ...prev, visible: false }));
   };
+
+  // State untuk Modal Kalender Interaktif (Pengganti Input Tanggal Manual)
+  const [calendarModalVisible, setCalendarModalVisible] = useState(false);
+  const [calendarViewYear, setCalendarViewYear] = useState(() => new Date().getFullYear());
+  const [calendarViewMonth, setCalendarViewMonth] = useState(() => new Date().getMonth());
+
+  const openCalendar = () => {
+    if (reservationDate && reservationDate.includes("-")) {
+      const parts = reservationDate.split("-");
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      if (!isNaN(y) && !isNaN(m)) {
+        setCalendarViewYear(y);
+        setCalendarViewMonth(m);
+      }
+    } else {
+      const now = new Date();
+      setCalendarViewYear(now.getFullYear());
+      setCalendarViewMonth(now.getMonth());
+    }
+    setCalendarModalVisible(true);
+  };
+
+  const currentYearNow = currentNow.getFullYear();
+  const currentMonthNow = currentNow.getMonth();
+  const canGoPrevMonth =
+    calendarViewYear > currentYearNow ||
+    (calendarViewYear === currentYearNow && calendarViewMonth > currentMonthNow);
+  const canGoNextMonth =
+    calendarViewYear * 12 + calendarViewMonth < currentYearNow * 12 + currentMonthNow + 3;
+
+  const handlePrevMonth = () => {
+    if (!canGoPrevMonth) return;
+    if (calendarViewMonth === 0) {
+      setCalendarViewYear((prev) => prev - 1);
+      setCalendarViewMonth(11);
+    } else {
+      setCalendarViewMonth((prev) => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (!canGoNextMonth) return;
+    if (calendarViewMonth === 11) {
+      setCalendarViewYear((prev) => prev + 1);
+      setCalendarViewMonth(0);
+    } else {
+      setCalendarViewMonth((prev) => prev + 1);
+    }
+  };
+
+  const handleSelectDate = (dStr) => {
+    setReservationDate(dStr);
+    setCalendarModalVisible(false);
+  };
+
+  // Generate sel-sel kalender untuk bulan yang sedang dilihat
+  const calendarGridCells = useMemo(() => {
+    const firstDayIndex = new Date(calendarViewYear, calendarViewMonth, 1).getDay(); // 0 = Minggu
+    const totalDays = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+    const cells = [];
+
+    // Kotak kosong di awal bulan
+    for (let i = 0; i < firstDayIndex; i++) {
+      cells.push({ key: `pad-${i}`, empty: true });
+    }
+
+    // Hari 1 s/d totalDays
+    for (let day = 1; day <= totalDays; day++) {
+      const dStr = `${calendarViewYear}-${String(calendarViewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const isPast = dStr < todayStr;
+      const isSelected = dStr === reservationDate;
+      const isToday = dStr === todayStr;
+      const isSunday = (firstDayIndex + day - 1) % 7 === 0;
+
+      cells.push({
+        key: `day-${day}`,
+        empty: false,
+        day,
+        dateStr: dStr,
+        isPast,
+        isSelected,
+        isToday,
+        isSunday
+      });
+    }
+
+    return cells;
+  }, [calendarViewYear, calendarViewMonth, todayStr, reservationDate]);
 
   // State untuk Custom Success Payment Modal
   const [successModalData, setSuccessModalData] = useState({
@@ -678,14 +797,31 @@ export default function BookingFormScreen({ route, navigation }) {
           </View>
         )}
 
-        {/* Input Tanggal Manual */}
-        <TextInput
-          style={[styles.textInput, { marginTop: 8, marginBottom: isPastDate ? 8 : 18 }]}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor={colors.textMuted}
-          value={reservationDate}
-          onChangeText={setReservationDate}
-        />
+        {/* Pemilih Tanggal Kalender (Interaktif, menggantikan TextInput manual) */}
+        <TouchableOpacity
+          style={[
+            styles.calendarTriggerCard,
+            isPastDate && styles.calendarTriggerCardError
+          ]}
+          onPress={openCalendar}
+          activeOpacity={0.82}
+        >
+          <View style={styles.calendarTriggerLeft}>
+            <View style={styles.calendarTriggerIconCircle}>
+              <Ionicons name="calendar" size={20} color={colors.primary} />
+            </View>
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <Text style={styles.calendarTriggerSubLabel}>Tanggal Reservasi</Text>
+              <Text style={styles.calendarTriggerValueText} numberOfLines={1}>
+                {formatIndonesianDate(reservationDate)}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.calendarTriggerActionBadge}>
+            <Ionicons name="calendar-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+            <Text style={styles.calendarTriggerActionText}>Pilih Kalender</Text>
+          </View>
+        </TouchableOpacity>
 
         {/* Notifikasi jika memilih tanggal yang sudah lewat */}
         {isPastDate && (
@@ -1304,6 +1440,168 @@ export default function BookingFormScreen({ route, navigation }) {
                 );
               }}
             />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal Kalender Interaktif MeepleCafe */}
+      <Modal visible={calendarModalVisible} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.calendarModalCard}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons name="calendar" size={20} color={colors.primary} style={{ marginRight: 8 }} />
+                <Text style={styles.modalTitle}>Pilih Tanggal Reservasi</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => setCalendarModalVisible(false)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons name="close" size={24} color={colors.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Quick Pills di dalam Modal */}
+            <View style={styles.calendarQuickPillsRow}>
+              {[
+                { label: "Hari Ini", date: getFormattedDate(0) },
+                { label: "Besok", date: getFormattedDate(1) },
+                { label: "Lusa", date: getFormattedDate(2) }
+              ].map((qp) => {
+                const isSelected = reservationDate === qp.date;
+                return (
+                  <TouchableOpacity
+                    key={qp.date}
+                    style={[styles.calendarQuickPill, isSelected && styles.calendarQuickPillActive]}
+                    onPress={() => {
+                      const [y, m] = qp.date.split("-").map(Number);
+                      setCalendarViewYear(y);
+                      setCalendarViewMonth(m - 1);
+                      handleSelectDate(qp.date);
+                    }}
+                  >
+                    <Text style={[styles.calendarQuickPillText, isSelected && styles.calendarQuickPillTextActive]}>
+                      {qp.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* Month & Year Navigation */}
+            <View style={styles.calendarNavRow}>
+              <TouchableOpacity
+                style={[styles.calendarNavBtn, !canGoPrevMonth && styles.calendarNavBtnDisabled]}
+                onPress={handlePrevMonth}
+                disabled={!canGoPrevMonth}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name="chevron-back"
+                  size={20}
+                  color={canGoPrevMonth ? colors.primaryDark : colors.border}
+                />
+              </TouchableOpacity>
+
+              <Text style={styles.calendarNavTitle}>
+                {INDO_MONTHS[calendarViewMonth]} {calendarViewYear}
+              </Text>
+
+              <TouchableOpacity
+                style={[styles.calendarNavBtn, !canGoNextMonth && styles.calendarNavBtnDisabled]}
+                onPress={handleNextMonth}
+                disabled={!canGoNextMonth}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={canGoNextMonth ? colors.primaryDark : colors.border}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Weekday Header */}
+            <View style={styles.calendarWeekdayRow}>
+              {CALENDAR_WEEKDAYS.map((wd, index) => (
+                <View key={wd} style={styles.calendarWeekdayCol}>
+                  <Text style={[styles.calendarWeekdayText, index === 0 && styles.calendarWeekdaySunday]}>
+                    {wd}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Days Grid */}
+            <View style={styles.calendarGrid}>
+              {calendarGridCells.map((cell) => {
+                if (cell.empty) {
+                  return <View key={cell.key} style={styles.calendarGridCellEmpty} />;
+                }
+
+                return (
+                  <View key={cell.key} style={styles.calendarGridCellWrapper}>
+                    <TouchableOpacity
+                      style={[
+                        styles.calendarDayBtn,
+                        cell.isToday && styles.calendarDayBtnToday,
+                        cell.isSelected && styles.calendarDayBtnSelected,
+                        cell.isPast && styles.calendarDayBtnDisabled
+                      ]}
+                      onPress={() => handleSelectDate(cell.dateStr)}
+                      disabled={cell.isPast}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.calendarDayText,
+                          cell.isSunday && styles.calendarDayTextSunday,
+                          cell.isToday && styles.calendarDayTextToday,
+                          cell.isSelected && styles.calendarDayTextSelected,
+                          cell.isPast && styles.calendarDayTextDisabled
+                        ]}
+                      >
+                        {cell.day}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+
+            {/* Legend */}
+            <View style={styles.calendarLegendRow}>
+              <View style={styles.calendarLegendItem}>
+                <View style={[styles.legendDot, { backgroundColor: colors.primary }]} />
+                <Text style={styles.legendText}>Terpilih</Text>
+              </View>
+              <View style={styles.calendarLegendItem}>
+                <View style={[styles.legendDot, { borderColor: colors.primary, borderWidth: 1.5, backgroundColor: colors.primaryLight }]} />
+                <Text style={styles.legendText}>Hari Ini</Text>
+              </View>
+              <View style={styles.calendarLegendItem}>
+                <View style={[styles.legendDot, { backgroundColor: "#E5E7EB" }]} />
+                <Text style={styles.legendText}>Lewat</Text>
+              </View>
+            </View>
+
+            {/* Footer Selected Date Banner */}
+            <View style={styles.calendarFooterBanner}>
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={styles.calendarFooterLabel}>Tanggal Terpilih</Text>
+                <Text style={styles.calendarFooterDateText} numberOfLines={1}>
+                  {formatIndonesianDate(reservationDate)}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.calendarFooterConfirmBtn}
+                onPress={() => setCalendarModalVisible(false)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.calendarFooterConfirmText}>Selesai</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -2274,5 +2572,271 @@ const styles = StyleSheet.create({
     color: colors.secondary,
     fontSize: 13,
     fontWeight: "600"
+  },
+
+  // Calendar Trigger in Booking Form
+  calendarTriggerCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 8,
+    marginBottom: 16,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2
+  },
+  calendarTriggerCardError: {
+    borderColor: "#DC2626",
+    backgroundColor: "#FEF2F2"
+  },
+  calendarTriggerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    marginRight: 8
+  },
+  calendarTriggerIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  calendarTriggerSubLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.5
+  },
+  calendarTriggerValueText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.text,
+    marginTop: 2
+  },
+  calendarTriggerActionBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20
+  },
+  calendarTriggerActionText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.primaryDark
+  },
+
+  // Calendar Interactive Modal
+  calendarModalCard: {
+    width: "92%",
+    maxWidth: 390,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 18,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 10
+  },
+  calendarQuickPillsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12
+  },
+  calendarQuickPill: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginHorizontal: 3
+  },
+  calendarQuickPillActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary
+  },
+  calendarQuickPillText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.text
+  },
+  calendarQuickPillTextActive: {
+    color: colors.primaryDark,
+    fontWeight: "bold"
+  },
+  calendarNavRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#F1F5F9",
+    marginBottom: 10
+  },
+  calendarNavBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  calendarNavBtnDisabled: {
+    opacity: 0.3
+  },
+  calendarNavTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.text
+  },
+  calendarWeekdayRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6
+  },
+  calendarWeekdayCol: {
+    width: "14.28%",
+    alignItems: "center"
+  },
+  calendarWeekdayText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.textMuted
+  },
+  calendarWeekdaySunday: {
+    color: "#EF4444"
+  },
+  calendarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap"
+  },
+  calendarGridCellEmpty: {
+    width: "14.28%",
+    height: 40
+  },
+  calendarGridCellWrapper: {
+    width: "14.28%",
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  calendarDayBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  calendarDayBtnToday: {
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight
+  },
+  calendarDayBtnSelected: {
+    backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+    elevation: 3
+  },
+  calendarDayBtnDisabled: {
+    opacity: 0.35
+  },
+  calendarDayText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.text
+  },
+  calendarDayTextSunday: {
+    color: "#EF4444"
+  },
+  calendarDayTextToday: {
+    color: colors.primaryDark,
+    fontWeight: "700"
+  },
+  calendarDayTextSelected: {
+    color: "#FFFFFF",
+    fontWeight: "bold"
+  },
+  calendarDayTextDisabled: {
+    color: "#94A3B8"
+  },
+  calendarLegendRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderColor: "#F1F5F9"
+  },
+  calendarLegendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 8
+  },
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 5
+  },
+  legendText: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: "500"
+  },
+  calendarFooterBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0"
+  },
+  calendarFooterLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.textMuted,
+    textTransform: "uppercase"
+  },
+  calendarFooterDateText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.primaryDark,
+    marginTop: 1
+  },
+  calendarFooterConfirmBtn: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  calendarFooterConfirmText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700"
   }
 });
