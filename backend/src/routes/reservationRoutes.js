@@ -8,6 +8,7 @@ router.get("/", ReservationController.getAll);
 router.get("/:id", ReservationController.getById);
 router.post("/", ReservationController.create);
 router.patch("/:id/status", ReservationController.updateStatus);
+router.put("/:id/status", ReservationController.updateStatus);
 router.delete("/:id", ReservationController.remove);
 
 export default router;

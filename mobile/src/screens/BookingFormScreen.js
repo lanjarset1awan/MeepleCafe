@@ -12,6 +12,7 @@ import {
   Image
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../context/AuthContext";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
@@ -161,6 +162,8 @@ export default function BookingFormScreen({ route, navigation }) {
   // Modal Sistem Pembayaran
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("bca");
+  const [paymentProofUri, setPaymentProofUri] = useState(null);
+  const [uploadingProof, setUploadingProof] = useState(false);
 
   // Modal Popup Sukses Pasca Pembayaran (Custom Ticket Confirmation)
   const [successModalVisible, setSuccessModalVisible] = useState(false);
@@ -559,8 +562,92 @@ export default function BookingFormScreen({ route, navigation }) {
     });
   };
 
-  // Konfirmasi Pembayaran dan Buat Tiket Reservasi
+  // 1. Pilih Foto Bukti Transfer dari Galeri
+  const handlePickProofGallery = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        showDialog({
+          type: "warning",
+          title: "Izin Diperlukan",
+          message: "Aplikasi membutuhkan izin galeri untuk memilih foto bukti transfer."
+        });
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        quality: 0.8,
+        base64: true
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        setUploadingProof(true);
+        const uploadRes = await ApiService.uploadPaymentProof(
+          asset.base64,
+          asset.mimeType || "image/jpeg"
+        );
+        setPaymentProofUri(uploadRes.imageUrl);
+      }
+    } catch (err) {
+      showDialog({
+        type: "error",
+        title: "Gagal Mengunggah",
+        message: err.message || "Gagal mengunggah foto bukti transfer."
+      });
+    } finally {
+      setUploadingProof(false);
+    }
+  };
+
+  // 2. Ambil Foto Bukti Transfer Langsung dari Kamera
+  const handleTakeProofCamera = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        showDialog({
+          type: "warning",
+          title: "Izin Kamera Diperlukan",
+          message: "Aplikasi membutuhkan izin kamera untuk memotret bukti transfer."
+        });
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        quality: 0.8,
+        base64: true
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        setUploadingProof(true);
+        const uploadRes = await ApiService.uploadPaymentProof(
+          asset.base64,
+          asset.mimeType || "image/jpeg"
+        );
+        setPaymentProofUri(uploadRes.imageUrl);
+      }
+    } catch (err) {
+      showDialog({
+        type: "error",
+        title: "Gagal Mengunggah",
+        message: err.message || "Gagal memotret bukti transfer."
+      });
+    } finally {
+      setUploadingProof(false);
+    }
+  };
+
+  // Konfirmasi Pembayaran dan Buat Tiket Reservasi (Status: Pending / Menunggu Konfirmasi)
   const handleConfirmPaymentAndCreateTicket = async () => {
+    if (selectedPaymentMethod !== "cash" && !paymentProofUri) {
+      showDialog({
+        type: "warning",
+        title: "Bukti Transfer Diperlukan",
+        message: "Silakan unggah foto bukti transfer atau screenshot pembayaran Anda terlebih dahulu agar admin dapat memverifikasi tiket."
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const count = parseInt(guestCount, 10) || capacity;
@@ -575,10 +662,11 @@ export default function BookingFormScreen({ route, navigation }) {
       // Format metadata
       const bookingUsername = (user?.username || "").trim().toLowerCase();
       const userTag = bookingUsername ? ` [User: ${bookingUsername}]` : "";
+      const proofTag = paymentProofUri ? ` [Bukti: ${paymentProofUri}]` : "";
 
       const combinedName = `${customerName.trim()} [Game: ${gameTitle}] [Total: ${formatRupiah(
         totalPrice
-      )}] [Metode: ${paymentMethodName}]${userTag}`;
+      )}] [Metode: ${paymentMethodName}]${userTag}${proofTag}`;
 
       const payload = {
         customer_name: combinedName,
@@ -588,7 +676,8 @@ export default function BookingFormScreen({ route, navigation }) {
         session_time: currentSessionTime,
         guest_count: count,
         game_title: gameTitle,
-        game_id: gameId
+        game_id: gameId,
+        status: "Pending" // Menunggu konfirmasi admin!
       };
 
       const result = await ApiService.createReservation(payload);
@@ -605,7 +694,8 @@ export default function BookingFormScreen({ route, navigation }) {
         reservationDate: reservationDate,
         sessionTime: currentSessionTime,
         totalPrice: formatRupiah(totalPrice),
-        paymentMethod: paymentMethodName
+        paymentMethod: paymentMethodName,
+        status: "Menunggu Konfirmasi"
       });
     } catch (err) {
       showDialog({
@@ -1191,29 +1281,108 @@ export default function BookingFormScreen({ route, navigation }) {
                 )}
               </TouchableOpacity>
 
+              {/* FORM UPLOAD BUKTI TRANSFER */}
+              {selectedPaymentMethod !== "cash" && (
+                <View style={styles.proofUploadSection}>
+                  <View style={styles.proofHeaderRow}>
+                    <Ionicons name="receipt-outline" size={17} color={colors.primary} />
+                    <Text style={styles.proofTitle}>Upload Bukti Transfer</Text>
+                    <View style={styles.proofRequiredBadge}>
+                      <Text style={styles.proofRequiredText}>Wajib Dilampirkan</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.proofDesc}>
+                    Lampirkan screenshot m-banking, struk ATM, atau bukti bayar QRIS Anda.
+                  </Text>
+
+                  {paymentProofUri ? (
+                    <View style={styles.proofPreviewCard}>
+                      <Image source={{ uri: paymentProofUri }} style={styles.proofImageThumb} resizeMode="cover" />
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <View style={styles.proofSuccessPill}>
+                          <Ionicons name="checkmark-circle" size={13} color="#047857" style={{ marginRight: 4 }} />
+                          <Text style={styles.proofSuccessPillText}>Bukti Terlampir</Text>
+                        </View>
+                        <TouchableOpacity
+                          style={styles.btnProofChange}
+                          activeOpacity={0.8}
+                          onPress={handlePickProofGallery}
+                        >
+                          <Text style={styles.btnProofChangeText}>Ganti Foto</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.btnProofDelete}
+                        activeOpacity={0.8}
+                        onPress={() => setPaymentProofUri(null)}
+                      >
+                        <Ionicons name="trash-outline" size={18} color="#DC2626" />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View style={styles.proofActionRow}>
+                      <TouchableOpacity
+                        style={styles.proofActionBtn}
+                        activeOpacity={0.8}
+                        onPress={handlePickProofGallery}
+                        disabled={uploadingProof}
+                      >
+                        {uploadingProof ? (
+                          <ActivityIndicator size="small" color={colors.primary} />
+                        ) : (
+                          <>
+                            <Ionicons name="images-outline" size={17} color={colors.primary} style={{ marginRight: 6 }} />
+                            <Text style={styles.proofActionBtnText}>Buka Galeri</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.proofActionBtn}
+                        activeOpacity={0.8}
+                        onPress={handleTakeProofCamera}
+                        disabled={uploadingProof}
+                      >
+                        {uploadingProof ? (
+                          <ActivityIndicator size="small" color={colors.primary} />
+                        ) : (
+                          <>
+                            <Ionicons name="camera-outline" size={17} color={colors.primary} style={{ marginRight: 6 }} />
+                            <Text style={styles.proofActionBtnText}>Buka Kamera</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
+
               {/* Petunjuk Konfirmasi */}
               <View style={styles.transferGuideBox}>
                 <Ionicons name="shield-checkmark" size={18} color={colors.secondary} />
                 <Text style={styles.transferGuideText}>
-                  Setelah transfer sejumlah {formatRupiah(totalPrice)}, tekan tombol konfirmasi
-                  di bawah untuk langsung menerbitkan tiket Anda.
+                  {selectedPaymentMethod === "cash"
+                    ? "Reservasi akan diajukan ke admin dan Anda dapat melakukan pembayaran di kasir saat tiba di kafe."
+                    : "Setelah mengunggah bukti transfer, tekan tombol di bawah untuk mengajukan tiket reservasi ke admin."}
                 </Text>
               </View>
 
               {/* Tombol Konfirmasi Pembayaran */}
               <TouchableOpacity
-                style={[styles.confirmPaymentBtn, loading && { opacity: 0.6 }]}
+                style={[styles.confirmPaymentBtn, (loading || uploadingProof) && { opacity: 0.6 }]}
                 onPress={handleConfirmPaymentAndCreateTicket}
-                disabled={loading}
+                disabled={loading || uploadingProof}
                 activeOpacity={0.88}
               >
                 {loading ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <>
-                    <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Ionicons name="send" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
                     <Text style={styles.confirmPaymentBtnText}>
-                      Saya Sudah Transfer (Konfirmasi Tiket)
+                      {selectedPaymentMethod === "cash"
+                        ? "Ajukan Reservasi (Bayar di Kasir)"
+                        : "Kirim Bukti & Ajukan Tiket"}
                     </Text>
                   </>
                 )}
@@ -2625,10 +2794,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5
   },
   calendarTriggerValueText: {
-    fontSize: 13.5,
+    fontSize: 13,
     fontWeight: "700",
     color: colors.primaryDark,
-    marginTop: 2
+    marginTop: 2,
+    flexShrink: 1
   },
   calendarTriggerActionBadge: {
     flexDirection: "row",
@@ -2844,5 +3014,105 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 12,
     fontWeight: "700"
+  },
+
+  // Upload Bukti Pembayaran / Transfer
+  proofUploadSection: {
+    marginTop: 16,
+    padding: 14,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#E2E8F0"
+  },
+  proofHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4
+  },
+  proofTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.primaryDark
+  },
+  proofRequiredBadge: {
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8
+  },
+  proofRequiredText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#B45309"
+  },
+  proofDesc: {
+    fontSize: 11.5,
+    color: colors.textMuted,
+    lineHeight: 16,
+    marginBottom: 12
+  },
+  proofPreviewCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#CBD5E1"
+  },
+  proofImageThumb: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    backgroundColor: "#F1F5F9"
+  },
+  proofSuccessPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    alignSelf: "flex-start",
+    marginBottom: 6
+  },
+  proofSuccessPillText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#047857"
+  },
+  btnProofChange: {
+    alignSelf: "flex-start"
+  },
+  btnProofChangeText: {
+    fontSize: 11.5,
+    fontWeight: "600",
+    color: colors.primary
+  },
+  btnProofDelete: {
+    padding: 8
+  },
+  proofActionRow: {
+    flexDirection: "row",
+    gap: 10
+  },
+  proofActionBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    borderStyle: "dashed",
+    paddingVertical: 12,
+    borderRadius: 10
+  },
+  proofActionBtnText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.primary
   }
 });

@@ -267,6 +267,18 @@ export const ApiService = {
     });
   },
 
+  async updateReservationStatus(id, status) {
+    return fetchWithFallback(`/api/reservations/${id}/status`, `reservations?id=eq.${id}`, {
+      method: "PUT",
+      supabaseMethod: "PATCH",
+      body: JSON.stringify({ status })
+    });
+  },
+
+  async uploadPaymentProof(base64, mimeType = "image/jpeg") {
+    return this.uploadGameImage(base64, mimeType);
+  },
+
   // Autentikasi Pengguna (Login via Backend REST API & Supabase)
   async login(identifier, password) {
     const trimmedId = (identifier || "").trim().toLowerCase();

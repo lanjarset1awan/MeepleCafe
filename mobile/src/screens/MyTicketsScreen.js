@@ -7,7 +7,8 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
-  Image
+  Image,
+  Modal
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
@@ -60,6 +61,7 @@ export default function MyTicketsScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("active"); // 'active' atau 'expired'
+  const [previewImageUri, setPreviewImageUri] = useState(null);
 
   const loadGamesLookup = async () => {
     try {
@@ -177,13 +179,17 @@ export default function MyTicketsScreen({ navigation }) {
     });
   }, [tickets, user]);
 
-  // Pisahkan tiket aktif (belum lewat) dan tiket yang sudah kedaluwarsa (lewat jamnya)
+  // Pisahkan tiket aktif (belum lewat & tidak ditolak) dan tiket riwayat (lewat jamnya atau ditolak)
   const { activeTickets, expiredTickets } = useMemo(() => {
     const active = [];
     const expired = [];
 
     myUserTickets.forEach((t) => {
-      if (isReservationExpired(t.reservation_date, t.session_time)) {
+      const statusStr = (t.status || "Confirmed").trim().toLowerCase();
+      const isRejected = statusStr === "rejected" || statusStr === "ditolak" || statusStr === "cancelled";
+      const isExpired = isReservationExpired(t.reservation_date, t.session_time);
+
+      if (isRejected || isExpired) {
         expired.push(t);
       } else {
         active.push(t);
@@ -221,11 +227,12 @@ export default function MyTicketsScreen({ navigation }) {
     const tableInfo = item.cafe_tables || {};
     const isExpired = isReservationExpired(item.reservation_date, item.session_time);
 
-    // Ambil judul game, total bayar, dan metode pembayaran
+    // Ambil judul game, total bayar, metode pembayaran, dan bukti transfer
     let displayGame = item.game_title;
     let displayName = item.customer_name || "";
     let displayTotal = null;
     let displayMethod = null;
+    let displayProof = null;
 
     if (displayName.includes("[Game:")) {
       const match = displayName.match(/\[Game:\s*(.+?)\]/);
@@ -238,6 +245,10 @@ export default function MyTicketsScreen({ navigation }) {
     if (displayName.includes("[Metode:")) {
       const match = displayName.match(/\[Metode:\s*(.+?)\]/);
       if (match) displayMethod = match[1];
+    }
+    if (displayName.includes("[Bukti:")) {
+      const match = displayName.match(/\[Bukti:\s*(.+?)\]/);
+      if (match) displayProof = match[1];
     }
 
     displayName = displayName.replace(/\[.+?\]/g, "").trim();
@@ -253,6 +264,10 @@ export default function MyTicketsScreen({ navigation }) {
         ? `Rp ${Number(tableInfo.price_per_hour).toLocaleString("id-ID")}`
         : "Rp 30.000";
     }
+
+    const rawStatus = (item.status || "Confirmed").trim().toLowerCase();
+    const isPending = rawStatus === "pending" || rawStatus === "menunggu konfirmasi";
+    const isRejected = rawStatus === "rejected" || rawStatus === "ditolak" || rawStatus === "cancelled";
 
     // Ambil gambar board game sesuai judul di katalog
     let gameImage =
@@ -271,12 +286,19 @@ export default function MyTicketsScreen({ navigation }) {
     }
 
     return (
-      <View style={[styles.ticketCard, isExpired && styles.ticketCardExpired]}>
+      <View
+        style={[
+          styles.ticketCard,
+          isExpired && styles.ticketCardExpired,
+          isPending && styles.ticketCardPending,
+          isRejected && styles.ticketCardRejected
+        ]}
+      >
         {/* Ticket Header */}
         <View style={[styles.ticketHeader, isExpired && styles.ticketHeaderExpired]}>
           <View>
             <Text style={[styles.ticketBrand, isExpired && styles.ticketBrandExpired]}>
-              {isExpired ? "MEEPLECAFE (EXPIRED)" : "MEEPLECAFE PASS"}
+              {isExpired ? "MEEPLECAFE (EXPIRED)" : isPending ? "MEEPLECAFE (PENGAJUAN)" : "MEEPLECAFE PASS"}
             </Text>
             <Text style={[styles.bookingCode, isExpired && styles.bookingCodeExpired]}>
               {item.booking_code}
@@ -284,23 +306,27 @@ export default function MyTicketsScreen({ navigation }) {
           </View>
 
           <View style={styles.headerRightActions}>
-            <View
-              style={[
-                styles.statusBadge,
-                isExpired ? styles.statusBadgeExpired : styles.statusBadgeActive
-              ]}
-            >
-              <Text
-                style={[
-                  styles.statusText,
-                  isExpired ? styles.statusTextExpired : styles.statusTextActive
-                ]}
-              >
-                {isExpired ? "Kedaluwarsa" : "Aktif"}
-              </Text>
-            </View>
+            {isRejected ? (
+              <View style={[styles.statusBadge, styles.statusBadgeRejected]}>
+                <Ionicons name="close-circle" size={13} color="#DC2626" style={{ marginRight: 3 }} />
+                <Text style={[styles.statusText, styles.statusTextRejected]}>Ditolak</Text>
+              </View>
+            ) : isPending ? (
+              <View style={[styles.statusBadge, styles.statusBadgePending]}>
+                <Ionicons name="time" size={13} color="#D97706" style={{ marginRight: 3 }} />
+                <Text style={[styles.statusText, styles.statusTextPending]}>Menunggu Konfirmasi</Text>
+              </View>
+            ) : isExpired ? (
+              <View style={[styles.statusBadge, styles.statusBadgeExpired]}>
+                <Text style={[styles.statusText, styles.statusTextExpired]}>Kedaluwarsa</Text>
+              </View>
+            ) : (
+              <View style={[styles.statusBadge, styles.statusBadgeActive]}>
+                <Text style={[styles.statusText, styles.statusTextActive]}>Aktif</Text>
+              </View>
+            )}
 
-            {isExpired && (
+            {(isExpired || isRejected) && (
               <TouchableOpacity
                 style={styles.btnDelete}
                 onPress={() => handleDeleteTicket(item.id, item.booking_code)}
@@ -320,7 +346,32 @@ export default function MyTicketsScreen({ navigation }) {
 
         {/* Ticket Body */}
         <View style={styles.ticketBody}>
-          {/* Label Board Game Dipesan (di atas kotakan judul agar mudah & jelas dibaca) */}
+          {/* Status Banners */}
+          {isPending && (
+            <View style={styles.pendingNoticeBox}>
+              <Ionicons name="hourglass" size={18} color="#D97706" />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.pendingNoticeTitle}>Menunggu Verifikasi Admin</Text>
+                <Text style={styles.pendingNoticeDesc}>
+                  Bukti transfer Anda telah dikirim dan sedang diverifikasi oleh admin. Tiket akan aktif otomatis setelah disetujui.
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {isRejected && (
+            <View style={styles.rejectedNoticeBox}>
+              <Ionicons name="alert-circle" size={18} color="#DC2626" />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.rejectedNoticeTitle}>Reservasi Ditolak</Text>
+                <Text style={styles.rejectedNoticeDesc}>
+                  Reservasi tidak dapat disetujui admin. Jadwal meja telah dibatalkan & box game dikembalikan ke stok kafe.
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Label Board Game Dipesan */}
           <Text
             style={[
               styles.gameSectionLabel,
@@ -398,16 +449,54 @@ export default function MyTicketsScreen({ navigation }) {
             </Text>
           </View>
 
+          {/* Pratinjau Bukti Transfer jika ada */}
+          {displayProof && (
+            <View style={styles.proofPreviewRow}>
+              <TouchableOpacity
+                style={styles.proofThumbWrapper}
+                activeOpacity={0.8}
+                onPress={() => setPreviewImageUri(displayProof)}
+              >
+                <Image source={{ uri: displayProof }} style={styles.proofThumbImage} resizeMode="cover" />
+                <View style={styles.proofZoomBadge}>
+                  <Ionicons name="scan-outline" size={11} color="#FFFFFF" />
+                </View>
+              </TouchableOpacity>
+              <View style={{ flex: 1, marginLeft: 10, justifyContent: "center" }}>
+                <Text style={styles.proofLabelText}>Bukti Pembayaran Terlampir</Text>
+                <TouchableOpacity
+                  onPress={() => setPreviewImageUri(displayProof)}
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                >
+                  <Text style={styles.proofActionLink}>Ketuk untuk lihat foto bukti transfer</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
           {/* Payment & Total Info Row */}
           <View style={styles.paymentInfoRow}>
             <View style={styles.paymentTagTotal}>
               <Ionicons name="wallet-outline" size={14} color={colors.primaryDark} />
               <Text style={styles.paymentTagTotalText}>Total: {displayTotal}</Text>
             </View>
-            <View style={styles.paymentTagMethod}>
-              <Ionicons name="checkmark-circle" size={14} color="#166534" />
-              <Text style={styles.paymentTagMethodText}>{displayMethod} (Lunas)</Text>
-            </View>
+
+            {isRejected ? (
+              <View style={styles.paymentTagRejected}>
+                <Ionicons name="close-circle" size={14} color="#DC2626" />
+                <Text style={styles.paymentTagRejectedText}>{displayMethod} (Ditolak)</Text>
+              </View>
+            ) : isPending ? (
+              <View style={styles.paymentTagPending}>
+                <Ionicons name="hourglass-outline" size={14} color="#D97706" />
+                <Text style={styles.paymentTagPendingText}>{displayMethod} (Verifikasi)</Text>
+              </View>
+            ) : (
+              <View style={styles.paymentTagMethod}>
+                <Ionicons name="checkmark-circle" size={14} color="#166534" />
+                <Text style={styles.paymentTagMethodText}>{displayMethod} (Lunas)</Text>
+              </View>
+            )}
           </View>
         </View>
       </View>
@@ -554,6 +643,34 @@ export default function MyTicketsScreen({ navigation }) {
         onCancel={dialogConfig.onCancel}
         onClose={hideDialog}
       />
+
+      {/* Modal Pratinjau Foto Bukti Transfer */}
+      <Modal visible={!!previewImageUri} transparent animationType="fade">
+        <View style={styles.imageModalOverlay}>
+          <View style={styles.imageModalHeader}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Ionicons name="receipt-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Text style={styles.imageModalTitle}>Bukti Transfer Pelanggan</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.imageModalCloseBtn}
+              onPress={() => setPreviewImageUri(null)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Ionicons name="close" size={26} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.imageModalContent}>
+            {previewImageUri && (
+              <Image
+                source={{ uri: previewImageUri }}
+                style={styles.imageModalPreview}
+                resizeMode="contain"
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -904,5 +1021,176 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 13,
     fontWeight: "bold"
+  },
+
+  // Status Pending & Rejected Card Styles
+  ticketCardPending: {
+    borderColor: "#FCD34D",
+    borderWidth: 1.5
+  },
+  ticketCardRejected: {
+    borderColor: "#FCA5A5",
+    borderWidth: 1.5,
+    opacity: 0.92
+  },
+  statusBadgePending: {
+    backgroundColor: "#FEF3C7",
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  statusTextPending: {
+    color: "#B45309",
+    fontWeight: "700"
+  },
+  statusBadgeRejected: {
+    backgroundColor: "#FEE2E2",
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  statusTextRejected: {
+    color: "#DC2626",
+    fontWeight: "700"
+  },
+  pendingNoticeBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFBEB",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12
+  },
+  pendingNoticeTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#B45309"
+  },
+  pendingNoticeDesc: {
+    fontSize: 11,
+    color: "#92400E",
+    marginTop: 2,
+    lineHeight: 15
+  },
+  rejectedNoticeBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12
+  },
+  rejectedNoticeTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#DC2626"
+  },
+  rejectedNoticeDesc: {
+    fontSize: 11,
+    color: "#991B1B",
+    marginTop: 2,
+    lineHeight: 15
+  },
+  proofPreviewRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    padding: 8,
+    marginTop: 10
+  },
+  proofThumbWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 6,
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#E2E8F0"
+  },
+  proofThumbImage: {
+    width: "100%",
+    height: "100%"
+  },
+  proofZoomBadge: {
+    position: "absolute",
+    bottom: 2,
+    right: 2,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 4,
+    padding: 2
+  },
+  proofLabelText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.primaryDark
+  },
+  proofActionLink: {
+    fontSize: 11,
+    color: colors.primary,
+    fontWeight: "600",
+    marginTop: 2
+  },
+  paymentTagPending: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  paymentTagPendingText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#B45309",
+    marginLeft: 5
+  },
+  paymentTagRejected: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEE2E2",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  paymentTagRejectedText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#DC2626",
+    marginLeft: 5
+  },
+  imageModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.92)",
+    justifyContent: "space-between"
+  },
+  imageModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 16
+  },
+  imageModalTitle: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "700"
+  },
+  imageModalCloseBtn: {
+    padding: 6
+  },
+  imageModalContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16
+  },
+  imageModalPreview: {
+    width: "100%",
+    height: "85%"
   }
 });

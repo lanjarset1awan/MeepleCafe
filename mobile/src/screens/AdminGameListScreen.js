@@ -395,6 +395,15 @@ export default function AdminGameListScreen({ navigation }) {
           <MaterialCommunityIcons name="table-chair" size={21} color={colors.textMuted} />
           <Text style={styles.adminBottomNavLabel}>Meja Kafe</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.adminBottomNavItem}
+          activeOpacity={0.8}
+          onPress={() => navigation.replace("AdminPaymentList")}
+        >
+          <Ionicons name="receipt-outline" size={20} color={colors.textMuted} />
+          <Text style={styles.adminBottomNavLabel}>Verifikasi Tiket</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -78,7 +78,7 @@ export const ReservationModel = {
   async checkAvailability(reservation_date, table_id, game_title) {
     let query = supabase
       .from("reservations")
-      .select("id, booking_code, table_id, session_time, customer_name")
+      .select("id, booking_code, table_id, session_time, customer_name, status")
       .eq("reservation_date", reservation_date);
 
     const { data: bookings, error } = await query;
@@ -88,6 +88,12 @@ export const ReservationModel = {
     const bookedSessionsForGame = [];
 
     (bookings || []).forEach((b) => {
+      // Abaikan booking yang sudah ditolak atau dibatalkan oleh admin
+      const s = (b.status || "").toLowerCase();
+      if (s === "rejected" || s === "cancelled" || s === "ditolak") {
+        return;
+      }
+
       // Meja sudah dibooking pada sesi ini
       if (table_id && b.table_id === table_id) {
         bookedSessionsForTable.push(b.session_time);
@@ -140,12 +146,18 @@ export const ReservationModel = {
     // 1. VALIDASI KONFLIK JADWAL (Mencegah double booking meja & game dengan pengecekan interval overlap)
     const { data: existingBookings, error: checkError } = await supabase
       .from("reservations")
-      .select("id, booking_code, table_id, session_time, customer_name")
+      .select("id, booking_code, table_id, session_time, customer_name, status")
       .eq("reservation_date", payload.reservation_date);
 
     if (existingBookings && existingBookings.length > 0) {
+      // Saring hanya booking yang aktif / pending (abaikan yang ditolak atau dibatalkan)
+      const activeBookings = existingBookings.filter((b) => {
+        const s = (b.status || "").toLowerCase();
+        return s !== "rejected" && s !== "cancelled" && s !== "ditolak";
+      });
+
       // Cek apakah meja ini sudah dibooking orang pada rentang jam tersebut
-      const tableConflict = existingBookings.find(
+      const tableConflict = activeBookings.find(
         (b) => b.table_id === payload.table_id && doOverlap(b.session_time, payload.session_time)
       );
       if (tableConflict) {
@@ -158,7 +170,7 @@ export const ReservationModel = {
 
       // Cek apakah game ini sudah dipinjam di meja lain pada rentang jam yang sama (stok habis)
       if (payload.game_title) {
-        const gameConflict = existingBookings.filter((b) => {
+        const gameConflict = activeBookings.filter((b) => {
           const isSameGame =
             b.customer_name && b.customer_name.toLowerCase().includes(payload.game_title.toLowerCase());
           return isSameGame && doOverlap(b.session_time, payload.session_time);
@@ -216,8 +228,9 @@ export const ReservationModel = {
   },
 
   async updateStatus(id, status) {
-    // Jika status diubah menjadi Cancelled, kembalikan stok box game
-    if (status === "Cancelled") {
+    // Jika status diubah menjadi Cancelled atau Rejected (Ditolak), kembalikan stok box game
+    const sLower = (status || "").toLowerCase();
+    if (sLower === "cancelled" || sLower === "rejected" || sLower === "ditolak") {
       try {
         const { data: currentRes } = await supabase
           .from("reservations")

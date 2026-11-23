@@ -23,6 +23,7 @@ import AdminGameListScreen from "../screens/AdminGameListScreen";
 import AdminGameFormScreen from "../screens/AdminGameFormScreen";
 import AdminTableListScreen from "../screens/AdminTableListScreen";
 import AdminTableFormScreen from "../screens/AdminTableFormScreen";
+import AdminPaymentListScreen from "../screens/AdminPaymentListScreen";
 
 import { colors } from "../theme/colors";
 
@@ -310,6 +311,11 @@ export default function AppNavigator() {
           name="AdminTableForm"
           component={AdminTableFormScreen}
           options={{ headerShown: false, animation: "fade" }}
+        />
+        <RootStack.Screen
+          name="AdminPaymentList"
+          component={AdminPaymentListScreen}
+          options={{ headerShown: false, animation: "none" }}
         />
         <RootStack.Screen
           name="About"

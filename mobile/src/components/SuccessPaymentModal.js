@@ -21,24 +21,31 @@ export default function SuccessPaymentModal({
   sessionTime,
   totalPrice,
   paymentMethod,
+  status = "Menunggu Konfirmasi",
   onViewTicket
 }) {
   if (!visible) return null;
+
+  const isPending = status === "Pending" || status === "Menunggu Konfirmasi";
 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.card}>
           {/* Header Icon Celebration */}
-          <View style={styles.celebrationBadge}>
-            <View style={styles.innerBadge}>
-              <Ionicons name="checkmark" size={36} color="#FFFFFF" />
+          <View style={[styles.celebrationBadge, isPending && { backgroundColor: "rgba(245, 158, 11, 0.15)" }]}>
+            <View style={[styles.innerBadge, isPending && { backgroundColor: "#F59E0B" }]}>
+              <Ionicons name={isPending ? "hourglass-outline" : "checkmark"} size={34} color="#FFFFFF" />
             </View>
           </View>
 
-          <Text style={styles.title}>Pembayaran Berhasil!</Text>
+          <Text style={styles.title}>
+            {isPending ? "Pengajuan Terkirim!" : "Pembayaran Berhasil!"}
+          </Text>
           <Text style={styles.subtitle}>
-            Tiket resmi reservasi MeepleCafe Anda telah diterbitkan.
+            {isPending
+              ? "Bukti pembayaran terkirim. Tiket menunggu konfirmasi verifikasi dari Admin."
+              : "Tiket resmi reservasi MeepleCafe Anda telah diterbitkan."}
           </Text>
 
           {/* Ticket Pass Preview Card */}
@@ -48,8 +55,20 @@ export default function SuccessPaymentModal({
                 <Text style={styles.brandText}>MEEPLECAFE TICKET PASS</Text>
                 <Text style={styles.codeText}>{bookingCode || "MC-XXXX"}</Text>
               </View>
-              <View style={styles.statusPill}>
-                <Text style={styles.statusPillText}>LUNAS</Text>
+              <View
+                style={[
+                  styles.statusPill,
+                  isPending && { backgroundColor: "#FEF3C7", borderColor: "#FDE68A", borderWidth: 1 }
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.statusPillText,
+                    isPending && { color: "#B45309" }
+                  ]}
+                >
+                  {isPending ? "MENUNGGU KONFIRMASI" : "LUNAS"}
+                </Text>
               </View>
             </View>
 
