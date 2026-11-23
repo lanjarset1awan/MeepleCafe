@@ -451,43 +451,32 @@ export default function AdminGameFormScreen({ navigation, route }) {
             </View>
           </View>
 
-          {/* Row Tingkat Kesulitan: Full Width & Lapang */}
+          {/* Row Tingkat Kesulitan: Menggunakan icon bar-chart-outline serasi dengan GameDetail */}
           <View style={{ marginTop: 14 }}>
-            <Text style={styles.fieldLabel}>Tingkat Kesulitan Permainan</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+              <Ionicons name="bar-chart-outline" size={17} color={colors.primary} style={{ marginRight: 6 }} />
+              <Text style={[styles.fieldLabel, { marginBottom: 0 }]}>Tingkat Kesulitan Permainan</Text>
+            </View>
             <View style={styles.difficultyContainer}>
-              {[
-                { label: "Mudah", icon: "leaf-outline", color: "#059669", bgActive: "#ECFDF5", borderActive: "#A7F3D0" },
-                { label: "Menengah", icon: "flash-outline", color: "#D97706", bgActive: "#FFFBEB", borderActive: "#FDE68A" },
-                { label: "Sulit", icon: "flame-outline", color: "#DC2626", bgActive: "#FEF2F2", borderActive: "#FECACA" }
-              ].map((lvl) => {
-                const active = difficulty === lvl.label;
+              {["Mudah", "Menengah", "Sulit"].map((lvl) => {
+                const active = difficulty === lvl;
                 return (
                   <TouchableOpacity
-                    key={lvl.label}
+                    key={lvl}
                     style={[
                       styles.diffPill,
-                      active && {
-                        backgroundColor: lvl.bgActive,
-                        borderColor: lvl.borderActive,
-                        borderWidth: 1.5
-                      }
+                      active && styles.diffPillActive
                     ]}
-                    onPress={() => setDifficulty(lvl.label)}
+                    onPress={() => setDifficulty(lvl)}
                     activeOpacity={0.8}
                   >
-                    <Ionicons
-                      name={lvl.icon}
-                      size={16}
-                      color={active ? lvl.color : colors.textMuted}
-                      style={{ marginRight: 6 }}
-                    />
                     <Text
                       style={[
                         styles.diffPillText,
-                        active ? { color: lvl.color, fontWeight: "700" } : { color: colors.textSecondary }
+                        active && styles.diffPillTextActive
                       ]}
                     >
-                      {lvl.label}
+                      {lvl}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -909,18 +898,26 @@ const styles = StyleSheet.create({
   },
   diffPill: {
     flex: 1,
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
+    paddingVertical: 11,
     backgroundColor: "#F1F5F9",
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border
   },
+  diffPillActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
+  },
   diffPillText: {
-    fontSize: 12.5,
+    fontSize: 13,
+    color: colors.textSecondary,
     fontWeight: "600"
+  },
+  diffPillTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "700"
   },
   // Tab Selector: Upload vs Link URL
   imageSourceToggle: {
