@@ -11,12 +11,12 @@ import {
   ScrollView,
   SafeAreaView,
   Image,
-  Alert,
   StatusBar
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
+import CustomDialog from "../components/CustomDialog";
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -31,6 +31,16 @@ export default function RegisterScreen({ navigation }) {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Dialog State (Desain Baru CustomDialog MeepleCafe)
+  const [dialogConfig, setDialogConfig] = useState({
+    visible: false,
+    type: "info",
+    title: "",
+    message: "",
+    confirmText: "Mengerti",
+    onConfirm: null
+  });
 
   const handleRegister = async () => {
     setErrorMessage("");
@@ -84,11 +94,16 @@ export default function RegisterScreen({ navigation }) {
         password
       });
 
-      Alert.alert(
-        "Pendaftaran Berhasil!",
-        `Selamat datang di MeepleCafe, ${name}! Akun Anda telah siap digunakan.`,
-        [{ text: "Mulai Bermain" }]
-      );
+      setDialogConfig({
+        visible: true,
+        type: "success",
+        title: "Pendaftaran Berhasil!",
+        message: `Selamat datang di MeepleCafe, ${name.trim()}! Akun Anda telah berhasil dibuat dan siap digunakan untuk reservasi bermain.`,
+        confirmText: "Mulai Bermain",
+        onConfirm: () => {
+          setDialogConfig((prev) => ({ ...prev, visible: false }));
+        }
+      });
       // Sukses registrasi -> AuthContext otomatis login & mengarahkan ke MainTabs
     } catch (err) {
       setErrorMessage(err.message || "Gagal mendaftarkan akun. Silakan coba lagi.");
@@ -285,6 +300,17 @@ export default function RegisterScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+        {/* Modal Popup Kustom Desain Baru MeepleCafe */}
+        <CustomDialog
+          visible={dialogConfig.visible}
+          type={dialogConfig.type}
+          title={dialogConfig.title}
+          message={dialogConfig.message}
+          confirmText={dialogConfig.confirmText}
+          onConfirm={dialogConfig.onConfirm}
+          onClose={() => setDialogConfig((prev) => ({ ...prev, visible: false }))}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

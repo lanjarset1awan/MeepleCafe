@@ -42,7 +42,7 @@ export default function CustomDialog({
           iconColor: colors.secondary,
           badgeBg: colors.secondaryLight,
           borderColor: "#FED7AA",
-          buttonBg: colors.primary
+          buttonBg: colors.secondary
         };
       case "error":
         return {
@@ -122,7 +122,9 @@ export default function CustomDialog({
                       onPress={handleCancel}
                       activeOpacity={0.8}
                     >
-                      <Text style={styles.cancelBtnText}>{cancelText}</Text>
+                      <Text style={styles.cancelBtnText} numberOfLines={1} adjustsFontSizeToFit>
+                        {cancelText}
+                      </Text>
                     </TouchableOpacity>
                   )}
 
@@ -135,7 +137,9 @@ export default function CustomDialog({
                     onPress={handleConfirm}
                     activeOpacity={0.85}
                   >
-                    <Text style={styles.confirmBtnText}>{confirmText}</Text>
+                    <Text style={styles.confirmBtnText} numberOfLines={1} adjustsFontSizeToFit>
+                      {confirmText}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -196,7 +200,8 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     width: "100%",
-    justifyContent: "space-between"
+    alignItems: "center",
+    gap: 10
   },
   secondaryBtn: {
     width: "100%",
@@ -216,22 +221,27 @@ const styles = StyleSheet.create({
   },
   cancelBtn: {
     flex: 1,
+    minHeight: 46,
     paddingVertical: 12,
+    paddingHorizontal: 8,
     borderRadius: 12,
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: "center",
-    marginRight: 10
+    justifyContent: "center"
   },
   cancelBtnText: {
     fontSize: 14,
     fontWeight: "600",
-    color: colors.textMuted
+    color: colors.textMuted,
+    textAlign: "center"
   },
   confirmBtn: {
-    flex: 1,
-    paddingVertical: 13,
+    flex: 1.2,
+    minHeight: 46,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center"
@@ -239,6 +249,7 @@ const styles = StyleSheet.create({
   confirmBtnText: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#FFFFFF"
+    color: "#FFFFFF",
+    textAlign: "center"
   }
 });

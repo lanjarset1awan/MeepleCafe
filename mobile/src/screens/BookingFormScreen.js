@@ -1386,114 +1386,6 @@ export default function BookingFormScreen({ route, navigation }) {
         </View>
       </Modal>
 
-      {/* POPUP SUKSES PEMBELIAN TIKET (CUSTOM TICKET PASS) */}
-      <Modal visible={successModalVisible} animationType="fade" transparent>
-        <View style={styles.successModalOverlay}>
-          <View style={styles.ticketPassCard}>
-            {/* Ticket Pass Header: Biru Slate (#1E293B) */}
-            <View style={styles.passHeader}>
-              <View style={styles.passTopBadge}>
-                <Ionicons name="ticket" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-                <Text style={styles.passTopBadgeText}>TIKET RESMI BERHASIL DITERBITKAN</Text>
-              </View>
-
-              <View style={styles.passIconCircle}>
-                <Ionicons name="checkmark-circle" size={32} color={colors.primary} />
-              </View>
-
-              <Text style={styles.passHeading}>Pembayaran Terkonfirmasi</Text>
-              <Text style={styles.passBookingLabel}>KODE BOOKING</Text>
-              <Text style={styles.passBookingCode}>{issuedTicket?.bookingCode}</Text>
-            </View>
-
-            {/* Perforated Divider */}
-            <View style={styles.passDividerRow}>
-              <View style={styles.passCutoutLeft} />
-              <View style={styles.passDashedLine} />
-              <View style={styles.passCutoutRight} />
-            </View>
-
-            {/* Ticket Pass Body: Putih (#FFFFFF) */}
-            <View style={styles.passBody}>
-              <View style={styles.passDetailRow}>
-                <View style={styles.passCol}>
-                  <Text style={styles.passMetaLabel}>Nama Pemesan</Text>
-                  <Text style={styles.passMetaValue}>{issuedTicket?.customerName}</Text>
-                </View>
-                <View style={styles.passColRight}>
-                  <Text style={styles.passMetaLabel}>Pemain</Text>
-                  <Text style={styles.passMetaValue}>{issuedTicket?.guestCount} Orang</Text>
-                </View>
-              </View>
-
-              <View style={styles.passDetailRow}>
-                <View style={styles.passCol}>
-                  <Text style={styles.passMetaLabel}>Meja Kafe</Text>
-                  <Text style={styles.passMetaValue}>
-                    {issuedTicket?.tableType} ({issuedTicket?.tableNumber})
-                  </Text>
-                </View>
-                <View style={styles.passColRight}>
-                  <Text style={styles.passMetaLabel}>Tanggal</Text>
-                  <Text style={styles.passMetaValue}>{issuedTicket?.reservationDate}</Text>
-                </View>
-              </View>
-
-              <Text style={styles.passMetaLabel}>Board Game Dipesan</Text>
-              <View style={styles.passGameBox}>
-                <GameImage
-                  uri={chosenGame?.image_url}
-                  style={styles.passGameThumb}
-                />
-                <Text style={styles.passGameTitle}>{issuedTicket?.gameTitle || chosenGame?.title}</Text>
-              </View>
-
-              <View style={styles.passDetailRow}>
-                <View style={styles.passCol}>
-                  <Text style={styles.passMetaLabel}>Jadwal Sesi</Text>
-                  <Text style={styles.passMetaValue}>{issuedTicket?.sessionTime}</Text>
-                </View>
-                <View style={styles.passColRight}>
-                  <Text style={styles.passMetaLabel}>Metode Bayar</Text>
-                  <Text style={styles.passMetaValue}>{issuedTicket?.paymentMethod}</Text>
-                </View>
-              </View>
-
-              <View style={styles.passTotalBox}>
-                <Text style={styles.passTotalLabel}>TOTAL LUNAS</Text>
-                <Text style={styles.passTotalValue}>{formatRupiah(issuedTicket?.totalPrice || 0)}</Text>
-              </View>
-
-              {/* Action Buttons */}
-              <TouchableOpacity
-                style={styles.passPrimaryBtn}
-                activeOpacity={0.88}
-                onPress={() => {
-                  setSuccessModalVisible(false);
-                  navigation.popToTop();
-                  navigation.navigate("TicketsTab");
-                }}
-              >
-                <Ionicons name="ticket-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
-                <Text style={styles.passPrimaryBtnText}>Buka Tiket Saya</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.passSecondaryBtn}
-                activeOpacity={0.85}
-                onPress={() => {
-                  setSuccessModalVisible(false);
-                  navigation.popToTop();
-                  navigation.navigate("GameTab");
-                }}
-              >
-                <Text style={styles.passSecondaryBtnText}>Kembali ke Beranda</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
       {/* Modal Picker untuk Ganti Board Game */}
       <Modal visible={gamePickerVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
@@ -1815,6 +1707,11 @@ export default function BookingFormScreen({ route, navigation }) {
           setSuccessModalData((prev) => ({ ...prev, visible: false }));
           navigation.popToTop();
           navigation.navigate("TicketsTab");
+        }}
+        onClose={() => {
+          setSuccessModalData((prev) => ({ ...prev, visible: false }));
+          navigation.popToTop();
+          navigation.navigate("GameTab");
         }}
       />
     </ScrollView>

@@ -118,11 +118,11 @@ export default function AdminPaymentListScreen({ navigation }) {
   // Handler Update Status Reservasi (Terima / Tolak)
   const handleUpdateStatus = (reservation, newStatus) => {
     const isApprove = newStatus === "Confirmed";
-    const actionWord = isApprove ? "Menerima" : "Menolak";
-    const confirmBtnWord = isApprove ? "Ya, Terima & Aktifkan" : "Ya, Tolak Reservasi";
+    const actionWord = isApprove ? "Terima" : "Tolak";
+    const confirmBtnWord = isApprove ? "Terima Tiket" : "Tolak Tiket";
 
     showDialog({
-      type: isApprove ? "info" : "warning",
+      type: isApprove ? "success" : "danger",
       title: `${actionWord} Pembayaran Tiket?`,
       message: isApprove
         ? `Apakah Anda yakin ingin memvalidasi pembayaran dan mengaktifkan tiket ${reservation.booking_code} milik "${reservation.cleanName}"?`

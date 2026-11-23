@@ -22,7 +22,8 @@ export default function SuccessPaymentModal({
   totalPrice,
   paymentMethod,
   status = "Menunggu Konfirmasi",
-  onViewTicket
+  onViewTicket,
+  onClose
 }) {
   if (!visible) return null;
 
@@ -131,14 +132,25 @@ export default function SuccessPaymentModal({
             </Text>
           </View>
 
-          {/* Action Button */}
-          <TouchableOpacity
-            style={styles.actionBtn}
-            onPress={onViewTicket}
-            activeOpacity={0.88}
-          >
-            <Text style={styles.actionBtnText}>Buka Tiket Saya</Text>
-          </TouchableOpacity>
+          {/* Action Buttons */}
+          <View style={styles.actionButtonGroup}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={onViewTicket}
+              activeOpacity={0.88}
+            >
+              <Ionicons name="ticket-outline" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+              <Text style={styles.actionBtnText}>Buka Tiket Saya</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.actionSecondaryBtn}
+              onPress={onClose || onViewTicket}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.actionSecondaryBtnText}>Kembali ke Beranda</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -339,18 +351,39 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 16
   },
+  actionButtonGroup: {
+    width: "100%",
+    marginTop: 4
+  },
   actionBtn: {
     width: "100%",
     backgroundColor: colors.primary,
-    paddingVertical: 14,
-    borderRadius: 14,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    elevation: 3
+    paddingVertical: 13,
+    borderRadius: 12,
+    marginBottom: 8,
+    elevation: 2
   },
   actionBtnText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#FFFFFF"
+  },
+  actionSecondaryBtn: {
+    width: "100%",
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderRadius: 12
+  },
+  actionSecondaryBtnText: {
+    fontSize: 13.5,
+    fontWeight: "600",
+    color: colors.textMuted
   }
 });
