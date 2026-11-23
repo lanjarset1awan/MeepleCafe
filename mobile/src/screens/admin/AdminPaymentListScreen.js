@@ -528,13 +528,7 @@ export default function AdminPaymentListScreen({ navigation }) {
             </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.refreshBtn}
-            onPress={onRefresh}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="refresh" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
+          <View style={styles.headerRightPlaceholder} />
         </View>
       </View>
 
@@ -759,8 +753,8 @@ const styles = StyleSheet.create({
   backBtn: {
     padding: 6
   },
-  refreshBtn: {
-    padding: 6
+  headerRightPlaceholder: {
+    width: 36
   },
   headerTitleBox: {
     alignItems: "center"

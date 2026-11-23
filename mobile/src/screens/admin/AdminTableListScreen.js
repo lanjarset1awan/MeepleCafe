@@ -213,14 +213,7 @@ export default function AdminTableListScreen({ navigation }) {
             </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.headerAddBtn}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("AdminTableForm")}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="add" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
+          <View style={styles.headerRightPlaceholder} />
         </View>
       </View>
 
@@ -414,18 +407,8 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 0.5
   },
-  headerAddBtn: {
-    backgroundColor: colors.primary,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3
+  headerRightPlaceholder: {
+    width: 36
   },
   searchContainer: {
     flexDirection: "row",
