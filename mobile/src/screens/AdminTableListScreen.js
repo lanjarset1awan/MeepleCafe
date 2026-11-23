@@ -271,13 +271,6 @@ export default function AdminTableListScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Subheader info: Jumlah meja terdaftar */}
-      <View style={styles.infoSummaryRow}>
-        <Text style={styles.infoSummaryText}>
-          Total <Text style={{ fontWeight: "700", color: colors.primary }}>{filteredTables.length}</Text> meja kafe terdaftar
-        </Text>
-      </View>
-
       {/* List Meja Kafe */}
       {loading ? (
         <View style={styles.centerContainer}>
@@ -477,15 +470,6 @@ const styles = StyleSheet.create({
   filterChipTextActive: {
     color: "#FFFFFF",
     fontWeight: "700"
-  },
-  infoSummaryRow: {
-    paddingHorizontal: 16,
-    marginTop: 6,
-    marginBottom: 4
-  },
-  infoSummaryText: {
-    fontSize: 12,
-    color: colors.textMuted
   },
   listContainer: {
     padding: 16,
