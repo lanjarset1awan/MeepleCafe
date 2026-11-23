@@ -13,12 +13,12 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { useAuth } from "../context/AuthContext";
-import { ApiService } from "../api/apiService";
-import { colors } from "../theme/colors";
-import CustomDialog from "../components/CustomDialog";
-import SuccessPaymentModal from "../components/SuccessPaymentModal";
-import GameImage from "../components/GameImage";
+import { useAuth } from "../../context/AuthContext";
+import { ApiService } from "../../api/apiService";
+import { colors } from "../../theme/colors";
+import CustomDialog from "../../components/CustomDialog";
+import SuccessPaymentModal from "../../components/SuccessPaymentModal";
+import GameImage from "../../components/GameImage";
 
 // Logo resmi perbankan & QRIS untuk metode pembayaran
 const BANK_LOGOS = {

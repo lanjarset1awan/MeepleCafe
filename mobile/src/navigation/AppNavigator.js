@@ -5,25 +5,28 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { useAuth } from "../context/AuthContext";
-import LandingScreen from "../screens/LandingScreen";
-import LoginScreen from "../screens/LoginScreen";
-import RegisterScreen from "../screens/RegisterScreen";
 
-import GameListScreen from "../screens/GameListScreen";
-import GameDetailScreen from "../screens/GameDetailScreen";
-import GameInventoryScreen from "../screens/GameInventoryScreen";
-import TableListScreen from "../screens/TableListScreen";
-import TableDetailScreen from "../screens/TableDetailScreen";
-import BookingFormScreen from "../screens/BookingFormScreen";
-import MyTicketsScreen from "../screens/MyTicketsScreen";
-import ProfileScreen from "../screens/ProfileScreen";
-import EditProfileScreen from "../screens/EditProfileScreen";
-import AboutScreen from "../screens/AboutScreen";
-import AdminGameListScreen from "../screens/AdminGameListScreen";
-import AdminGameFormScreen from "../screens/AdminGameFormScreen";
-import AdminTableListScreen from "../screens/AdminTableListScreen";
-import AdminTableFormScreen from "../screens/AdminTableFormScreen";
-import AdminPaymentListScreen from "../screens/AdminPaymentListScreen";
+// User Screens
+import LandingScreen from "../screens/user/LandingScreen";
+import LoginScreen from "../screens/user/LoginScreen";
+import RegisterScreen from "../screens/user/RegisterScreen";
+import GameListScreen from "../screens/user/GameListScreen";
+import GameDetailScreen from "../screens/user/GameDetailScreen";
+import GameInventoryScreen from "../screens/user/GameInventoryScreen";
+import TableListScreen from "../screens/user/TableListScreen";
+import TableDetailScreen from "../screens/user/TableDetailScreen";
+import BookingFormScreen from "../screens/user/BookingFormScreen";
+import MyTicketsScreen from "../screens/user/MyTicketsScreen";
+import ProfileScreen from "../screens/user/ProfileScreen";
+import EditProfileScreen from "../screens/user/EditProfileScreen";
+import AboutScreen from "../screens/user/AboutScreen";
+
+// Admin Screens
+import AdminGameListScreen from "../screens/admin/AdminGameListScreen";
+import AdminGameFormScreen from "../screens/admin/AdminGameFormScreen";
+import AdminTableListScreen from "../screens/admin/AdminTableListScreen";
+import AdminTableFormScreen from "../screens/admin/AdminTableFormScreen";
+import AdminPaymentListScreen from "../screens/admin/AdminPaymentListScreen";
 
 import { colors } from "../theme/colors";
 

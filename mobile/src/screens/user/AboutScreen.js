@@ -7,7 +7,7 @@ import {
   Image
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { colors } from "../theme/colors";
+import { colors } from "../../theme/colors";
 
 export default function AboutScreen() {
   return (
@@ -19,7 +19,7 @@ export default function AboutScreen() {
       {/* Brand Hero */}
       <View style={styles.heroCard}>
         <Image
-          source={require("../../assets/Logo-MeepleCafe.jpeg")}
+          source={require("../../../assets/Logo-MeepleCafe.jpeg")}
           style={styles.logoImage}
           resizeMode="contain"
         />

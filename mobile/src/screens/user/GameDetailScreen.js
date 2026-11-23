@@ -8,11 +8,11 @@ import {
   TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ApiService } from "../api/apiService";
-import { useAuth } from "../context/AuthContext";
-import { colors } from "../theme/colors";
-import GameImage from "../components/GameImage";
-import CustomDialog from "../components/CustomDialog";
+import { ApiService } from "../../api/apiService";
+import { useAuth } from "../../context/AuthContext";
+import { colors } from "../../theme/colors";
+import GameImage from "../../components/GameImage";
+import CustomDialog from "../../components/CustomDialog";
 
 export default function GameDetailScreen({ route, navigation }) {
   const { gameId } = route.params;

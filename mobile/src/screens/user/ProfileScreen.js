@@ -11,9 +11,9 @@ import {
   ScrollView
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/AuthContext";
-import { colors } from "../theme/colors";
-import CustomDialog from "../components/CustomDialog";
+import { useAuth } from "../../context/AuthContext";
+import { colors } from "../../theme/colors";
+import CustomDialog from "../../components/CustomDialog";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
@@ -52,7 +52,7 @@ export default function ProfileScreen({ navigation }) {
         <View style={styles.headerBrandRow}>
           <View style={styles.headerLeft}>
             <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              source={require("../../../assets/Logo-MeepleCafe.jpeg")}
               style={styles.headerLogo}
               resizeMode="contain"
             />

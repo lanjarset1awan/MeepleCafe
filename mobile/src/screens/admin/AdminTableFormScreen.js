@@ -13,10 +13,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { ApiService } from "../api/apiService";
-import { colors } from "../theme/colors";
-import GameImage from "../components/GameImage";
-import CustomDialog from "../components/CustomDialog";
+import { ApiService } from "../../api/apiService";
+import { colors } from "../../theme/colors";
+import GameImage from "../../components/GameImage";
+import CustomDialog from "../../components/CustomDialog";
 
 export default function AdminTableFormScreen({ navigation, route }) {
   const existingTable = route.params?.table || null;

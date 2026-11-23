@@ -13,10 +13,10 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import { ApiService } from "../api/apiService";
-import { colors } from "../theme/colors";
-import GameImage from "../components/GameImage";
-import CustomDialog from "../components/CustomDialog";
+import { ApiService } from "../../api/apiService";
+import { colors } from "../../theme/colors";
+import GameImage from "../../components/GameImage";
+import CustomDialog from "../../components/CustomDialog";
 
 export default function AdminPaymentListScreen({ navigation }) {
   const [reservations, setReservations] = useState([]);

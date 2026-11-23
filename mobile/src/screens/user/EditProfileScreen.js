@@ -13,9 +13,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { useAuth } from "../context/AuthContext";
-import { colors } from "../theme/colors";
-import CustomDialog from "../components/CustomDialog";
+import { useAuth } from "../../context/AuthContext";
+import { colors } from "../../theme/colors";
+import CustomDialog from "../../components/CustomDialog";
 
 export default function EditProfileScreen({ navigation }) {
   const { user, updateProfile, uploadAvatar, deleteAvatar } = useAuth();

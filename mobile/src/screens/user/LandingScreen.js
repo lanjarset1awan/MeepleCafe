@@ -12,10 +12,10 @@ import {
   ScrollView
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { ApiService } from "../api/apiService";
-import { colors } from "../theme/colors";
-import GameImage from "../components/GameImage";
-import CustomDialog from "../components/CustomDialog";
+import { ApiService } from "../../api/apiService";
+import { colors } from "../../theme/colors";
+import GameImage from "../../components/GameImage";
+import CustomDialog from "../../components/CustomDialog";
 
 export default function LandingScreen({ navigation }) {
   const [activePage, setActivePage] = useState("katalog"); // "katalog" | "about"
@@ -121,7 +121,7 @@ export default function LandingScreen({ navigation }) {
         <View style={styles.headerBrandRow}>
           <View style={styles.headerLeft}>
             <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              source={require("../../../assets/Logo-MeepleCafe.jpeg")}
               style={styles.headerLogo}
               resizeMode="contain"
             />
@@ -295,7 +295,7 @@ export default function LandingScreen({ navigation }) {
           {/* Brand Hero */}
           <View style={styles.heroCard}>
             <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              source={require("../../../assets/Logo-MeepleCafe.jpeg")}
               style={styles.logoImage}
               resizeMode="contain"
             />

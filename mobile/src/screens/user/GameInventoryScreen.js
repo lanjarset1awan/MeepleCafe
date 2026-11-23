@@ -11,10 +11,10 @@ import {
   TextInput
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ApiService } from "../api/apiService";
-import { useAuth } from "../context/AuthContext";
-import { colors } from "../theme/colors";
-import GameImage from "../components/GameImage";
+import { ApiService } from "../../api/apiService";
+import { useAuth } from "../../context/AuthContext";
+import { colors } from "../../theme/colors";
+import GameImage from "../../components/GameImage";
 
 export default function GameInventoryScreen({ navigation }) {
   const { user } = useAuth();
@@ -176,7 +176,7 @@ export default function GameInventoryScreen({ navigation }) {
         <View style={styles.headerBrandRow}>
           <View style={styles.headerLeft}>
             <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              source={require("../../../assets/Logo-MeepleCafe.jpeg")}
               style={styles.headerLogo}
               resizeMode="contain"
             />

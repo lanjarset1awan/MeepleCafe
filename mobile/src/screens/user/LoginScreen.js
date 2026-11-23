@@ -15,8 +15,8 @@ import {
   StatusBar
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/AuthContext";
-import { colors } from "../theme/colors";
+import { useAuth } from "../../context/AuthContext";
+import { colors } from "../../theme/colors";
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -71,7 +71,7 @@ export default function LoginScreen({ navigation }) {
           {/* Logo & Judul Sambutan */}
           <View style={styles.brandBox}>
             <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              source={require("../../../assets/Logo-MeepleCafe.jpeg")}
               style={styles.logoImage}
               resizeMode="contain"
             />

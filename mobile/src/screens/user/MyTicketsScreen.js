@@ -11,11 +11,11 @@ import {
   Modal
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ApiService } from "../api/apiService";
-import { useAuth } from "../context/AuthContext";
-import { colors } from "../theme/colors";
-import CustomDialog from "../components/CustomDialog";
-import GameImage from "../components/GameImage";
+import { ApiService } from "../../api/apiService";
+import { useAuth } from "../../context/AuthContext";
+import { colors } from "../../theme/colors";
+import CustomDialog from "../../components/CustomDialog";
+import GameImage from "../../components/GameImage";
 
 /**
  * Memeriksa apakah waktu sesi reservasi sudah lewat dibandingkan waktu saat ini.
@@ -515,7 +515,7 @@ export default function MyTicketsScreen({ navigation }) {
         <View style={styles.headerBrandRow}>
           <View style={styles.headerLeft}>
             <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              source={require("../../../assets/Logo-MeepleCafe.jpeg")}
               style={styles.headerLogo}
               resizeMode="contain"
             />

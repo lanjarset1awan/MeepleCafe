@@ -9,9 +9,9 @@ import {
   TouchableOpacity
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ApiService } from "../api/apiService";
-import { colors } from "../theme/colors";
-import GameImage from "../components/GameImage";
+import { ApiService } from "../../api/apiService";
+import { colors } from "../../theme/colors";
+import GameImage from "../../components/GameImage";
 
 export default function TableDetailScreen({ route, navigation }) {
   const { tableId, selectedGame } = route.params;

@@ -14,9 +14,9 @@ import {
   StatusBar
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/AuthContext";
-import { colors } from "../theme/colors";
-import CustomDialog from "../components/CustomDialog";
+import { useAuth } from "../../context/AuthContext";
+import { colors } from "../../theme/colors";
+import CustomDialog from "../../components/CustomDialog";
 
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
@@ -135,7 +135,7 @@ export default function RegisterScreen({ navigation }) {
           {/* Judul Registrasi */}
           <View style={styles.brandBox}>
             <Image
-              source={require("../../assets/Logo-MeepleCafe.jpeg")}
+              source={require("../../../assets/Logo-MeepleCafe.jpeg")}
               style={styles.logoImage}
               resizeMode="contain"
             />
