@@ -284,7 +284,6 @@ export default function AdminGameListScreen({ navigation }) {
         <Text style={styles.infoSummaryText}>
           Total <Text style={{ fontWeight: "700", color: colors.primary }}>{filteredGames.length}</Text> board game ditemukan
         </Text>
-        <Text style={styles.infoHintText}>Ketuk kartu untuk mengedit / menghapus</Text>
       </View>
 
       {/* List Board Game */}

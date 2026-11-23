@@ -501,7 +501,6 @@ export default function AdminGameFormScreen({ navigation, route }) {
                   onChangeText={setStock}
                 />
               </View>
-              <Text style={styles.fieldHint}>Jumlah box fisik</Text>
             </View>
 
             <View style={styles.columnHalf}>
@@ -517,7 +516,6 @@ export default function AdminGameFormScreen({ navigation, route }) {
                   onChangeText={setShelfLocation}
                 />
               </View>
-              <Text style={styles.fieldHint}>Lokasi etalase kafe</Text>
             </View>
           </View>
         </View>
