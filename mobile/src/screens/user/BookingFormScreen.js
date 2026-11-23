@@ -504,7 +504,7 @@ export default function BookingFormScreen({ route, navigation }) {
   ]);
 
   // Validasi sebelum membuka modal pembayaran
-  const handleProceedToPayment = () => {
+  const handleProceedToPayment = async () => {
     if (isPastDate) {
       showDialog({
         type: "error",
@@ -569,6 +569,18 @@ export default function BookingFormScreen({ route, navigation }) {
         type: "error",
         title: slotStatus.reason || "Jadwal Tidak Tersedia",
         message: `${slotStatus.detail}\n\nSilakan pilih jam mulai atau durasi lain yang masih kosong.`
+      });
+      return;
+    }
+
+    // Pengecekan koneksi online sebelum membuka form pembayaran
+    const isOnline = await ApiService.checkOnline();
+    if (!isOnline) {
+      showDialog({
+        type: "warning",
+        iconName: "cloud-offline",
+        title: "Koneksi Offline Terdeteksi",
+        message: "Anda sedang dalam mode offline. Pembuatan tiket reservasi meja kafe membutuhkan koneksi internet aktif untuk verifikasi ketersediaan jadwal meja dan pembayaran."
       });
       return;
     }
@@ -662,6 +674,19 @@ export default function BookingFormScreen({ route, navigation }) {
 
   // Konfirmasi Pembayaran dan Buat Tiket Reservasi (Status: Pending / Menunggu Konfirmasi)
   const handleConfirmPaymentAndCreateTicket = async () => {
+    // Validasi koneksi internet: Pembuatan reservasi wajib online
+    const isOnline = await ApiService.checkOnline();
+    if (!isOnline) {
+      setPaymentModalVisible(false);
+      showDialog({
+        type: "warning",
+        iconName: "cloud-offline",
+        title: "Koneksi Offline Terdeteksi",
+        message: "Anda sedang dalam mode offline. Pembuatan tiket reservasi meja membutuhkan koneksi internet aktif untuk verifikasi ketersediaan meja dan konfirmasi pembayaran."
+      });
+      return;
+    }
+
     if (!paymentProofUri) {
       showDialog({
         type: "warning",
@@ -720,11 +745,26 @@ export default function BookingFormScreen({ route, navigation }) {
         status: "Menunggu Konfirmasi"
       });
     } catch (err) {
-      showDialog({
-        type: "error",
-        title: "Gagal Memproses Reservasi",
-        message: err.message || "Terjadi kendala saat menerbitkan tiket. Silakan coba kembali."
-      });
+      const isOfflineError =
+        err.message &&
+        (err.message.includes("OFFLINE_ERROR") ||
+          err.message.includes("offline") ||
+          err.message.includes("Network request failed"));
+
+      if (isOfflineError) {
+        showDialog({
+          type: "warning",
+          iconName: "cloud-offline",
+          title: "Koneksi Internet Terputus",
+          message: "Reservasi tiket tidak dapat diproses karena perangkat Anda sedang dalam mode offline. Pastikan koneksi internet Anda aktif lalu coba kembali."
+        });
+      } else {
+        showDialog({
+          type: "error",
+          title: "Gagal Memproses Reservasi",
+          message: err.message || "Terjadi kendala saat menerbitkan tiket. Silakan coba kembali."
+        });
+      }
       refreshAvailability();
     } finally {
       setLoading(false);

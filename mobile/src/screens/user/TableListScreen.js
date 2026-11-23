@@ -15,6 +15,9 @@ import { ApiService } from "../../api/apiService";
 import { useAuth } from "../../context/AuthContext";
 import { colors } from "../../theme/colors";
 import GameImage from "../../components/GameImage";
+import CustomDialog from "../../components/CustomDialog";
+import OfflineNotice from "../../components/OfflineNotice";
+import { CacheService } from "../../services/cacheService";
 
 export default function TableListScreen({ route, navigation }) {
   const { user } = useAuth();
@@ -23,6 +26,8 @@ export default function TableListScreen({ route, navigation }) {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [offlineDialogVisible, setOfflineDialogVisible] = useState(false);
 
   // Menerima & mengelola game yang dipilih
   const [selectedGame, setSelectedGame] = useState(route.params?.selectedGame || null);
@@ -36,26 +41,42 @@ export default function TableListScreen({ route, navigation }) {
     }
   }, [route.params?.selectedGame]);
 
-  // Load daftar board game untuk modal ganti game
+  // Load daftar board game untuk modal ganti game (menggunakan cache lokal juga)
   useEffect(() => {
     async function loadAllGames() {
       try {
+        const cachedGames = await CacheService.getGames();
+        if (cachedGames && cachedGames.length > 0) {
+          setAllGames(cachedGames);
+        }
         const games = await ApiService.getGames();
         setAllGames(games || []);
       } catch (err) {
-        console.error("Gagal memuat list games di TableListScreen:", err);
+        console.warn("Gagal memuat list games di TableListScreen (offline):", err.message);
       }
     }
     loadAllGames();
   }, []);
 
-  const loadTables = async () => {
+  // Strategi Cache-First (Stale-While-Revalidate)
+  const loadTables = async (isManualRefresh = false) => {
     try {
-      setLoading(true);
+      // 1. Ambil dari Cache Lokal (Instan)
+      if (!isManualRefresh) {
+        const cached = await CacheService.getTables();
+        if (cached && cached.length > 0) {
+          setTables(cached);
+          setLoading(false);
+        }
+      }
+
+      // 2. Revalidasi data online
       const data = await ApiService.getTables();
       setTables(data || []);
+      setIsOffline(Boolean(data?._isOffline));
     } catch (err) {
-      console.error(err);
+      console.warn("TableListScreen loadTables error (offline):", err.message);
+      setIsOffline(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -68,7 +89,7 @@ export default function TableListScreen({ route, navigation }) {
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadTables();
+    loadTables(true);
   };
 
   const formatRupiah = (number) => {
@@ -80,6 +101,11 @@ export default function TableListScreen({ route, navigation }) {
   };
 
   const handleSelectTable = (table) => {
+    if (isOffline) {
+      setOfflineDialogVisible(true);
+      return;
+    }
+
     navigation.navigate("BookingForm", {
       tableId: table.id,
       tableNumber: table.table_number,
@@ -135,7 +161,8 @@ export default function TableListScreen({ route, navigation }) {
                 navigation.navigate("TableDetail", {
                   tableId: item.id,
                   title: item.table_type,
-                  selectedGame: selectedGame
+                  selectedGame: selectedGame,
+                  isOffline: isOffline
                 })
               }
             >
@@ -144,12 +171,19 @@ export default function TableListScreen({ route, navigation }) {
 
             {isAvailable ? (
               <TouchableOpacity
-                style={styles.btnSelect}
-                activeOpacity={0.85}
+                style={[styles.btnSelect, isOffline && styles.btnSelectDisabled]}
+                activeOpacity={isOffline ? 1 : 0.85}
                 onPress={() => handleSelectTable(item)}
               >
-                <Ionicons name="checkmark-circle-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-                <Text style={styles.btnSelectText}>Pilih Meja Ini</Text>
+                <Ionicons
+                  name={isOffline ? "cloud-offline-outline" : "checkmark-circle-outline"}
+                  size={16}
+                  color={isOffline ? "#94A3B8" : "#FFFFFF"}
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={[styles.btnSelectText, isOffline && styles.btnSelectDisabledText]}>
+                  {isOffline ? "Butuh Internet" : "Pilih Meja Ini"}
+                </Text>
               </TouchableOpacity>
             ) : (
               <View style={styles.btnSelectDisabled}>
@@ -233,6 +267,11 @@ export default function TableListScreen({ route, navigation }) {
         </TouchableOpacity>
       )}
 
+      {/* Mode Offline Banner */}
+      {isOffline && (
+        <OfflineNotice message="Mode Offline: Menampilkan data meja tersimpan di perangkat. Pemesanan dinonaktifkan." />
+      )}
+
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
@@ -299,6 +338,18 @@ export default function TableListScreen({ route, navigation }) {
           </View>
         </View>
       </Modal>
+
+      {/* Dialog Peringatan Mode Offline */}
+      <CustomDialog
+        visible={offlineDialogVisible}
+        type="warning"
+        iconName="cloud-offline"
+        title="Mode Offline Aktif"
+        message="Anda sedang tidak terhubung ke internet. Anda tetap dapat melihat seluruh fasilitas dan ketersediaan meja kafe, namun reservasi meja hanya dapat diproses saat perangkat terhubung ke internet."
+        confirmText="Mengerti"
+        onConfirm={() => setOfflineDialogVisible(false)}
+        onClose={() => setOfflineDialogVisible(false)}
+      />
     </View>
   );
 }

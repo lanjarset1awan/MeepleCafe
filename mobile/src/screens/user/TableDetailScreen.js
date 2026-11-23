@@ -12,20 +12,35 @@ import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../../api/apiService";
 import { colors } from "../../theme/colors";
 import GameImage from "../../components/GameImage";
+import CustomDialog from "../../components/CustomDialog";
+import { CacheService } from "../../services/cacheService";
 
 export default function TableDetailScreen({ route, navigation }) {
   const { tableId, selectedGame } = route.params;
   const [table, setTable] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(Boolean(route.params?.isOffline));
+  const [offlineDialogVisible, setOfflineDialogVisible] = useState(false);
 
   useEffect(() => {
     async function fetchDetail() {
       try {
-        setLoading(true);
+        // 1. Ambil dari Cache Lokal (Instan)
+        const cached = await CacheService.getTableDetail(tableId);
+        if (cached) {
+          setTable(cached);
+          setLoading(false);
+        }
+
+        // 2. Revalidasi data online
         const data = await ApiService.getTableById(tableId);
-        setTable(data);
+        if (data) {
+          setTable(data);
+          setIsOffline(Boolean(data._isOffline));
+        }
       } catch (err) {
-        console.error(err);
+        console.warn("TableDetail fetch error (offline):", err.message);
+        setIsOffline(true);
       } finally {
         setLoading(false);
       }
@@ -73,6 +88,16 @@ export default function TableDetailScreen({ route, navigation }) {
 
         <View style={styles.detailCard}>
           <Text style={styles.title}>{table.table_type}</Text>
+
+          {/* Banner Peringatan Mode Offline */}
+          {isOffline && (
+            <View style={styles.offlineAlert}>
+              <Ionicons name="cloud-offline-outline" size={18} color="#B45309" style={{ marginRight: 8 }} />
+              <Text style={styles.offlineAlertText}>
+                Mode Offline: Anda dapat melihat seluruh spesifikasi & fasilitas meja ini, namun pemesanan dinonaktifkan hingga terhubung ke internet.
+              </Text>
+            </View>
+          )}
 
           <View style={styles.topRow}>
             <View style={styles.badge}>
@@ -130,7 +155,16 @@ export default function TableDetailScreen({ route, navigation }) {
 
       {/* Button CTA to Booking Form */}
       <View style={styles.bottomBar}>
-        {table.is_active !== false ? (
+        {isOffline ? (
+          <TouchableOpacity
+            style={styles.bookButtonDisabled}
+            activeOpacity={0.88}
+            onPress={() => setOfflineDialogVisible(true)}
+          >
+            <Ionicons name="cloud-offline-outline" size={20} color="#94A3B8" style={{ marginRight: 8 }} />
+            <Text style={styles.bookButtonDisabledText}>Pemesanan Butuh Internet (Mode Offline)</Text>
+          </TouchableOpacity>
+        ) : table.is_active !== false ? (
           <TouchableOpacity
             style={styles.bookButton}
             activeOpacity={0.88}
@@ -156,6 +190,18 @@ export default function TableDetailScreen({ route, navigation }) {
           </View>
         )}
       </View>
+
+      {/* Dialog Peringatan Mode Offline */}
+      <CustomDialog
+        visible={offlineDialogVisible}
+        type="warning"
+        iconName="cloud-offline"
+        title="Mode Offline Aktif"
+        message="Anda sedang tidak terhubung ke internet. Anda dapat melihat informasi dan fasilitas meja kafe ini, namun proses pembuatan reservasi tiket membutuhkan koneksi internet aktif."
+        confirmText="Mengerti"
+        onConfirm={() => setOfflineDialogVisible(false)}
+        onClose={() => setOfflineDialogVisible(false)}
+      />
     </View>
   );
 }
@@ -347,6 +393,23 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.accent,
     fontSize: 15
+  },
+  offlineAlert: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 14
+  },
+  offlineAlertText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: "#92400E",
+    lineHeight: 18,
+    fontWeight: "600"
   }
 });
 

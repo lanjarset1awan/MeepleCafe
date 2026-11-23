@@ -16,6 +16,8 @@ import { ApiService } from "../../api/apiService";
 import { colors } from "../../theme/colors";
 import GameImage from "../../components/GameImage";
 import CustomDialog from "../../components/CustomDialog";
+import OfflineNotice from "../../components/OfflineNotice";
+import { CacheService } from "../../services/cacheService";
 
 export default function LandingScreen({ navigation }) {
   const [activePage, setActivePage] = useState("katalog"); // "katalog" | "about"
@@ -25,16 +27,29 @@ export default function LandingScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [noticeDialogVisible, setNoticeDialogVisible] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
 
   const categories = ["All", "Strategy", "Party Game", "Family", "Social Deduction"];
 
-  const loadGames = async () => {
+  // Strategi Cache-First (Stale-While-Revalidate)
+  const loadGames = async (isManualRefresh = false) => {
     try {
-      setLoading(true);
+      // 1. Ambil dari Cache Lokal (Instan)
+      if (!isManualRefresh) {
+        const cached = await CacheService.getGames();
+        if (cached && cached.length > 0) {
+          setGames(cached);
+          setLoading(false);
+        }
+      }
+
+      // 2. Revalidasi data online
       const data = await ApiService.getGames();
       setGames(data || []);
+      setIsOffline(Boolean(data?._isOffline));
     } catch (err) {
-      console.error("LandingScreen loadGames error:", err);
+      console.warn("LandingScreen loadGames error (offline):", err.message);
+      setIsOffline(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -47,7 +62,7 @@ export default function LandingScreen({ navigation }) {
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadGames();
+    loadGames(true);
   };
 
   // Filter game berdasarkan pencarian dan kategori
@@ -67,7 +82,7 @@ export default function LandingScreen({ navigation }) {
     <TouchableOpacity
       style={styles.card}
       activeOpacity={0.88}
-      onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title })}
+      onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title, isOffline: isOffline })}
     >
       <GameImage uri={item.image_url} style={styles.cardImage} />
 
@@ -255,6 +270,11 @@ export default function LandingScreen({ navigation }) {
               }}
             />
           </View>
+
+          {/* Mode Offline Banner */}
+          {isOffline && (
+            <OfflineNotice message="Mode Offline: Menampilkan katalog tersimpan di perangkat. Pemesanan dinonaktifkan." />
+          )}
 
           {/* Daftar Koleksi Game */}
           {loading ? (

@@ -1,4 +1,29 @@
 import { DEFAULT_BACKEND_URL, SUPABASE_URL, SUPABASE_KEY } from "./config.js";
+import { CacheService, CACHE_KEYS } from "../services/cacheService.js";
+
+let isLastKnownOnline = true;
+
+/**
+ * Pengecekan aktif konektivitas internet (Ping ke Supabase Cloud / Backend)
+ */
+export async function checkConnectivity() {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2500);
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+      method: "HEAD",
+      headers: { apikey: SUPABASE_KEY },
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    const online = response.status < 500;
+    isLastKnownOnline = online;
+    return online;
+  } catch (err) {
+    isLastKnownOnline = false;
+    return false;
+  }
+}
 
 /**
  * Helper fetch dengan pembersihan header & auto-fallback ke Supabase Cloud
@@ -29,6 +54,7 @@ async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
 
     const response = await fetch(backendUrl, fetchOptions);
     if (response.ok) {
+      isLastKnownOnline = true;
       const resText = await response.text();
       return resText ? JSON.parse(resText) : {};
     }
@@ -37,60 +63,66 @@ async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
   }
 
   // 2. Fallback: Langsung akses Supabase Cloud
-  const supabaseUrl = `${SUPABASE_URL}/rest/v1/${supabaseTable}`;
-  const supabaseHeaders = {
-    "Content-Type": "application/json",
-    "apikey": SUPABASE_KEY,
-    "Authorization": `Bearer ${SUPABASE_KEY}`
-  };
+  try {
+    const supabaseUrl = `${SUPABASE_URL}/rest/v1/${supabaseTable}`;
+    const supabaseHeaders = {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`
+    };
 
-  const supabaseMethod = options.supabaseMethod || (options.method === "PUT" ? "PATCH" : (options.method || "GET"));
+    const supabaseMethod = options.supabaseMethod || (options.method === "PUT" ? "PATCH" : (options.method || "GET"));
 
-  if (options.method === "POST" || supabaseMethod === "PATCH") {
-    supabaseHeaders["Prefer"] = "return=representation";
-  }
+    if (options.method === "POST" || supabaseMethod === "PATCH") {
+      supabaseHeaders["Prefer"] = "return=representation";
+    }
 
-  if (options.headers) {
-    for (const [k, v] of Object.entries(options.headers)) {
-      if (v !== undefined && v !== null) {
-        supabaseHeaders[k] = String(v);
+    if (options.headers) {
+      for (const [k, v] of Object.entries(options.headers)) {
+        if (v !== undefined && v !== null) {
+          supabaseHeaders[k] = String(v);
+        }
       }
     }
-  }
 
-  const supabaseOptions = {
-    method: supabaseMethod,
-    headers: supabaseHeaders
-  };
-  if (options.body) {
-    supabaseOptions.body = options.body;
-  }
-
-  const response = await fetch(supabaseUrl, supabaseOptions);
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gagal memuat data dari Supabase: ${errText}`);
-  }
-
-  const resText = await response.text();
-  let result = null;
-  try {
-    result = resText ? JSON.parse(resText) : {};
-  } catch (e) {
-    result = {};
-  }
-
-  // Jika hasil berupa array dan yang diminta adalah single item
-  if (Array.isArray(result)) {
-    if (options.method === "POST" || supabaseMethod === "PATCH") {
-      return result[0];
+    const supabaseOptions = {
+      method: supabaseMethod,
+      headers: supabaseHeaders
+    };
+    if (options.body) {
+      supabaseOptions.body = options.body;
     }
-    if (options.single) {
-      return result.length > 0 ? result[0] : null;
+
+    const response = await fetch(supabaseUrl, supabaseOptions);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Gagal memuat data dari Supabase: ${errText}`);
     }
+
+    isLastKnownOnline = true;
+    const resText = await response.text();
+    let result = null;
+    try {
+      result = resText ? JSON.parse(resText) : {};
+    } catch (e) {
+      result = {};
+    }
+
+    // Jika hasil berupa array dan yang diminta adalah single item
+    if (Array.isArray(result)) {
+      if (options.method === "POST" || supabaseMethod === "PATCH") {
+        return result[0];
+      }
+      if (options.single) {
+        return result.length > 0 ? result[0] : null;
+      }
+    }
+    return result;
+  } catch (networkErr) {
+    isLastKnownOnline = false;
+    throw networkErr;
   }
-  return result;
 }
 
 // Helper normalisasi game dengan stok kafe & posisi rak dinamis
@@ -117,23 +149,65 @@ function normalizeGame(game) {
 }
 
 export const ApiService = {
-  // 1. Koleksi Games (List Utama 1 & Detail)
+  // Helper Pengecekan Online
+  checkOnline() {
+    return checkConnectivity();
+  },
+  isOnline() {
+    return isLastKnownOnline;
+  },
+
+  // 1. Koleksi Games (List Utama 1 & Detail) - Strategi Cache-First (Stale-While-Revalidate)
   async getGames(categoryId = null) {
-    const endpoint = categoryId ? `/api/games?category=${categoryId}` : "/api/games";
-    const supabaseQuery = categoryId
-      ? `board_games?category_id=eq.${categoryId}&select=*,game_categories(id,name)`
-      : `board_games?select=*,game_categories(id,name)&order=title.asc`;
-    const data = await fetchWithFallback(endpoint, supabaseQuery);
-    return Array.isArray(data) ? data.map(normalizeGame) : [];
+    try {
+      const endpoint = categoryId ? `/api/games?category=${categoryId}` : "/api/games";
+      const supabaseQuery = categoryId
+        ? `board_games?category_id=eq.${categoryId}&select=*,game_categories(id,name)`
+        : `board_games?select=*,game_categories(id,name)&order=title.asc`;
+      const data = await fetchWithFallback(endpoint, supabaseQuery);
+      const normalized = Array.isArray(data) ? data.map(normalizeGame) : [];
+
+      // Simpan ke cache lokal jika fetch online berhasil
+      if (!categoryId) {
+        CacheService.saveGames(normalized).catch(() => {});
+      }
+      return normalized;
+    } catch (err) {
+      // Fallback Offline: Muat dari AsyncStorage
+      const cached = await CacheService.getGames();
+      if (cached && cached.length > 0) {
+        let result = cached;
+        if (categoryId) {
+          result = cached.filter((g) => String(g.category_id) === String(categoryId));
+        }
+        result._isOffline = true;
+        return result;
+      }
+      throw err;
+    }
   },
 
   async getGameById(id) {
-    const data = await fetchWithFallback(
-      `/api/games/${id}`,
-      `board_games?id=eq.${id}&select=*,game_categories(id,name)`,
-      { single: true }
-    );
-    return normalizeGame(data);
+    try {
+      const data = await fetchWithFallback(
+        `/api/games/${id}`,
+        `board_games?id=eq.${id}&select=*,game_categories(id,name)`,
+        { single: true }
+      );
+      const normalized = normalizeGame(data);
+      if (normalized) {
+        CacheService.set(CACHE_KEYS.GAME_DETAIL(id), normalized).catch(() => {});
+      }
+      return normalized;
+    } catch (err) {
+      // Fallback Offline: Muat detail dari cache
+      const cached = await CacheService.getGameDetail(id);
+      if (cached) {
+        cached._isOffline = true;
+        return cached;
+      }
+      throw err;
+    }
   },
 
   async createGame(payload) {
@@ -178,16 +252,57 @@ export const ApiService = {
   },
 
   async getCategories() {
-    return fetchWithFallback("/api/categories", "game_categories?select=*&order=name.asc");
+    try {
+      const data = await fetchWithFallback("/api/categories", "game_categories?select=*&order=name.asc");
+      const list = Array.isArray(data) ? data : [];
+      if (list.length > 0) {
+        CacheService.saveCategories(list).catch(() => {});
+      }
+      return list;
+    } catch (err) {
+      const cached = await CacheService.getCategories();
+      if (cached && cached.length > 0) return cached;
+      return [
+        { id: "1", name: "Strategy" },
+        { id: "2", name: "Party Game" },
+        { id: "3", name: "Family" },
+        { id: "4", name: "Social Deduction" }
+      ];
+    }
   },
 
-  // 2. Meja Kafe (List Utama 2, Detail & CRUD Admin)
+  // 2. Meja Kafe (List Utama 2, Detail & CRUD Admin) - Strategi Cache-First
   async getTables() {
-    return fetchWithFallback("/api/tables", "cafe_tables?order=table_number.asc");
+    try {
+      const data = await fetchWithFallback("/api/tables", "cafe_tables?order=table_number.asc");
+      const list = Array.isArray(data) ? data : [];
+      CacheService.saveTables(list).catch(() => {});
+      return list;
+    } catch (err) {
+      const cached = await CacheService.getTables();
+      if (cached && cached.length > 0) {
+        cached._isOffline = true;
+        return cached;
+      }
+      throw err;
+    }
   },
 
   async getTableById(id) {
-    return fetchWithFallback(`/api/tables/${id}`, `cafe_tables?id=eq.${id}`, { single: true });
+    try {
+      const data = await fetchWithFallback(`/api/tables/${id}`, `cafe_tables?id=eq.${id}`, { single: true });
+      if (data) {
+        CacheService.set(CACHE_KEYS.TABLE_DETAIL(id), data).catch(() => {});
+      }
+      return data;
+    } catch (err) {
+      const cached = await CacheService.getTableDetail(id);
+      if (cached) {
+        cached._isOffline = true;
+        return cached;
+      }
+      throw err;
+    }
   },
 
   async createTable(payload) {
@@ -224,6 +339,14 @@ export const ApiService = {
   },
 
   async createReservation(payload) {
+    // Validasi mode offline: Pemesanan membutuhkan koneksi internet aktif
+    if (!isLastKnownOnline) {
+      const isConnected = await checkConnectivity();
+      if (!isConnected) {
+        throw new Error("OFFLINE_ERROR: Anda sedang dalam mode offline. Pembuatan tiket reservasi membutuhkan koneksi internet aktif.");
+      }
+    }
+
     if (!payload.booking_code) {
       const code = Math.floor(1000 + Math.random() * 9000);
       payload.booking_code = `MC-${code}`;

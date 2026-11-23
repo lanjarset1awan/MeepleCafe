@@ -15,6 +15,8 @@ import { ApiService } from "../../api/apiService";
 import { useAuth } from "../../context/AuthContext";
 import { colors } from "../../theme/colors";
 import GameImage from "../../components/GameImage";
+import OfflineNotice from "../../components/OfflineNotice";
+import { CacheService } from "../../services/cacheService";
 
 export default function GameListScreen({ navigation }) {
   const { user } = useAuth();
@@ -25,16 +27,29 @@ export default function GameListScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("All");
+  const [isOffline, setIsOffline] = useState(false);
 
   const categories = ["All", "Strategy", "Party Game", "Family", "Social Deduction"];
 
-  const loadGames = async () => {
+  // Strategi Cache-First (Stale-While-Revalidate)
+  const loadGames = async (isManualRefresh = false) => {
     try {
-      setLoading(true);
+      // 1. Ambil dari Cache Lokal (Instan, layar langsung tampil)
+      if (!isManualRefresh) {
+        const cached = await CacheService.getGames();
+        if (cached && cached.length > 0) {
+          setGames(cached);
+          setLoading(false);
+        }
+      }
+
+      // 2. Revalidasi data terbaru dari server / Supabase Cloud
       const data = await ApiService.getGames();
       setGames(data || []);
+      setIsOffline(Boolean(data?._isOffline));
     } catch (err) {
-      console.error(err);
+      console.warn("loadGames revalidation error (offline):", err.message);
+      setIsOffline(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -47,7 +62,7 @@ export default function GameListScreen({ navigation }) {
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadGames();
+    loadGames(true);
   };
 
   const filteredGames = games.filter((item) => {
@@ -75,7 +90,8 @@ export default function GameListScreen({ navigation }) {
             gameId: item.id,
             title: item.title,
             stock: stockCount,
-            rackCode: shelfLoc
+            rackCode: shelfLoc,
+            isOffline: isOffline
           })
         }
       >
@@ -238,6 +254,11 @@ export default function GameListScreen({ navigation }) {
           }}
         />
       </View>
+
+      {/* Mode Offline Banner */}
+      {isOffline && (
+        <OfflineNotice message="Mode Offline: Menampilkan katalog tersimpan di perangkat. Pemesanan dinonaktifkan." />
+      )}
 
       {/* Main List */}
       {loading ? (

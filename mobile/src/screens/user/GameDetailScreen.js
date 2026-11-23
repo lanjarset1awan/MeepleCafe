@@ -13,6 +13,7 @@ import { useAuth } from "../../context/AuthContext";
 import { colors } from "../../theme/colors";
 import GameImage from "../../components/GameImage";
 import CustomDialog from "../../components/CustomDialog";
+import { CacheService } from "../../services/cacheService";
 
 export default function GameDetailScreen({ route, navigation }) {
   const { gameId } = route.params;
@@ -21,6 +22,8 @@ export default function GameDetailScreen({ route, navigation }) {
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loginPromptVisible, setLoginPromptVisible] = useState(false);
+  const [isOffline, setIsOffline] = useState(Boolean(route.params?.isOffline));
+  const [offlineDialogVisible, setOfflineDialogVisible] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
@@ -39,14 +42,26 @@ export default function GameDetailScreen({ route, navigation }) {
     }
   }, [isAdmin, navigation]);
 
+  // Strategi Cache-First (Stale-While-Revalidate)
   useEffect(() => {
     async function fetchDetail() {
       try {
-        setLoading(true);
+        // 1. Ambil dari Cache Lokal (Instan)
+        const cached = await CacheService.getGameDetail(gameId);
+        if (cached) {
+          setGame(cached);
+          setLoading(false);
+        }
+
+        // 2. Revalidasi data online
         const data = await ApiService.getGameById(gameId);
-        setGame(data);
+        if (data) {
+          setGame(data);
+          setIsOffline(Boolean(data._isOffline));
+        }
       } catch (err) {
-        console.error(err);
+        console.warn("GameDetail fetch error (offline):", err.message);
+        setIsOffline(true);
       } finally {
         setLoading(false);
       }
@@ -82,6 +97,11 @@ export default function GameDetailScreen({ route, navigation }) {
   const isAvailable = stockCount > 0 && game.is_available !== false;
 
   const handleSelectGameAndChooseTable = () => {
+    if (isOffline) {
+      setOfflineDialogVisible(true);
+      return;
+    }
+
     if (!user) {
       setLoginPromptVisible(true);
       return;
@@ -119,8 +139,18 @@ export default function GameDetailScreen({ route, navigation }) {
         <View style={styles.detailCard}>
           <Text style={styles.title}>{game.title}</Text>
 
+          {/* Banner Peringatan Mode Offline */}
+          {isOffline && (
+            <View style={styles.offlineAlert}>
+              <Ionicons name="cloud-offline-outline" size={18} color="#B45309" style={{ marginRight: 8 }} />
+              <Text style={styles.offlineAlertText}>
+                Mode Offline: Anda dapat melihat seluruh panduan & spesifikasi game ini, namun pemesanan dinonaktifkan hingga terhubung ke internet.
+              </Text>
+            </View>
+          )}
+
           {/* Banner Peringatan Ketersediaan / Stok */}
-          {!isAvailable && (
+          {!isAvailable && !isOffline && (
             <View style={styles.outOfStockAlert}>
               <Ionicons name="alert-circle" size={18} color="#DC2626" style={{ marginRight: 8 }} />
               <Text style={styles.outOfStockAlertText}>
@@ -238,24 +268,37 @@ export default function GameDetailScreen({ route, navigation }) {
       {/* Bottom Floating CTA Button */}
       <View style={styles.bottomBar}>
         <TouchableOpacity
-          style={[styles.ctaButton, !isAvailable && styles.ctaButtonDisabled]}
-          activeOpacity={isAvailable ? 0.88 : 1}
-          disabled={!isAvailable}
+          style={[styles.ctaButton, (!isAvailable || isOffline) && styles.ctaButtonDisabled]}
+          activeOpacity={(!isAvailable || isOffline) ? 0.88 : 1}
           onPress={handleSelectGameAndChooseTable}
         >
           <Ionicons
-            name={!isAvailable ? "alert-circle" : (user ? "calendar-outline" : "play-circle-outline")}
+            name={isOffline ? "cloud-offline-outline" : (!isAvailable ? "alert-circle" : (user ? "calendar-outline" : "play-circle-outline"))}
             size={20}
             color="#FFFFFF"
             style={{ marginRight: 8 }}
           />
           <Text style={styles.ctaText}>
-            {!isAvailable
-              ? (game.is_available === false ? "Game Tidak Tersedia (Tidak Dapat Dipesan)" : "Stok Game Habis / Sedang Dipinjam")
-              : (user ? "Pilih Game Ini & Lanjut Reservasi Meja" : "Main Game Ini (Perlu Masuk Akun)")}
+            {isOffline
+              ? "Pemesanan Butuh Internet (Mode Offline)"
+              : (!isAvailable
+                ? (game.is_available === false ? "Game Tidak Tersedia (Tidak Dapat Dipesan)" : "Stok Game Habis / Sedang Dipinjam")
+                : (user ? "Pilih Game Ini & Lanjut Reservasi Meja" : "Main Game Ini (Perlu Masuk Akun)"))}
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Dialog Peringatan Mode Offline */}
+      <CustomDialog
+        visible={offlineDialogVisible}
+        type="warning"
+        iconName="cloud-offline"
+        title="Mode Offline Aktif"
+        message="Anda sedang tidak terhubung ke internet. Anda tetap dapat membaca spesifikasi dan panduan bermain board game ini, namun pemesanan meja kafe hanya dapat dilakukan saat perangkat terhubung ke internet."
+        confirmText="Mengerti"
+        onConfirm={() => setOfflineDialogVisible(false)}
+        onClose={() => setOfflineDialogVisible(false)}
+      />
 
       {/* Dialog Kustom Wajib Masuk Akun (CustomDialog) */}
       <CustomDialog
@@ -414,6 +457,23 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12.5,
     color: "#B91C1C",
+    lineHeight: 18,
+    fontWeight: "600"
+  },
+  offlineAlert: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 14
+  },
+  offlineAlertText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: "#92400E",
     lineHeight: 18,
     fontWeight: "600"
   },

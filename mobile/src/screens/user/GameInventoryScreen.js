@@ -15,6 +15,8 @@ import { ApiService } from "../../api/apiService";
 import { useAuth } from "../../context/AuthContext";
 import { colors } from "../../theme/colors";
 import GameImage from "../../components/GameImage";
+import OfflineNotice from "../../components/OfflineNotice";
+import { CacheService } from "../../services/cacheService";
 
 export default function GameInventoryScreen({ navigation }) {
   const { user } = useAuth();
@@ -25,29 +27,45 @@ export default function GameInventoryScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterAvailability, setFilterAvailability] = useState("all"); // 'all', 'available', 'in_use'
+  const [isOffline, setIsOffline] = useState(false);
 
-  const loadGames = async () => {
+  const enrichGames = (data) => {
+    return (data || []).map((game, originalIndex) => {
+      const isInUse = originalIndex === 3 || originalIndex === 7 || game.is_available === false;
+      const isAvailable = !isInUse;
+      const stockCount = isAvailable ? (originalIndex % 3) + 1 : 0;
+      const rackCode = getRackCode(originalIndex);
+
+      return {
+        ...game,
+        originalIndex,
+        is_in_use: isInUse,
+        is_available: isAvailable,
+        stock: stockCount,
+        rack_code: rackCode
+      };
+    });
+  };
+
+  // Strategi Cache-First (Stale-While-Revalidate)
+  const loadGames = async (isManualRefresh = false) => {
     try {
-      setLoading(true);
-      const data = await ApiService.getGames();
-      const enriched = (data || []).map((game, originalIndex) => {
-        const isInUse = originalIndex === 3 || originalIndex === 7 || game.is_available === false;
-        const isAvailable = !isInUse;
-        const stockCount = isAvailable ? (originalIndex % 3) + 1 : 0;
-        const rackCode = getRackCode(originalIndex);
+      // 1. Muat dari Cache Lokal (Instan)
+      if (!isManualRefresh) {
+        const cached = await CacheService.getGames();
+        if (cached && cached.length > 0) {
+          setGames(enrichGames(cached));
+          setLoading(false);
+        }
+      }
 
-        return {
-          ...game,
-          originalIndex,
-          is_in_use: isInUse,
-          is_available: isAvailable,
-          stock: stockCount,
-          rack_code: rackCode
-        };
-      });
-      setGames(enriched);
+      // 2. Revalidasi data online
+      const data = await ApiService.getGames();
+      setGames(enrichGames(data));
+      setIsOffline(Boolean(data?._isOffline));
     } catch (err) {
-      console.error(err);
+      console.warn("GameInventoryScreen loadGames error (offline):", err.message);
+      setIsOffline(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -60,7 +78,7 @@ export default function GameInventoryScreen({ navigation }) {
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadGames();
+    loadGames(true);
   };
 
   const getRackCode = (index) => {
@@ -104,7 +122,8 @@ export default function GameInventoryScreen({ navigation }) {
             title: item.title,
             isAvailable: item.is_available,
             stock: stockCount,
-            rackCode: rackCode
+            rackCode: rackCode,
+            isOffline: isOffline
           })
         }
       >
@@ -269,6 +288,11 @@ export default function GameInventoryScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Mode Offline Banner */}
+      {isOffline && (
+        <OfflineNotice message="Mode Offline: Menampilkan daftar rak tersimpan di perangkat. Pemesanan dinonaktifkan." />
+      )}
 
       {/* List Compact */}
       {loading ? (
