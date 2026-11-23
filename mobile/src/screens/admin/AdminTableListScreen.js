@@ -206,11 +206,11 @@ export default function AdminTableListScreen({ navigation }) {
           </TouchableOpacity>
 
           <View style={styles.headerTitleBox}>
-            <Text style={styles.headerTitle}>Kelola Meja Kafe</Text>
             <View style={styles.adminRolePill}>
-              <Ionicons name="shield-checkmark" size={12.5} color="#38BDF8" style={{ marginRight: 4 }} />
+              <Ionicons name="shield-checkmark" size={12} color="#38BDF8" style={{ marginRight: 4 }} />
               <Text style={styles.adminRolePillText}>ADMIN PANEL</Text>
             </View>
+            <Text style={styles.headerTitle}>Kelola Meja Kafe</Text>
           </View>
 
           <View style={styles.headerRightPlaceholder} />
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 48,
-    paddingBottom: 22,
+    paddingBottom: 30,
     paddingHorizontal: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9.5,
     paddingVertical: 3,
     borderRadius: 12,
-    marginTop: 4,
+    marginBottom: 6,
     borderWidth: 1,
     borderColor: "rgba(56, 189, 248, 0.3)"
   },
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.card,
     marginHorizontal: 16,
-    marginTop: -14,
+    marginTop: -10,
     paddingHorizontal: 14,
     height: 44,
     borderRadius: 12,
