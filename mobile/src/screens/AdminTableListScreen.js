@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,8 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
-  TextInput,
-  Image
+  TextInput
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
@@ -67,6 +66,15 @@ export default function AdminTableListScreen({ navigation }) {
     }).format(number || 0);
   };
 
+  // Navigasi Kembali Bersih (Langsung 1 kali klik keluar dari admin)
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate("MainApp");
+    }
+  };
+
   // Filter & Search Logic
   const filteredTables = tables.filter((item) => {
     const tableNum = (item.table_number || "").toLowerCase();
@@ -98,7 +106,7 @@ export default function AdminTableListScreen({ navigation }) {
         visible: true,
         type: "success",
         title: "Meja Dinonaktifkan",
-        message: `Meja "${selectedTableForDelete.table_number} (${selectedTableForDelete.table_type})" berhasil dinonaktifkan.`
+        message: `Meja "${selectedTableForDelete.table_number} (${selectedTableForDelete.table_type})" berhasil dinonaktifkan / masuk status maintenance.`
       });
       loadTables();
     } catch (err) {
@@ -114,6 +122,7 @@ export default function AdminTableListScreen({ navigation }) {
     }
   };
 
+  // Desain Kartu: Dibuat SAMA PERSIS dengan Halaman Meja Kafe Pelanggan
   const renderTableCard = ({ item }) => {
     const isActive = item.is_active !== false;
 
@@ -122,64 +131,58 @@ export default function AdminTableListScreen({ navigation }) {
         <GameImage uri={item.image_url} style={styles.cardImage} />
 
         <View style={styles.cardContent}>
-          {/* Header Row: Table Number & Status Badge */}
-          <View style={styles.cardHeaderRow}>
-            <View style={styles.tableNumBadge}>
-              <MaterialCommunityIcons name="table-chair" size={16} color={colors.primary} style={{ marginRight: 5 }} />
-              <Text style={styles.tableNumText}>Meja {item.table_number}</Text>
-            </View>
-
-            <View style={[styles.statusBadge, isActive ? styles.statusBadgeActive : styles.statusBadgeInactive]}>
-              <View style={[styles.statusDot, { backgroundColor: isActive ? "#10B981" : "#EF4444" }]} />
-              <Text style={[styles.statusBadgeText, { color: isActive ? "#047857" : "#B91C1C" }]}>
-                {isActive ? "Aktif" : "Non-Aktif"}
-              </Text>
-            </View>
-          </View>
-
-          {/* Tipe Meja */}
+          {/* 1. Tipe Meja (Judul 18px Bold) */}
           <Text style={styles.tableType}>{item.table_type}</Text>
 
-          {/* Meta Info Row: Kapasitas & Tarif Sewa */}
-          <View style={styles.metaRow}>
-            <View style={styles.metaItem}>
-              <Ionicons name="people-outline" size={14} color={colors.primary} />
-              <Text style={styles.metaText}>Maks. {item.capacity} Orang</Text>
+          {/* 2. Top Row: Nomor Meja & Status Badge */}
+          <View style={styles.cardTopRow}>
+            <View style={styles.tableNumberBadge}>
+              <Text style={styles.tableNumberText}>Meja {item.table_number}</Text>
             </View>
 
-            <View style={styles.metaItem}>
-              <Ionicons name="cash-outline" size={14} color="#059669" />
-              <Text style={[styles.metaText, { color: "#059669", fontWeight: "700" }]}>
-                {formatRupiah(item.price_per_hour)} / Jam
-              </Text>
-            </View>
+            {isActive ? (
+              <View style={styles.statusPill}>
+                <Text style={styles.statusPillText}>Tersedia</Text>
+              </View>
+            ) : (
+              <View style={styles.statusPillMaintenance}>
+                <Ionicons name="construct" size={11} color="#B45309" style={{ marginRight: 4 }} />
+                <Text style={styles.statusPillTextMaintenance}>Maintenance</Text>
+              </View>
+            )}
           </View>
 
-          {/* Fasilitas Meja */}
+          {/* 3. Info Meta Row: Kapasitas & Tarif Sewa */}
+          <View style={styles.infoMetaRow}>
+            <View style={styles.capacityRow}>
+              <Ionicons name="people-outline" size={16} color={colors.primary} />
+              <Text style={styles.capacityText}>Kapasitas: Maks. {item.capacity} Orang</Text>
+            </View>
+            <Text style={styles.priceText}>{formatRupiah(item.price_per_hour)}/jam</Text>
+          </View>
+
+          {/* 4. Fasilitas Meja */}
           <Text style={styles.facilitiesText} numberOfLines={2}>
-            <Ionicons name="sparkles-outline" size={12} color={colors.textMuted} /> Fasilitas: {item.facilities || "Kursi nyaman, pencahayaan khusus board game"}
+            Fasilitas: {item.facilities || "Kursi nyaman, pencahayaan khusus board game"}
           </Text>
 
-          {/* Divider */}
-          <View style={styles.cardDivider} />
-
-          {/* Action Buttons: Edit & Delete */}
-          <View style={styles.actionRow}>
+          {/* 5. Action Buttons Row: Edit Data & Hapus */}
+          <View style={styles.actionButtonsRow}>
             <TouchableOpacity
               style={styles.btnEdit}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               onPress={() => navigation.navigate("AdminTableForm", { table: item })}
             >
-              <Ionicons name="create-outline" size={15} color="#FFFFFF" style={{ marginRight: 5 }} />
+              <Ionicons name="create-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
               <Text style={styles.btnEditText}>Edit Data</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.btnDelete}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
               onPress={() => handlePromptDelete(item)}
             >
-              <Ionicons name="trash-outline" size={15} color="#DC2626" style={{ marginRight: 5 }} />
+              <Ionicons name="trash-outline" size={16} color="#DC2626" style={{ marginRight: 6 }} />
               <Text style={styles.btnDeleteText}>Hapus</Text>
             </TouchableOpacity>
           </View>
@@ -190,13 +193,13 @@ export default function AdminTableListScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Header Banner Admin */}
+      {/* Header Banner Admin yang Bersih & Rapi */}
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
           <TouchableOpacity
             style={styles.backBtn}
             activeOpacity={0.8}
-            onPress={() => navigation.goBack()}
+            onPress={handleBack}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
@@ -214,28 +217,9 @@ export default function AdminTableListScreen({ navigation }) {
             style={styles.headerAddBtn}
             activeOpacity={0.8}
             onPress={() => navigation.navigate("AdminTableForm")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name="add" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Switcher Tab Admin: Katalog Game vs Meja Kafe */}
-        <View style={styles.adminNavSwitcher}>
-          <TouchableOpacity
-            style={styles.adminNavTab}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("AdminGameList")}
-          >
-            <Ionicons name="game-controller-outline" size={15} color="rgba(255,255,255,0.7)" style={{ marginRight: 6 }} />
-            <Text style={styles.adminNavTabText}>Katalog Game</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.adminNavTab, styles.adminNavTabActive]}
-            activeOpacity={0.8}
-          >
-            <MaterialCommunityIcons name="table-chair" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-            <Text style={[styles.adminNavTabText, styles.adminNavTabTextActive]}>Meja Kafe</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -273,7 +257,7 @@ export default function AdminTableListScreen({ navigation }) {
           style={[styles.filterChip, filterStatus === "active" && styles.filterChipActive]}
         >
           <Text style={[styles.filterChipText, filterStatus === "active" && styles.filterChipTextActive]}>
-            Aktif ({activeCount})
+            Tersedia ({activeCount})
           </Text>
         </TouchableOpacity>
 
@@ -282,7 +266,7 @@ export default function AdminTableListScreen({ navigation }) {
           style={[styles.filterChip, filterStatus === "inactive" && styles.filterChipActive]}
         >
           <Text style={[styles.filterChipText, filterStatus === "inactive" && styles.filterChipTextActive]}>
-            Non-Aktif ({inactiveCount})
+            Maintenance ({inactiveCount})
           </Text>
         </TouchableOpacity>
       </View>
@@ -342,8 +326,8 @@ export default function AdminTableListScreen({ navigation }) {
         visible={dialogVisible}
         type="danger"
         title="Konfirmasi Nonaktifkan Meja"
-        message={`Apakah Anda yakin ingin menonaktifkan Meja "${selectedTableForDelete?.table_number} (${selectedTableForDelete?.table_type})"?\n\nData meja tetap tersimpan di riwayat reservasi pelanggan.`}
-        confirmText={isDeleting ? "Menghapus..." : "Ya, Hapus / Nonaktifkan"}
+        message={`Apakah Anda yakin ingin memasukkan Meja "${selectedTableForDelete?.table_number} (${selectedTableForDelete?.table_type})" ke status Maintenance?\n\nMeja tidak akan dapat dipesan pelanggan, dan riwayat reservasi lama tetap aman.`}
+        confirmText={isDeleting ? "Menghapus..." : "Ya, Nonaktifkan"}
         cancelText="Batal"
         onConfirm={handleConfirmDelete}
         onCancel={() => setDialogVisible(false)}
@@ -358,6 +342,26 @@ export default function AdminTableListScreen({ navigation }) {
         confirmText="Tutup"
         onConfirm={() => setFeedbackDialog({ ...feedbackDialog, visible: false })}
       />
+
+      {/* NAVBAR BAWAH ADMIN: Samain Persis dengan Bottom Navbar Halaman Meja Kafe */}
+      <View style={styles.adminBottomNav}>
+        <TouchableOpacity
+          style={styles.adminBottomNavItem}
+          activeOpacity={0.8}
+          onPress={() => navigation.replace("AdminGameList")}
+        >
+          <Ionicons name="albums-outline" size={20} color={colors.textMuted} />
+          <Text style={styles.adminBottomNavLabel}>Katalog Game</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.adminBottomNavItem}
+          activeOpacity={0.8}
+        >
+          <MaterialCommunityIcons name="table-chair" size={21} color={colors.primary} />
+          <Text style={[styles.adminBottomNavLabel, styles.adminBottomNavLabelActive]}>Meja Kafe</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -370,7 +374,7 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 48,
-    paddingBottom: 16,
+    paddingBottom: 22,
     paddingHorizontal: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20
@@ -410,9 +414,9 @@ const styles = StyleSheet.create({
   },
   headerAddBtn: {
     backgroundColor: colors.primary,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000",
@@ -421,41 +425,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3
   },
-  adminNavSwitcher: {
-    flexDirection: "row",
-    backgroundColor: "rgba(255, 255, 255, 0.12)",
-    borderRadius: 12,
-    padding: 4,
-    marginTop: 14
-  },
-  adminNavTab: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-    borderRadius: 8
-  },
-  adminNavTabActive: {
-    backgroundColor: colors.primary
-  },
-  adminNavTabText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "rgba(255, 255, 255, 0.7)"
-  },
-  adminNavTabTextActive: {
-    color: "#FFFFFF",
-    fontWeight: "700"
-  },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.card,
     marginHorizontal: 16,
-    marginTop: -12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    marginTop: -14,
+    paddingHorizontal: 14,
+    height: 44,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
@@ -509,114 +486,113 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 16,
-    paddingTop: 6,
-    paddingBottom: 90
+    paddingTop: 8,
+    paddingBottom: 150
   },
+
+  // CARD DESIGN: SAMA PERSIS DENGAN HALAMAN MEJA KAFE
   card: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    marginBottom: 14,
+    marginBottom: 16,
+    overflow: "hidden",
     borderWidth: 1,
     borderColor: colors.border,
-    overflow: "hidden",
+    elevation: 2,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.05,
     shadowRadius: 5,
-    elevation: 2
+    shadowOffset: { width: 0, height: 2 }
   },
   cardImage: {
     width: "100%",
-    height: 140,
-    backgroundColor: "#F1F5F9"
+    height: 150,
+    resizeMode: "cover"
   },
   cardContent: {
     padding: 14
   },
-  cardHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 6
-  },
-  tableNumBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 9,
-    paddingVertical: 3.5,
-    borderRadius: 8
-  },
-  tableNumText: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: colors.primaryDark
-  },
-  statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12
-  },
-  statusBadgeActive: {
-    backgroundColor: "#ECFDF5",
-    borderWidth: 1,
-    borderColor: "#A7F3D0"
-  },
-  statusBadgeInactive: {
-    backgroundColor: "#FEF2F2",
-    borderWidth: 1,
-    borderColor: "#FECACA"
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginRight: 5
-  },
-  statusBadgeText: {
-    fontSize: 11,
-    fontWeight: "700"
-  },
   tableType: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "bold",
     color: colors.text,
-    marginBottom: 6
-  },
-  metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-    gap: 14,
     marginBottom: 8
   },
-  metaItem: {
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10
+  },
+  tableNumberBadge: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8
+  },
+  tableNumberText: {
+    color: colors.primaryDark,
+    fontWeight: "bold",
+    fontSize: 12
+  },
+  statusPill: {
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12
+  },
+  statusPillText: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "bold"
+  },
+  statusPillMaintenance: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 12
+  },
+  statusPillTextMaintenance: {
+    color: "#B45309",
+    fontSize: 11,
+    fontWeight: "bold"
+  },
+  infoMetaRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8
+  },
+  capacityRow: {
     flexDirection: "row",
     alignItems: "center"
   },
-  metaText: {
-    fontSize: 12.5,
-    color: colors.text,
-    fontWeight: "600",
-    marginLeft: 5
+  capacityText: {
+    fontSize: 13,
+    color: colors.textMuted,
+    marginLeft: 6
+  },
+  priceText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.primaryDark
   },
   facilitiesText: {
     fontSize: 12,
     color: colors.textMuted,
-    lineHeight: 18
+    lineHeight: 17,
+    marginBottom: 12
   },
-  cardDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 12
-  },
-  actionRow: {
+  actionButtonsRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
-    gap: 8
+    gap: 8,
+    marginTop: 2
   },
   btnEdit: {
     flex: 1,
@@ -624,13 +600,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.primary,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 8
   },
   btnEditText: {
     color: "#FFFFFF",
-    fontSize: 12.5,
-    fontWeight: "600"
+    fontSize: 13,
+    fontWeight: "bold"
   },
   btnDelete: {
     flexDirection: "row",
@@ -639,15 +615,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#FEF2F2",
     borderWidth: 1,
     borderColor: "#FECACA",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
     borderRadius: 8
   },
   btnDeleteText: {
     color: "#DC2626",
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: "600"
   },
+
   centerContainer: {
     flex: 1,
     alignItems: "center",
@@ -680,14 +657,14 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 18,
-    bottom: 24,
+    bottom: 76, // Di atas bottom navbar
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 28,
-    elevation: 5,
+    elevation: 6,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
@@ -697,5 +674,40 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 14
+  },
+
+  // NAVBAR BAWAH ADMIN: Samain persis dengan Tab Bar Utama Meja Kafe
+  adminBottomNav: {
+    flexDirection: "row",
+    backgroundColor: colors.card,
+    borderTopWidth: 1,
+    borderColor: colors.border,
+    height: 62,
+    paddingBottom: 8,
+    paddingTop: 6,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4
+  },
+  adminBottomNavItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  adminBottomNavLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  adminBottomNavLabelActive: {
+    color: colors.primary,
+    fontWeight: "700"
   }
 });

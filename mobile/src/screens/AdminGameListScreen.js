@@ -73,6 +73,14 @@ export default function AdminGameListScreen({ navigation }) {
     loadData();
   };
 
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate("MainApp");
+    }
+  };
+
   // Filter game berdasarkan search & category
   const filteredGames = games.filter((item) => {
     const categoryName = item.game_categories?.name || "";
@@ -214,7 +222,7 @@ export default function AdminGameListScreen({ navigation }) {
           <TouchableOpacity
             style={styles.backBtn}
             activeOpacity={0.8}
-            onPress={() => navigation.goBack()}
+            onPress={handleBack}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
@@ -234,26 +242,6 @@ export default function AdminGameListScreen({ navigation }) {
             onPress={() => navigation.navigate("AdminGameForm")}
           >
             <Ionicons name="add" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Switcher Tab Admin: Katalog Game vs Meja Kafe */}
-        <View style={styles.adminNavSwitcher}>
-          <TouchableOpacity
-            style={[styles.adminNavTab, styles.adminNavTabActive]}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="game-controller-outline" size={15} color="#FFFFFF" style={{ marginRight: 6 }} />
-            <Text style={[styles.adminNavTabText, styles.adminNavTabTextActive]}>Katalog Game</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.adminNavTab}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("AdminTableList")}
-          >
-            <MaterialCommunityIcons name="table-chair" size={16} color="rgba(255,255,255,0.7)" style={{ marginRight: 6 }} />
-            <Text style={styles.adminNavTabText}>Meja Kafe</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -388,6 +376,26 @@ export default function AdminGameListScreen({ navigation }) {
         onConfirm={() => setFeedbackDialog({ ...feedbackDialog, visible: false })}
         onClose={() => setFeedbackDialog({ ...feedbackDialog, visible: false })}
       />
+
+      {/* NAVBAR BAWAH ADMIN: Samain Persis dengan Bottom Navbar Halaman Meja Kafe */}
+      <View style={styles.adminBottomNav}>
+        <TouchableOpacity
+          style={styles.adminBottomNavItem}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="albums" size={20} color={colors.primary} />
+          <Text style={[styles.adminBottomNavLabel, styles.adminBottomNavLabelActive]}>Katalog Game</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.adminBottomNavItem}
+          activeOpacity={0.8}
+          onPress={() => navigation.replace("AdminTableList")}
+        >
+          <MaterialCommunityIcons name="table-chair" size={21} color={colors.textMuted} />
+          <Text style={styles.adminBottomNavLabel}>Meja Kafe</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -449,31 +457,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  adminNavSwitcher: {
+  adminBottomNav: {
     flexDirection: "row",
-    backgroundColor: "rgba(255, 255, 255, 0.12)",
-    borderRadius: 12,
-    padding: 4,
-    marginTop: 14
+    backgroundColor: colors.card,
+    borderTopWidth: 1,
+    borderColor: colors.border,
+    height: 62,
+    paddingBottom: 8,
+    paddingTop: 6,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4
   },
-  adminNavTab: {
+  adminBottomNavItem: {
     flex: 1,
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-    borderRadius: 8
+    justifyContent: "center"
   },
-  adminNavTabActive: {
-    backgroundColor: colors.primary
-  },
-  adminNavTabText: {
-    fontSize: 12,
+  adminBottomNavLabel: {
+    fontSize: 10,
     fontWeight: "600",
-    color: "rgba(255, 255, 255, 0.7)"
+    color: colors.textMuted,
+    marginTop: 2
   },
-  adminNavTabTextActive: {
-    color: "#FFFFFF",
+  adminBottomNavLabelActive: {
+    color: colors.primary,
     fontWeight: "700"
   },
   searchContainer: {
@@ -730,7 +744,7 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 18,
-    bottom: 24,
+    bottom: 76,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primary,

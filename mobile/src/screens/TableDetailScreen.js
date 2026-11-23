@@ -78,9 +78,16 @@ export default function TableDetailScreen({ route, navigation }) {
             <View style={styles.badge}>
               <Text style={styles.badgeText}>Nomor Meja: {table.table_number}</Text>
             </View>
-            <View style={styles.activeBadge}>
-              <Text style={styles.activeText}>Siap Digunakan</Text>
-            </View>
+            {table.is_active !== false ? (
+              <View style={styles.activeBadge}>
+                <Text style={styles.activeText}>Siap Digunakan</Text>
+              </View>
+            ) : (
+              <View style={styles.maintenanceBadge}>
+                <Ionicons name="construct" size={12} color="#B45309" style={{ marginRight: 4 }} />
+                <Text style={styles.maintenanceText}>Sedang Pemeliharaan</Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.priceContainer}>
@@ -123,24 +130,31 @@ export default function TableDetailScreen({ route, navigation }) {
 
       {/* Button CTA to Booking Form */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={styles.bookButton}
-          activeOpacity={0.88}
-          onPress={() =>
-            navigation.navigate("BookingForm", {
-              tableId: table.id,
-              tableNumber: table.table_number,
-              tableType: table.table_type,
-              pricePerHour: table.price_per_hour,
-              capacity: table.capacity,
-              tableImage: table.image_url,
-              selectedGame: selectedGame
-            })
-          }
-        >
-          <Ionicons name="ticket-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
-          <Text style={styles.bookButtonText}>Lanjutkan Reservasi Meja</Text>
-        </TouchableOpacity>
+        {table.is_active !== false ? (
+          <TouchableOpacity
+            style={styles.bookButton}
+            activeOpacity={0.88}
+            onPress={() =>
+              navigation.navigate("BookingForm", {
+                tableId: table.id,
+                tableNumber: table.table_number,
+                tableType: table.table_type,
+                pricePerHour: table.price_per_hour,
+                capacity: table.capacity,
+                tableImage: table.image_url,
+                selectedGame: selectedGame
+              })
+            }
+          >
+            <Ionicons name="ticket-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+            <Text style={styles.bookButtonText}>Lanjutkan Reservasi Meja</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.bookButtonDisabled}>
+            <Ionicons name="construct-outline" size={20} color="#94A3B8" style={{ marginRight: 8 }} />
+            <Text style={styles.bookButtonDisabledText}>Meja Sedang Dalam Pemeliharaan</Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -193,6 +207,21 @@ const styles = StyleSheet.create({
   },
   activeText: {
     color: "#166534",
+    fontSize: 12,
+    fontWeight: "bold"
+  },
+  maintenanceBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8
+  },
+  maintenanceText: {
+    color: "#B45309",
     fontSize: 12,
     fontWeight: "bold"
   },
@@ -289,6 +318,21 @@ const styles = StyleSheet.create({
   bookButtonText: {
     color: "#FFFFFF",
     fontSize: 14,
+    fontWeight: "bold"
+  },
+  bookButtonDisabled: {
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    paddingVertical: 14,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  bookButtonDisabledText: {
+    color: "#94A3B8",
+    fontSize: 13.5,
     fontWeight: "bold"
   },
   centerContainer: {

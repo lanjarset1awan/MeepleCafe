@@ -686,13 +686,13 @@ export default function AdminTableFormScreen({ navigation, route }) {
                   ]}
                 />
                 <Text style={styles.switchTitle}>
-                  {isActive ? "Meja Aktif (Siap Dipesan)" : "Non-Aktif (Maintenance)"}
+                  {isActive ? "Meja Aktif (Tersedia)" : "Status Pemeliharaan (Maintenance)"}
                 </Text>
               </View>
               <Text style={styles.switchDesc}>
                 {isActive
-                  ? "Meja ditampilkan di daftar reservasi dan dapat dipilih oleh pelanggan"
-                  : "Meja disembunyikan sementara dari jadwal reservasi baru"}
+                  ? "Meja siap digunakan dan dapat dipilih oleh pelanggan untuk reservasi bermain."
+                  : "Meja bertanda 'Maintenance' di halaman pelanggan dan tombol 'Pilih Meja Ini' dinonaktifkan."}
               </Text>
             </View>
 

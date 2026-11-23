@@ -369,7 +369,9 @@ export default function BookingFormScreen({ route, navigation }) {
           ApiService.getTables()
         ]);
         setAllGames(games || []);
-        setAllTables(tables || []);
+        // Hanya tampilkan meja yang aktif (bukan maintenance) untuk dipilih pelanggan
+        const activeTables = (tables || []).filter((t) => t.is_active !== false);
+        setAllTables(activeTables);
         if (tables && tables.length > 0) {
           setChosenTable((prev) => {
             const match = tables.find((t) => t.id === prev.id);

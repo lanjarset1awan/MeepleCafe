@@ -91,59 +91,77 @@ export default function TableListScreen({ route, navigation }) {
     });
   };
 
-  const renderTableCard = ({ item }) => (
-    <View style={styles.card}>
-      <GameImage uri={item.image_url} style={styles.cardImage} />
-      <View style={styles.cardContent}>
-        <Text style={styles.tableType}>{item.table_type}</Text>
+  const renderTableCard = ({ item }) => {
+    const isAvailable = item.is_active !== false;
 
-        <View style={styles.cardTopRow}>
-          <View style={styles.tableNumberBadge}>
-            <Text style={styles.tableNumberText}>Meja {item.table_number}</Text>
+    return (
+      <View style={styles.card}>
+        <GameImage uri={item.image_url} style={styles.cardImage} />
+        <View style={styles.cardContent}>
+          <Text style={styles.tableType}>{item.table_type}</Text>
+
+          <View style={styles.cardTopRow}>
+            <View style={styles.tableNumberBadge}>
+              <Text style={styles.tableNumberText}>Meja {item.table_number}</Text>
+            </View>
+            {isAvailable ? (
+              <View style={styles.statusPill}>
+                <Text style={styles.statusPillText}>Tersedia</Text>
+              </View>
+            ) : (
+              <View style={styles.statusPillMaintenance}>
+                <Ionicons name="construct" size={11} color="#B45309" style={{ marginRight: 4 }} />
+                <Text style={styles.statusPillTextMaintenance}>Maintenance</Text>
+              </View>
+            )}
           </View>
-          <View style={styles.statusPill}>
-            <Text style={styles.statusPillText}>Tersedia</Text>
+
+          <View style={styles.infoMetaRow}>
+            <View style={styles.capacityRow}>
+              <Ionicons name="people-outline" size={16} color={colors.primary} />
+              <Text style={styles.capacityText}>Kapasitas: Maks. {item.capacity} Orang</Text>
+            </View>
+            <Text style={styles.priceText}>{formatRupiah(item.price_per_hour)}/jam</Text>
           </View>
-        </View>
 
-        <View style={styles.infoMetaRow}>
-          <View style={styles.capacityRow}>
-            <Ionicons name="people-outline" size={16} color={colors.primary} />
-            <Text style={styles.capacityText}>Kapasitas: Maks. {item.capacity} Orang</Text>
+          <Text style={styles.facilitiesText} numberOfLines={2}>
+            Fasilitas: {item.facilities || "Kursi nyaman, pencahayaan khusus board game"}
+          </Text>
+
+          <View style={styles.actionButtonsRow}>
+            <TouchableOpacity
+              style={styles.btnDetail}
+              onPress={() =>
+                navigation.navigate("TableDetail", {
+                  tableId: item.id,
+                  title: item.table_type,
+                  selectedGame: selectedGame
+                })
+              }
+            >
+              <Text style={styles.btnDetailText}>Info Meja</Text>
+            </TouchableOpacity>
+
+            {isAvailable ? (
+              <TouchableOpacity
+                style={styles.btnSelect}
+                activeOpacity={0.85}
+                onPress={() => handleSelectTable(item)}
+              >
+                <Ionicons name="checkmark-circle-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.btnSelectText}>Pilih Meja Ini</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.btnSelectDisabled}>
+                <Ionicons name="construct-outline" size={15} color="#94A3B8" style={{ marginRight: 5 }} />
+                <Text style={styles.btnSelectDisabledText}>Dalam Pemeliharaan</Text>
+              </View>
+            )}
           </View>
-          <Text style={styles.priceText}>{formatRupiah(item.price_per_hour)}/jam</Text>
-        </View>
-
-        <Text style={styles.facilitiesText} numberOfLines={2}>
-          Fasilitas: {item.facilities || "Kursi nyaman, pencahayaan khusus board game"}
-        </Text>
-
-        <View style={styles.actionButtonsRow}>
-          <TouchableOpacity
-            style={styles.btnDetail}
-            onPress={() =>
-              navigation.navigate("TableDetail", {
-                tableId: item.id,
-                title: item.table_type,
-                selectedGame: selectedGame
-              })
-            }
-          >
-            <Text style={styles.btnDetailText}>Info Meja</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.btnSelect}
-            activeOpacity={0.85}
-            onPress={() => handleSelectTable(item)}
-          >
-            <Ionicons name="checkmark-circle-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-            <Text style={styles.btnSelectText}>Pilih Meja Ini</Text>
-          </TouchableOpacity>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -455,6 +473,21 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "bold"
   },
+  statusPillMaintenance: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 12
+  },
+  statusPillTextMaintenance: {
+    color: "#B45309",
+    fontSize: 11,
+    fontWeight: "bold"
+  },
   tableType: {
     fontSize: 18,
     fontWeight: "bold",
@@ -519,6 +552,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "bold",
     color: "#FFFFFF"
+  },
+  btnSelectDisabled: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8
+  },
+  btnSelectDisabledText: {
+    fontSize: 12.5,
+    fontWeight: "600",
+    color: "#94A3B8"
   },
   centerContainer: {
     flex: 1,
