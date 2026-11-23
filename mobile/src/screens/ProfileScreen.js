@@ -58,26 +58,15 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.headerTitle}>Profil Pengguna</Text>
           </View>
 
-          {/* Tombol Info / About & Logout Cepat di Kanan Atas */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <TouchableOpacity
-              style={styles.headerInfoBtn}
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate("About")}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.headerLogoutIconBtn}
-              activeOpacity={0.8}
-              onPress={handleLogout}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="log-out-outline" size={22} color="#FCA5A5" />
-            </TouchableOpacity>
-          </View>
+          {/* Tombol Info / About di Kanan Atas */}
+          <TouchableOpacity
+            style={styles.headerInfoBtn}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate("About")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -312,17 +301,13 @@ const styles = StyleSheet.create({
   headerInfoBtn: {
     padding: 4
   },
-  headerLogoutIconBtn: {
-    padding: 4
-  },
   contentScrollView: {
     flex: 1,
-    backgroundColor: colors.background
+    marginTop: -16
   },
   contentWrapper: {
-    marginTop: -16,
     paddingHorizontal: 16,
-    paddingBottom: 36
+    paddingBottom: 28
   },
   profileHeaderCard: {
     backgroundColor: colors.card,
