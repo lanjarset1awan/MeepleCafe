@@ -17,7 +17,7 @@ import CustomDialog from "../components/CustomDialog";
 export default function GameDetailScreen({ route, navigation }) {
   const { gameId } = route.params;
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin" || user?.is_admin === true;
+  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.is_admin === true;
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loginPromptVisible, setLoginPromptVisible] = useState(false);

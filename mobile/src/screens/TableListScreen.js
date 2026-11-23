@@ -12,13 +12,14 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
+import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
-import { useAuth } from "../context/AuthContext";
 
 export default function TableListScreen({ route, navigation }) {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin" || user?.is_admin === true;
+  const isAdmin = user?.role?.toLowerCase() === "admin";
+
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

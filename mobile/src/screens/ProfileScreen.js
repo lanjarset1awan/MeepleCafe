@@ -17,7 +17,7 @@ import CustomDialog from "../components/CustomDialog";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
-  const isAdmin = user?.role === "admin" || user?.is_admin === true;
+  const isAdmin = user?.role?.toLowerCase() === "admin";
   const [isPhotoModalVisible, setIsPhotoModalVisible] = useState(false);
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
 
@@ -59,7 +59,7 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.headerTitle}>Profil Pengguna</Text>
           </View>
 
-          {/* Tombol Info / About & Admin di Kanan Atas */}
+          {/* Tombol Admin & Info / About di Kanan Atas */}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             {isAdmin && (
               <TouchableOpacity

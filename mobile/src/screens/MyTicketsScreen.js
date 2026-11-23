@@ -54,7 +54,7 @@ export function isReservationExpired(reservationDateStr, sessionTimeStr) {
 
 export default function MyTicketsScreen({ navigation }) {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin" || user?.is_admin === true;
+  const isAdmin = user?.role?.toLowerCase() === "admin";
   const [tickets, setTickets] = useState([]);
   const [gamesLookup, setGamesLookup] = useState({});
   const [loading, setLoading] = useState(true);
