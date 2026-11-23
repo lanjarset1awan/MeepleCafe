@@ -141,7 +141,7 @@ export default function AdminGameListScreen({ navigation }) {
             <View style={[styles.statusBadge, isAvail ? styles.statusBadgeAvail : styles.statusBadgeUnavail]}>
               <View style={[styles.statusDot, { backgroundColor: isAvail ? "#10B981" : "#EF4444" }]} />
               <Text style={[styles.statusBadgeText, { color: isAvail ? "#047857" : "#B91C1C" }]}>
-                {isAvail ? `Tersedia (${stockCount} Box)` : "Stok Habis"}
+                {isAvail ? "Tersedia" : "Stok Habis"}
               </Text>
             </View>
           </View>
@@ -163,20 +163,10 @@ export default function AdminGameListScreen({ navigation }) {
               <Ionicons name="time-outline" size={13} color={colors.primary} />
               <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
             </View>
-          </View>
 
-          {/* Inventory Row: Stok Box & Posisi Rak */}
-          <View style={styles.inventoryRow}>
-            <View style={styles.inventoryPill}>
-              <Ionicons name="cube-outline" size={13} color={stockCount > 0 ? colors.primary : "#EF4444"} />
-              <Text style={[styles.inventoryPillText, stockCount === 0 && { color: "#EF4444" }]}>
-                Stok: {stockCount} Box
-              </Text>
-            </View>
-
-            <View style={styles.inventoryPill}>
+            <View style={styles.metaItem}>
               <Ionicons name="grid-outline" size={13} color={colors.primary} />
-              <Text style={styles.inventoryPillText}>{shelfLoc}</Text>
+              <Text style={styles.metaText}>{shelfLoc}</Text>
             </View>
           </View>
 
@@ -188,25 +178,39 @@ export default function AdminGameListScreen({ navigation }) {
           {/* Divider */}
           <View style={styles.cardDivider} />
 
-          {/* Action Buttons: Edit & Delete */}
+          {/* Action Buttons: Info Stok di kiri, Edit & Hapus di kanan */}
           <View style={styles.actionRow}>
-            <TouchableOpacity
-              style={styles.btnEdit}
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate("AdminGameForm", { game: item })}
-            >
-              <Ionicons name="create-outline" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
-              <Text style={styles.btnEditText}>Edit Data</Text>
-            </TouchableOpacity>
+            <View style={[styles.stockPill, !isAvail && styles.stockPillEmpty]}>
+              <Ionicons
+                name="cube-outline"
+                size={12}
+                color={isAvail ? colors.primaryDark : "#DC2626"}
+                style={{ marginRight: 4 }}
+              />
+              <Text style={[styles.stockPillText, !isAvail && styles.stockPillEmptyText]}>
+                {isAvail ? `Tersedia ${stockCount} Box` : "Stok Habis"}
+              </Text>
+            </View>
 
-            <TouchableOpacity
-              style={styles.btnDelete}
-              activeOpacity={0.8}
-              onPress={() => handlePromptDelete(item)}
-            >
-              <Ionicons name="trash-outline" size={16} color="#DC2626" style={{ marginRight: 6 }} />
-              <Text style={styles.btnDeleteText}>Hapus</Text>
-            </TouchableOpacity>
+            <View style={styles.actionButtonsGroup}>
+              <TouchableOpacity
+                style={styles.btnEdit}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate("AdminGameForm", { game: item })}
+              >
+                <Ionicons name="create-outline" size={15} color="#FFFFFF" style={{ marginRight: 5 }} />
+                <Text style={styles.btnEditText}>Edit Data</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.btnDelete}
+                activeOpacity={0.8}
+                onPress={() => handlePromptDelete(item)}
+              >
+                <Ionicons name="trash-outline" size={15} color="#DC2626" style={{ marginRight: 5 }} />
+                <Text style={styles.btnDeleteText}>Hapus</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -629,22 +633,47 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  actionButtonsGroup: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 10
+    gap: 8
+  },
+  stockPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6
+  },
+  stockPillText: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: colors.primaryDark
+  },
+  stockPillEmpty: {
+    backgroundColor: "#FEF2F2"
+  },
+  stockPillEmptyText: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: "#DC2626"
   },
   btnEdit: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.primary,
-    paddingVertical: 8,
-    borderRadius: 10
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 8
   },
   btnEditText: {
     color: "#FFFFFF",
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: "600"
   },
   btnDelete: {
@@ -654,13 +683,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#FEF2F2",
     borderWidth: 1,
     borderColor: "#FECACA",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 10
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 8
   },
   btnDeleteText: {
     color: "#DC2626",
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: "600"
   },
   fab: {

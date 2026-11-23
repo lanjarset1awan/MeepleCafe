@@ -65,9 +65,6 @@ export default function AdminGameFormScreen({ navigation, route }) {
   const [imageUrl, setImageUrl] = useState(existingGame?.image_url || "");
   const [description, setDescription] = useState(existingGame?.description || "");
   const [rulesSummary, setRulesSummary] = useState(existingGame?.rules_summary || "");
-  const [isAvailable, setIsAvailable] = useState(
-    existingGame?.is_available !== undefined ? existingGame.is_available : true
-  );
 
   // Mode Pilihan Gambar: 'upload' (dari HP/kamera) atau 'url' (input link)
   const [imageInputMode, setImageInputMode] = useState("upload");
@@ -277,7 +274,7 @@ export default function AdminGameFormScreen({ navigation, route }) {
         image_url: imageUrl.trim() || null,
         description: description.trim() || null,
         rules_summary: rulesSummary.trim() || null,
-        is_available: isAvailable && parsedStock > 0
+        is_available: parsedStock > 0
       };
 
       if (isEditMode) {
@@ -392,22 +389,6 @@ export default function AdminGameFormScreen({ navigation, route }) {
               );
             })}
           </ScrollView>
-
-          {/* Status Ketersediaan */}
-          <View style={styles.switchRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.switchLabel}>Ketersediaan Permainan</Text>
-              <Text style={styles.switchSublabel}>
-                {isAvailable ? "Tersedia untuk dipinjam pengunjung" : "Sedang tidak tersedia / dipinjam"}
-              </Text>
-            </View>
-            <Switch
-              value={isAvailable}
-              onValueChange={setIsAvailable}
-              trackColor={{ false: "#CBD5E1", true: colors.primary }}
-              thumbColor={isAvailable ? "#FFFFFF" : "#F1F5F9"}
-            />
-          </View>
         </View>
 
         {/* Card 2: Spesifikasi & Gameplay (Layout Rapi, Tingkat Kesulitan Luas) */}

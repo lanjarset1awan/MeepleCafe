@@ -165,10 +165,10 @@ export default function GameDetailScreen({ route, navigation }) {
                 <Text style={styles.specLabel}>{isAvailable ? "Stok Kafe" : "Stok Habis"}</Text>
               </View>
 
-              {/* 5. Posisi Rak */}
+              {/* 5. Posisi Rak (Icon kotak-kotak konsisten grid-outline) */}
               <View style={styles.specCell}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="location-outline" size={17} color={colors.primary} />
+                  <Ionicons name="grid-outline" size={17} color={colors.primary} />
                 </View>
                 <Text style={styles.specValue} numberOfLines={1}>
                   {rackCode}

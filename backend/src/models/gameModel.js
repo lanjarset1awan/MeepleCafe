@@ -4,6 +4,7 @@ import { supabase } from "../config/supabaseClient.js";
 // Menjamin data tetap live & dinamis bahkan sebelum migrasi SQL dijalankan di Supabase Dashboard
 const runtimeStockTracker = new Map();
 const runtimeShelfTracker = new Map();
+const softDeletedIds = new Set();
 
 function computeDefaultStock(game) {
   if (game?.difficulty === "Hard" || game?.difficulty === "Sulit") return 1;
@@ -65,7 +66,9 @@ export const GameModel = {
 
       const { data, error } = await query;
       if (!error && Array.isArray(data)) {
-        return data.map(enhanceGameData);
+        return data
+          .filter((g) => !softDeletedIds.has(String(g.id)))
+          .map(enhanceGameData);
       }
     } catch (e) {
       // Lanjut ke fallback jika kolom belum ada di schema cache
@@ -88,7 +91,9 @@ export const GameModel = {
 
     const { data, error } = await fallbackQuery;
     if (error) throw error;
-    return (data || []).map(enhanceGameData);
+    return (data || [])
+      .filter((g) => !softDeletedIds.has(String(g.id)))
+      .map(enhanceGameData);
   },
 
   async getById(id) {
@@ -216,14 +221,22 @@ export const GameModel = {
   },
 
   async remove(id) {
-    runtimeStockTracker.delete(id);
-    runtimeShelfTracker.delete(id);
-    const { error } = await supabase
-      .from("board_games")
-      .delete()
-      .eq("id", id);
-    if (error) throw error;
-    return { message: "Board game deleted successfully" };
+    const strId = String(id);
+    softDeletedIds.add(strId);
+    runtimeStockTracker.set(id, 0);
+
+    // Soft delete: update is_available = false dan stock = 0 di Supabase
+    // Menghindari error foreign key constraint dan tetap menjaga integritas riwayat tiket/reservasi
+    try {
+      await supabase
+        .from("board_games")
+        .update({ is_available: false, stock: 0 })
+        .eq("id", id);
+    } catch (e) {
+      // Abaikan jika kolom di Supabase belum ada
+    }
+
+    return { message: "Board game deleted successfully (soft-deleted)", id, softDeleted: true };
   },
 
   // Kurangi stok box game ketika reservasi berhasil dipesan

@@ -85,16 +85,6 @@ export default function GameListScreen({ navigation }) {
             <Text style={styles.gameTitle} numberOfLines={1}>
               {item.title}
             </Text>
-            {isAvail ? (
-              <View style={styles.badgeStockAvail}>
-                <Ionicons name="cube-outline" size={11} color={colors.primary} style={{ marginRight: 3 }} />
-                <Text style={styles.badgeStockAvailText}>{stockCount} Box</Text>
-              </View>
-            ) : (
-              <View style={styles.badgeStockEmpty}>
-                <Text style={styles.badgeStockEmptyText}>Habis</Text>
-              </View>
-            )}
           </View>
 
           <View style={styles.metaRow}>
@@ -121,10 +111,12 @@ export default function GameListScreen({ navigation }) {
               </Text>
             </View>
 
-            {/* 4. Posisi Rak Kafe */}
-            <View style={styles.shelfBadge}>
-              <Ionicons name="grid-outline" size={11} color="#64748B" style={{ marginRight: 3 }} />
-              <Text style={styles.shelfBadgeText}>{shelfLoc}</Text>
+            {/* 4. Posisi Rak Kafe (Kanan jam main, icon kotak2 grid-outline) */}
+            <View style={styles.metaItem}>
+              <Ionicons name="grid-outline" size={13} color={colors.primary} />
+              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
+                {shelfLoc}
+              </Text>
             </View>
           </View>
 
@@ -136,11 +128,24 @@ export default function GameListScreen({ navigation }) {
             <Text style={[styles.actionFooterText, !isAvail && { color: colors.textMuted }]}>
               {isAvail ? "Pelajari Aturan & Pilih Game" : "Stok Sedang Habis / Dipinjam"}
             </Text>
-            <Ionicons
-              name={isAvail ? "arrow-forward-circle" : "alert-circle-outline"}
-              size={18}
-              color={isAvail ? colors.primary : colors.textMuted}
-            />
+            <View style={styles.actionFooterRight}>
+              <View style={[styles.stockPill, !isAvail && styles.stockPillEmpty]}>
+                <Ionicons
+                  name="cube-outline"
+                  size={12}
+                  color={isAvail ? colors.primaryDark : "#DC2626"}
+                  style={{ marginRight: 3 }}
+                />
+                <Text style={[styles.stockPillText, !isAvail && styles.stockPillEmptyText]}>
+                  {isAvail ? `Tersedia ${stockCount} Box` : "Stok Habis"}
+                </Text>
+              </View>
+              <Ionicons
+                name={isAvail ? "arrow-forward-circle" : "alert-circle-outline"}
+                size={20}
+                color={isAvail ? colors.primary : colors.textMuted}
+              />
+            </View>
           </View>
         </View>
       </TouchableOpacity>
@@ -470,6 +475,32 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     borderTopWidth: 1,
     borderColor: colors.border
+  },
+  actionFooterRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8
+  },
+  stockPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 6
+  },
+  stockPillText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.primaryDark
+  },
+  stockPillEmpty: {
+    backgroundColor: "#FEF2F2"
+  },
+  stockPillEmptyText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#DC2626"
   },
   actionFooterText: {
     fontSize: 12,
