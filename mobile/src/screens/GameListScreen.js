@@ -110,14 +110,6 @@ export default function GameListScreen({ navigation }) {
                 {item.duration_minutes} mnt
               </Text>
             </View>
-
-            {/* 4. Posisi Rak Kafe (Kanan jam main, icon kotak2 grid-outline) */}
-            <View style={styles.metaItem}>
-              <Ionicons name="grid-outline" size={13} color={colors.primary} />
-              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
-                {shelfLoc}
-              </Text>
-            </View>
           </View>
 
           <Text style={styles.description} numberOfLines={2}>

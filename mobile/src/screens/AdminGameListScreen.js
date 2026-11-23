@@ -163,11 +163,6 @@ export default function AdminGameListScreen({ navigation }) {
               <Ionicons name="time-outline" size={13} color={colors.primary} />
               <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
             </View>
-
-            <View style={styles.metaItem}>
-              <Ionicons name="grid-outline" size={13} color={colors.primary} />
-              <Text style={styles.metaText}>{shelfLoc}</Text>
-            </View>
           </View>
 
           {/* Deskripsi Singkat */}
