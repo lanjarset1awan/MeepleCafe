@@ -8,69 +8,15 @@ import {
   StyleSheet,
   ActivityIndicator,
   Switch,
-  Image,
   KeyboardAvoidingView,
   Platform
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
 import CustomDialog from "../components/CustomDialog";
-
-// Template Foto Meja Populer untuk Pilihan URL Cepat
-const TABLE_PRESETS = [
-  {
-    name: "VIP Lounge",
-    type: "VIP Lounge",
-    capacity: "6",
-    price: "45000",
-    url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    name: "Wood Cozy",
-    type: "Regular Standard",
-    capacity: "4",
-    price: "25000",
-    url: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    name: "Big Party",
-    type: "Party Room",
-    capacity: "10",
-    price: "60000",
-    url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    name: "Tatami Room",
-    type: "Tatami Room",
-    capacity: "6",
-    price: "35000",
-    url: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80"
-  }
-];
-
-// Opsi Tipe Meja Cepat
-const TABLE_TYPE_OPTIONS = [
-  "Regular Standard",
-  "VIP Lounge",
-  "Tatami Room",
-  "Party Room",
-  "Outdoor Cozy"
-];
-
-// Rekomendasi Tag Fasilitas
-const FACILITY_TAGS = [
-  "AC Dingin",
-  "Stopkontak",
-  "Meja Kayu Luas",
-  "Kursi Busa Empuk",
-  "Cup Holder",
-  "Pencahayaan Khusus",
-  "Papan Tulis Strategi",
-  "Dekat Rak Game"
-];
 
 export default function AdminTableFormScreen({ navigation, route }) {
   const existingTable = route.params?.table || null;
@@ -202,30 +148,6 @@ export default function AdminTableFormScreen({ navigation, route }) {
     }
   };
 
-  // Toggle Tag Fasilitas ke TextInput
-  const handleToggleFacilityTag = (tag) => {
-    const currentList = facilities
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-    if (currentList.includes(tag)) {
-      const updated = currentList.filter((item) => item !== tag);
-      setFacilities(updated.join(", "));
-    } else {
-      const updated = [...currentList, tag];
-      setFacilities(updated.join(", "));
-    }
-  };
-
-  const formatRupiah = (number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0
-    }).format(Number(number) || 0);
-  };
-
   // Validasi Form
   const validateForm = () => {
     if (!tableNumber.trim()) {
@@ -243,7 +165,7 @@ export default function AdminTableFormScreen({ navigation, route }) {
         visible: true,
         type: "danger",
         title: "Tipe Meja Wajib Diisi",
-        message: "Silakan pilih atau ketikkan tipe meja kafe."
+        message: "Silakan masukkan tipe meja kafe."
       });
       return false;
     }
@@ -363,10 +285,7 @@ export default function AdminTableFormScreen({ navigation, route }) {
       >
         {/* SECTION 1: FOTO MEJA KAFE */}
         <View style={styles.cardSection}>
-          <View style={styles.sectionTitleRow}>
-            <Ionicons name="image-outline" size={18} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Foto Sampul Meja</Text>
-          </View>
+          <Text style={styles.sectionTitle}>Foto Sampul Meja</Text>
           <Text style={styles.sectionSubtitle}>
             Tampilkan foto meja untuk memudahkan pelanggan memilih area bermain
           </Text>
@@ -377,7 +296,7 @@ export default function AdminTableFormScreen({ navigation, route }) {
               <GameImage uri={imageUrl} style={styles.imagePreview} />
             ) : (
               <View style={styles.imagePlaceholder}>
-                <MaterialCommunityIcons name="table-chair" size={48} color={colors.textMuted} />
+                <Ionicons name="image-outline" size={40} color={colors.textMuted} />
                 <Text style={styles.imagePlaceholderText}>Belum ada foto meja dipilih</Text>
               </View>
             )}
@@ -396,12 +315,6 @@ export default function AdminTableFormScreen({ navigation, route }) {
               style={[styles.modeTab, imageInputMode === "upload" && styles.modeTabActive]}
               onPress={() => setImageInputMode("upload")}
             >
-              <Ionicons
-                name="cloud-upload-outline"
-                size={14}
-                color={imageInputMode === "upload" ? "#FFFFFF" : colors.textMuted}
-                style={{ marginRight: 6 }}
-              />
               <Text
                 style={[
                   styles.modeTabText,
@@ -416,12 +329,6 @@ export default function AdminTableFormScreen({ navigation, route }) {
               style={[styles.modeTab, imageInputMode === "url" && styles.modeTabActive]}
               onPress={() => setImageInputMode("url")}
             >
-              <Ionicons
-                name="link-outline"
-                size={14}
-                color={imageInputMode === "url" ? "#FFFFFF" : colors.textMuted}
-                style={{ marginRight: 6 }}
-              />
               <Text
                 style={[
                   styles.modeTabText,
@@ -441,7 +348,6 @@ export default function AdminTableFormScreen({ navigation, route }) {
                 onPress={handlePickFromGallery}
                 disabled={uploadingImage}
               >
-                <Ionicons name="images-outline" size={18} color={colors.primary} />
                 <Text style={styles.imageActionBtnText}>Buka Galeri</Text>
               </TouchableOpacity>
 
@@ -450,60 +356,24 @@ export default function AdminTableFormScreen({ navigation, route }) {
                 onPress={handleTakeFromCamera}
                 disabled={uploadingImage}
               >
-                <Ionicons name="camera-outline" size={18} color={colors.primary} />
                 <Text style={styles.imageActionBtnText}>Buka Kamera</Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={styles.urlInputContainer}>
-              <TextInput
-                style={styles.textInput}
-                placeholder="https://images.unsplash.com/photo-..."
-                placeholderTextColor={colors.textMuted}
-                value={imageUrl}
-                onChangeText={setImageUrl}
-                autoCapitalize="none"
-              />
-
-              <Text style={styles.presetLabel}>Atau pilih template meja siap pakai:</Text>
-              <View style={styles.presetGrid}>
-                {TABLE_PRESETS.map((item, idx) => (
-                  <TouchableOpacity
-                    key={idx}
-                    style={[
-                      styles.presetChip,
-                      imageUrl === item.url && styles.presetChipSelected
-                    ]}
-                    onPress={() => {
-                      setImageUrl(item.url);
-                      if (!isEditMode && (!tableType || tableType === "Regular Standard")) {
-                        setTableType(item.type);
-                        setCapacity(item.capacity);
-                        setPricePerHour(item.price);
-                      }
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.presetChipText,
-                        imageUrl === item.url && styles.presetChipTextSelected
-                      ]}
-                    >
-                      {item.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+            <TextInput
+              style={styles.textInput}
+              placeholder="https://images.unsplash.com/photo-..."
+              placeholderTextColor={colors.textMuted}
+              value={imageUrl}
+              onChangeText={setImageUrl}
+              autoCapitalize="none"
+            />
           )}
         </View>
 
         {/* SECTION 2: IDENTITAS MEJA */}
         <View style={styles.cardSection}>
-          <View style={styles.sectionTitleRow}>
-            <MaterialCommunityIcons name="table-chair" size={18} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Identitas Meja</Text>
-          </View>
+          <Text style={styles.sectionTitle}>Identitas Meja</Text>
 
           {/* Nomor Meja */}
           <View style={styles.inputGroup}>
@@ -512,7 +382,7 @@ export default function AdminTableFormScreen({ navigation, route }) {
             </Text>
             <TextInput
               style={[styles.textInput, { fontWeight: "700" }]}
-              placeholder="Contoh: T-01, VIP-01, TT-01"
+              placeholder="Contoh: T-01, VIP-01"
               placeholderTextColor={colors.textMuted}
               value={tableNumber}
               onChangeText={(txt) => setTableNumber(txt.toUpperCase())}
@@ -533,38 +403,12 @@ export default function AdminTableFormScreen({ navigation, route }) {
               value={tableType}
               onChangeText={setTableType}
             />
-
-            {/* Quick Chips Tipe Meja */}
-            <View style={styles.chipWrapper}>
-              {TABLE_TYPE_OPTIONS.map((type, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  style={[
-                    styles.typeChip,
-                    tableType === type && styles.typeChipActive
-                  ]}
-                  onPress={() => setTableType(type)}
-                >
-                  <Text
-                    style={[
-                      styles.typeChipText,
-                      tableType === type && styles.typeChipTextActive
-                    ]}
-                  >
-                    {type}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
           </View>
         </View>
 
         {/* SECTION 3: KAPASITAS & TARIF SEWA */}
         <View style={styles.cardSection}>
-          <View style={styles.sectionTitleRow}>
-            <Ionicons name="calculator-outline" size={18} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Kapasitas & Tarif Sewa</Text>
-          </View>
+          <Text style={styles.sectionTitle}>Kapasitas & Tarif Sewa</Text>
 
           <View style={styles.rowTwoCols}>
             {/* Kapasitas Maksimal */}
@@ -572,17 +416,14 @@ export default function AdminTableFormScreen({ navigation, route }) {
               <Text style={styles.inputLabel}>
                 Kapasitas (Orang) <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View style={styles.inputWithIcon}>
-                <Ionicons name="people-outline" size={18} color={colors.primary} style={styles.inputInnerIcon} />
-                <TextInput
-                  style={[styles.textInput, styles.textInputWithIcon]}
-                  placeholder="4"
-                  placeholderTextColor={colors.textMuted}
-                  value={capacity}
-                  onChangeText={setCapacity}
-                  keyboardType="numeric"
-                />
-              </View>
+              <TextInput
+                style={styles.textInput}
+                placeholder="4"
+                placeholderTextColor={colors.textMuted}
+                value={capacity}
+                onChangeText={setCapacity}
+                keyboardType="numeric"
+              />
             </View>
 
             {/* Tarif Sewa per Jam */}
@@ -590,81 +431,27 @@ export default function AdminTableFormScreen({ navigation, route }) {
               <Text style={styles.inputLabel}>
                 Tarif / Jam (Rp) <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View style={styles.inputWithIcon}>
-                <Ionicons name="cash-outline" size={18} color="#059669" style={styles.inputInnerIcon} />
-                <TextInput
-                  style={[styles.textInput, styles.textInputWithIcon]}
-                  placeholder="25000"
-                  placeholderTextColor={colors.textMuted}
-                  value={pricePerHour}
-                  onChangeText={setPricePerHour}
-                  keyboardType="numeric"
-                />
-              </View>
+              <TextInput
+                style={styles.textInput}
+                placeholder="25000"
+                placeholderTextColor={colors.textMuted}
+                value={pricePerHour}
+                onChangeText={setPricePerHour}
+                keyboardType="numeric"
+              />
             </View>
-          </View>
-
-          {/* Pratinjau Tarif */}
-          <View style={styles.pricePreviewBox}>
-            <Text style={styles.pricePreviewLabel}>Perkiraan Harga Sewa Pelanggan:</Text>
-            <Text style={styles.pricePreviewValue}>
-              {formatRupiah(pricePerHour)} / Jam{" "}
-              <Text style={styles.pricePreviewSub}>(Maks. {capacity || "0"} orang)</Text>
-            </Text>
           </View>
         </View>
 
         {/* SECTION 4: FASILITAS MEJA */}
         <View style={styles.cardSection}>
-          <View style={styles.sectionTitleRow}>
-            <Ionicons name="sparkles-outline" size={18} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Fasilitas Meja</Text>
-          </View>
-          <Text style={styles.sectionSubtitle}>
-            Ketuk tag di bawah untuk menambah atau mengurangi fasilitas secara instan:
-          </Text>
+          <Text style={styles.sectionTitle}>Fasilitas Meja</Text>
 
-          {/* Quick Facility Tags */}
-          <View style={styles.chipWrapper}>
-            {FACILITY_TAGS.map((tag, idx) => {
-              const isSelected = facilities
-                .split(",")
-                .map((t) => t.trim().toLowerCase())
-                .includes(tag.toLowerCase());
-
-              return (
-                <TouchableOpacity
-                  key={idx}
-                  style={[
-                    styles.facilityChip,
-                    isSelected && styles.facilityChipActive
-                  ]}
-                  onPress={() => handleToggleFacilityTag(tag)}
-                >
-                  <Ionicons
-                    name={isSelected ? "checkmark-circle" : "add-circle-outline"}
-                    size={14}
-                    color={isSelected ? colors.primaryDark : colors.textMuted}
-                    style={{ marginRight: 4 }}
-                  />
-                  <Text
-                    style={[
-                      styles.facilityChipText,
-                      isSelected && styles.facilityChipTextActive
-                    ]}
-                  >
-                    {tag}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* Custom Facilities Text Area */}
-          <View style={[styles.inputGroup, { marginTop: 10 }]}>
+          {/* Facilities Text Area */}
+          <View style={[styles.inputGroup, { marginTop: 8 }]}>
             <TextInput
               style={[styles.textInput, styles.textArea]}
-              placeholder="AC Dingin, Stopkontak, Meja Kayu Luas, Kursi Busa..."
+              placeholder="Contoh: AC Dingin, Stopkontak, Meja Kayu Luas, Kursi Busa Empuk"
               placeholderTextColor={colors.textMuted}
               value={facilities}
               onChangeText={setFacilities}
@@ -715,17 +502,9 @@ export default function AdminTableFormScreen({ navigation, route }) {
           {isSubmitting ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <>
-              <Ionicons
-                name={isEditMode ? "save-outline" : "checkmark-circle-outline"}
-                size={20}
-                color="#FFFFFF"
-                style={{ marginRight: 8 }}
-              />
-              <Text style={styles.submitBtnText}>
-                {isEditMode ? "Simpan Perubahan Meja" : "Tambahkan Meja Kafe"}
-              </Text>
-            </>
+            <Text style={styles.submitBtnText}>
+              {isEditMode ? "Simpan Perubahan Meja" : "Tambahkan Meja Kafe"}
+            </Text>
           )}
         </TouchableOpacity>
 
@@ -802,16 +581,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1
   },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 4
-  },
   sectionTitle: {
     fontSize: 14.5,
     fontWeight: "700",
     color: colors.text,
-    marginLeft: 6
+    marginBottom: 4
   },
   sectionSubtitle: {
     fontSize: 11.5,
@@ -865,7 +639,6 @@ const styles = StyleSheet.create({
   },
   modeTab: {
     flex: 1,
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 7,
@@ -889,55 +662,18 @@ const styles = StyleSheet.create({
   },
   imageActionBtn: {
     flex: 1,
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.primaryLight,
     borderWidth: 1,
     borderColor: colors.primary,
     borderRadius: 10,
-    paddingVertical: 10,
-    gap: 6
+    paddingVertical: 10
   },
   imageActionBtnText: {
     fontSize: 12.5,
     fontWeight: "700",
     color: colors.primaryDark
-  },
-  urlInputContainer: {
-    gap: 8
-  },
-  presetLabel: {
-    fontSize: 11.5,
-    fontWeight: "600",
-    color: colors.textMuted,
-    marginTop: 4
-  },
-  presetGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
-  },
-  presetChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  presetChipSelected: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary
-  },
-  presetChipText: {
-    fontSize: 11,
-    color: colors.text,
-    fontWeight: "500"
-  },
-  presetChipTextSelected: {
-    color: colors.primaryDark,
-    fontWeight: "700"
   },
   inputGroup: {
     marginBottom: 12
@@ -966,98 +702,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.text
   },
-  inputWithIcon: {
-    position: "relative",
-    justifyContent: "center"
-  },
-  inputInnerIcon: {
-    position: "absolute",
-    left: 10,
-    zIndex: 1
-  },
-  textInputWithIcon: {
-    paddingLeft: 34
-  },
   rowTwoCols: {
     flexDirection: "row",
     gap: 12
   },
-  chipWrapper: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 8
-  },
-  typeChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  typeChipActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary
-  },
-  typeChipText: {
-    fontSize: 11,
-    color: colors.textMuted,
-    fontWeight: "500"
-  },
-  typeChipTextActive: {
-    color: colors.primaryDark,
-    fontWeight: "700"
-  },
-  facilityChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  facilityChipActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary
-  },
-  facilityChipText: {
-    fontSize: 11,
-    color: colors.textMuted,
-    fontWeight: "500"
-  },
-  facilityChipTextActive: {
-    color: colors.primaryDark,
-    fontWeight: "700"
-  },
   textArea: {
     height: 70,
     textAlignVertical: "top"
-  },
-  pricePreviewBox: {
-    backgroundColor: "#ECFDF5",
-    borderWidth: 1,
-    borderColor: "#A7F3D0",
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 2
-  },
-  pricePreviewLabel: {
-    fontSize: 11,
-    color: "#065F46"
-  },
-  pricePreviewValue: {
-    fontSize: 14,
-    fontWeight: "800",
-    color: "#047857",
-    marginTop: 2
-  },
-  pricePreviewSub: {
-    fontSize: 11.5,
-    fontWeight: "normal",
-    color: "#065F46"
   },
   switchRow: {
     flexDirection: "row",
@@ -1082,7 +733,6 @@ const styles = StyleSheet.create({
     lineHeight: 16
   },
   submitBtn: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.primary,
