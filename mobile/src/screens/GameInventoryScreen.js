@@ -87,8 +87,8 @@ export default function GameInventoryScreen({ navigation }) {
   const renderCompactItem = ({ item }) => {
     const isInUse = item.is_in_use;
     const isAvailable = item.is_available;
-    const stockCount = item.stock;
-    const rackCode = item.rack_code;
+    const stockCount = item.stock !== undefined ? item.stock : 2;
+    const rackCode = item.shelf_location || item.rack_code || "Rak A-01";
 
     return (
       <TouchableOpacity
@@ -99,8 +99,8 @@ export default function GameInventoryScreen({ navigation }) {
             gameId: item.id,
             title: item.title,
             isAvailable: item.is_available,
-            stock: item.stock,
-            rackCode: item.rack_code
+            stock: stockCount,
+            rackCode: rackCode
           })
         }
       >
@@ -119,10 +119,6 @@ export default function GameInventoryScreen({ navigation }) {
                 {item.game_categories?.name || "Game"}
               </Text>
             </View>
-            <View style={styles.rackBadge}>
-              <Ionicons name="location-sharp" size={11} color={colors.textMuted} style={{ marginRight: 2 }} />
-              <Text style={styles.rackText}>{rackCode}</Text>
-            </View>
           </View>
 
           <View style={styles.metaIconRow}>
@@ -139,10 +135,17 @@ export default function GameInventoryScreen({ navigation }) {
                 {item.duration_minutes} mnt
               </Text>
             </View>
+            <Text style={styles.metaDivider}>•</Text>
+            <View style={styles.metaIconItem}>
+              <Ionicons name="grid-outline" size={12} color={colors.primary} style={{ marginRight: 4 }} />
+              <Text style={styles.playerText}>
+                {rackCode}
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* Status & Ketersediaan di Kanan */}
+        {/* Status & Ketersediaan di Kanan: Tersedia 1 Box di kiri panah */}
         <View style={styles.rightInfo}>
           <View
             style={[
@@ -159,7 +162,7 @@ export default function GameInventoryScreen({ navigation }) {
               {isAvailable ? `Tersedia ${stockCount} Box` : "Sedang Main"}
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={16} color={colors.textMuted} style={{ marginTop: 6 }} />
+          <Ionicons name="chevron-forward" size={16} color={colors.textMuted} style={{ marginLeft: 6 }} />
         </View>
       </TouchableOpacity>
     );
@@ -483,8 +486,8 @@ const styles = StyleSheet.create({
     color: colors.textMuted
   },
   rightInfo: {
-    alignItems: "flex-end",
-    justifyContent: "center"
+    flexDirection: "row",
+    alignItems: "center"
   },
   stockBadge: {
     paddingHorizontal: 8,
