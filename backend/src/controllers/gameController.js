@@ -55,6 +55,26 @@ export const GameController = {
     }
   },
 
+  async decrementStock(req, res) {
+    try {
+      const { id } = req.params;
+      const updated = await GameModel.decrementStock(id);
+      res.json(updated);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+
+  async incrementStock(req, res) {
+    try {
+      const { id } = req.params;
+      const updated = await GameModel.incrementStock(id);
+      res.json(updated);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  },
+
   // POST /api/games/upload-image (Upload foto cover game ke cloud storage)
   async uploadImage(req, res) {
     try {

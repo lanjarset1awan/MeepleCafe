@@ -61,54 +61,91 @@ export default function GameListScreen({ navigation }) {
     return matchesCategory && matchesSearch;
   });
 
-  const renderGameCard = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.88}
-      onPress={() => navigation.navigate("GameDetail", { gameId: item.id, title: item.title })}
-    >
-      <GameImage uri={item.image_url} style={styles.cardImage} />
-      <View style={styles.cardContent}>
-        <Text style={styles.gameTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
+  const renderGameCard = ({ item }) => {
+    const stockCount = item.stock !== undefined ? Number(item.stock) : 2;
+    const shelfLoc = item.shelf_location || item.rack_code || "Rak A-01";
+    const isAvail = item.is_available !== false && stockCount > 0;
 
-        <View style={styles.metaRow}>
-          {/* 1. Kategori (Bubble Kotak Biru) */}
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryBadgeText}>
-              {item.game_categories?.name || "General"}
+    return (
+      <TouchableOpacity
+        style={[styles.card, !isAvail && styles.cardUnavailable]}
+        activeOpacity={0.88}
+        onPress={() =>
+          navigation.navigate("GameDetail", {
+            gameId: item.id,
+            title: item.title,
+            stock: stockCount,
+            rackCode: shelfLoc
+          })
+        }
+      >
+        <GameImage uri={item.image_url} style={styles.cardImage} />
+        <View style={styles.cardContent}>
+          <View style={styles.gameTitleRow}>
+            <Text style={styles.gameTitle} numberOfLines={1}>
+              {item.title}
             </Text>
+            {isAvail ? (
+              <View style={styles.badgeStockAvail}>
+                <Ionicons name="cube-outline" size={11} color={colors.primary} style={{ marginRight: 3 }} />
+                <Text style={styles.badgeStockAvailText}>{stockCount} Box</Text>
+              </View>
+            ) : (
+              <View style={styles.badgeStockEmpty}>
+                <Text style={styles.badgeStockEmptyText}>Habis</Text>
+              </View>
+            )}
           </View>
 
-          {/* 2. Jumlah Pemain (Biru) */}
-          <View style={styles.metaItem}>
-            <Ionicons name="people-outline" size={13} color={colors.primary} />
-            <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
-              {item.min_players}-{item.max_players} Pemain
-            </Text>
+          <View style={styles.metaRow}>
+            {/* 1. Kategori (Bubble Kotak Biru) */}
+            <View style={styles.categoryBadge}>
+              <Text style={styles.categoryBadgeText}>
+                {item.game_categories?.name || "General"}
+              </Text>
+            </View>
+
+            {/* 2. Jumlah Pemain (Biru) */}
+            <View style={styles.metaItem}>
+              <Ionicons name="people-outline" size={13} color={colors.primary} />
+              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
+                {item.min_players}-{item.max_players} Pemain
+              </Text>
+            </View>
+
+            {/* 3. Durasi (Biru) */}
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={13} color={colors.primary} />
+              <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
+                {item.duration_minutes} mnt
+              </Text>
+            </View>
+
+            {/* 4. Posisi Rak Kafe */}
+            <View style={styles.shelfBadge}>
+              <Ionicons name="grid-outline" size={11} color="#64748B" style={{ marginRight: 3 }} />
+              <Text style={styles.shelfBadgeText}>{shelfLoc}</Text>
+            </View>
           </View>
 
-          {/* 3. Durasi (Biru) */}
-          <View style={styles.metaItem}>
-            <Ionicons name="time-outline" size={13} color={colors.primary} />
-            <Text style={[styles.metaText, { color: colors.primary, fontWeight: "600" }]}>
-              {item.duration_minutes} mnt
+          <Text style={styles.description} numberOfLines={2}>
+            {item.description}
+          </Text>
+
+          <View style={styles.actionFooter}>
+            <Text style={[styles.actionFooterText, !isAvail && { color: colors.textMuted }]}>
+              {isAvail ? "Pelajari Aturan & Pilih Game" : "Stok Sedang Habis / Dipinjam"}
             </Text>
+            <Ionicons
+              name={isAvail ? "arrow-forward-circle" : "alert-circle-outline"}
+              size={18}
+              color={isAvail ? colors.primary : colors.textMuted}
+            />
           </View>
         </View>
-
-        <Text style={styles.description} numberOfLines={2}>
-          {item.description}
-        </Text>
-
-        <View style={styles.actionFooter}>
-          <Text style={styles.actionFooterText}>Pelajari Aturan & Pilih Game</Text>
-          <Ionicons name="arrow-forward-circle" size={18} color={colors.primary} />
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -329,6 +366,9 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 }
   },
+  cardUnavailable: {
+    opacity: 0.78
+  },
   cardImage: {
     width: "100%",
     height: 160,
@@ -337,10 +377,59 @@ const styles = StyleSheet.create({
   cardContent: {
     padding: 14
   },
+  gameTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6
+  },
   gameTitle: {
-    fontSize: 22,
+    flex: 1,
+    fontSize: 20,
     fontWeight: "bold",
     color: colors.text,
+    marginRight: 8
+  },
+  badgeStockAvail: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8
+  },
+  badgeStockAvailText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.primaryDark
+  },
+  badgeStockEmpty: {
+    backgroundColor: "#FEF2F2",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FECACA"
+  },
+  badgeStockEmptyText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#DC2626"
+  },
+  shelfBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F1F5F9",
+    paddingHorizontal: 6,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    marginRight: 6
+  },
+  shelfBadgeText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#64748B"
+  },
     marginBottom: 6
   },
   metaRow: {

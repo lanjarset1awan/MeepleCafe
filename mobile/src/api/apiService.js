@@ -93,6 +93,29 @@ async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
   return result;
 }
 
+// Helper normalisasi game dengan stok kafe & posisi rak dinamis
+function normalizeGame(game) {
+  if (!game) return game;
+  const letters = ["A", "B", "C", "D"];
+  const idStr = String(game.id || game.title || "1");
+  const num = parseInt(idStr.replace(/\D/g, ""), 10) || (idStr.charCodeAt(0) % 12) + 1;
+  const section = letters[(num - 1) % letters.length] || "A";
+  const shelfNum = Math.floor(((num - 1) % 12) / letters.length) + 1;
+  const fallbackShelf = `Rak ${section}-0${shelfNum}`;
+
+  const stock = game.stock !== undefined && game.stock !== null ? Number(game.stock) : 2;
+  const shelf_location = game.shelf_location || fallbackShelf;
+  const is_available = stock > 0 && game.is_available !== false;
+
+  return {
+    ...game,
+    stock,
+    shelf_location,
+    rack_code: shelf_location,
+    is_available
+  };
+}
+
 export const ApiService = {
   // 1. Koleksi Games (List Utama 1 & Detail)
   async getGames(categoryId = null) {
@@ -100,15 +123,17 @@ export const ApiService = {
     const supabaseQuery = categoryId
       ? `board_games?category_id=eq.${categoryId}&select=*,game_categories(id,name)`
       : `board_games?select=*,game_categories(id,name)&order=title.asc`;
-    return fetchWithFallback(endpoint, supabaseQuery);
+    const data = await fetchWithFallback(endpoint, supabaseQuery);
+    return Array.isArray(data) ? data.map(normalizeGame) : [];
   },
 
   async getGameById(id) {
-    return fetchWithFallback(
+    const data = await fetchWithFallback(
       `/api/games/${id}`,
       `board_games?id=eq.${id}&select=*,game_categories(id,name)`,
       { single: true }
     );
+    return normalizeGame(data);
   },
 
   async createGame(payload) {
@@ -130,6 +155,26 @@ export const ApiService = {
     return fetchWithFallback(`/api/games/${id}`, `board_games?id=eq.${id}`, {
       method: "DELETE"
     });
+  },
+
+  async decrementGameStock(id) {
+    try {
+      return await fetchWithFallback(`/api/games/${id}/decrement-stock`, `board_games?id=eq.${id}`, {
+        method: "PATCH"
+      });
+    } catch (e) {
+      // Abaikan
+    }
+  },
+
+  async incrementGameStock(id) {
+    try {
+      return await fetchWithFallback(`/api/games/${id}/increment-stock`, `board_games?id=eq.${id}`, {
+        method: "PATCH"
+      });
+    } catch (e) {
+      // Abaikan
+    }
   },
 
   async getCategories() {
@@ -163,8 +208,9 @@ export const ApiService = {
       payload.booking_code = `MC-${code}`;
     }
 
+    let result;
     try {
-      return await fetchWithFallback("/api/reservations", "reservations", {
+      result = await fetchWithFallback("/api/reservations", "reservations", {
         method: "POST",
         body: JSON.stringify(payload)
       });
@@ -177,13 +223,21 @@ export const ApiService = {
         }
         delete sanitized.game_title;
         delete sanitized.game_id;
-        return await fetchWithFallback("/api/reservations", "reservations", {
+        result = await fetchWithFallback("/api/reservations", "reservations", {
           method: "POST",
           body: JSON.stringify(sanitized)
         });
+      } else {
+        throw err;
       }
-      throw err;
     }
+
+    // Integrasi: kurangi stok game saat reservasi berhasil dibuat
+    if (payload.game_id) {
+      this.decrementGameStock(payload.game_id).catch(() => {});
+    }
+
+    return result;
   },
 
   async deleteReservation(id) {

@@ -122,7 +122,9 @@ export default function AdminGameListScreen({ navigation }) {
   };
 
   const renderGameCard = ({ item }) => {
-    const isAvail = item.is_available !== false;
+    const stockCount = item.stock !== undefined ? Number(item.stock) : 2;
+    const shelfLoc = item.shelf_location || item.rack_code || "Rak A-01";
+    const isAvail = item.is_available !== false && stockCount > 0;
     const categoryName = item.game_categories?.name || "General";
 
     return (
@@ -139,7 +141,7 @@ export default function AdminGameListScreen({ navigation }) {
             <View style={[styles.statusBadge, isAvail ? styles.statusBadgeAvail : styles.statusBadgeUnavail]}>
               <View style={[styles.statusDot, { backgroundColor: isAvail ? "#10B981" : "#EF4444" }]} />
               <Text style={[styles.statusBadgeText, { color: isAvail ? "#047857" : "#B91C1C" }]}>
-                {isAvail ? "Tersedia" : "Dipinjam"}
+                {isAvail ? `Tersedia (${stockCount} Box)` : "Stok Habis"}
               </Text>
             </View>
           </View>
@@ -160,6 +162,21 @@ export default function AdminGameListScreen({ navigation }) {
             <View style={styles.metaItem}>
               <Ionicons name="time-outline" size={13} color={colors.primary} />
               <Text style={styles.metaText}>{item.duration_minutes} mnt</Text>
+            </View>
+          </View>
+
+          {/* Inventory Row: Stok Box & Posisi Rak */}
+          <View style={styles.inventoryRow}>
+            <View style={styles.inventoryPill}>
+              <Ionicons name="cube-outline" size={13} color={stockCount > 0 ? colors.primary : "#EF4444"} />
+              <Text style={[styles.inventoryPillText, stockCount === 0 && { color: "#EF4444" }]}>
+                Stok: {stockCount} Box
+              </Text>
+            </View>
+
+            <View style={styles.inventoryPill}>
+              <Ionicons name="grid-outline" size={13} color={colors.primary} />
+              <Text style={styles.inventoryPillText}>{shelfLoc}</Text>
             </View>
           </View>
 
@@ -576,6 +593,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.primary,
     fontWeight: "600",
+    marginLeft: 4
+  },
+  inventoryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8
+  },
+  inventoryPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F1F5F9",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#E2E8F0"
+  },
+  inventoryPillText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: colors.text,
     marginLeft: 4
   },
   description: {

@@ -1,4 +1,5 @@
 import { supabase } from "../config/supabaseClient.js";
+import { GameModel } from "./gameModel.js";
 
 function parseHours(sessionStr) {
   if (!sessionStr) return { start: 0, end: 0 };
@@ -178,6 +179,8 @@ export const ReservationModel = {
       payload.booking_code = `MC-${randomCode}`;
     }
 
+    const targetGameIdentifier = payload.game_id || payload.game_title;
+
     // 2. Format game ke customer_name secara aman agar tidak gagal di database
     const sanitized = { ...payload };
     if (sanitized.game_title && !sanitized.customer_name.includes("[Game:")) {
@@ -199,10 +202,39 @@ export const ReservationModel = {
       .single();
 
     if (error) throw error;
+
+    // 4. Integrasi stok: kurangi stok game 1 box saat reservasi berhasil dipesan
+    if (targetGameIdentifier) {
+      try {
+        await GameModel.decrementStock(targetGameIdentifier);
+      } catch (err) {
+        console.warn("Gagal decrement stok game:", err.message);
+      }
+    }
+
     return data;
   },
 
   async updateStatus(id, status) {
+    // Jika status diubah menjadi Cancelled, kembalikan stok box game
+    if (status === "Cancelled") {
+      try {
+        const { data: currentRes } = await supabase
+          .from("reservations")
+          .select("customer_name")
+          .eq("id", id)
+          .single();
+        if (currentRes && currentRes.customer_name) {
+          const match = currentRes.customer_name.match(/\[Game:\s*([^\]]+)\]/i);
+          if (match && match[1]) {
+            await GameModel.incrementStock(match[1].trim());
+          }
+        }
+      } catch (e) {
+        // Abaikan
+      }
+    }
+
     const { data, error } = await supabase
       .from("reservations")
       .update({ status })
@@ -214,6 +246,22 @@ export const ReservationModel = {
   },
 
   async remove(id) {
+    try {
+      const { data: currentRes } = await supabase
+        .from("reservations")
+        .select("customer_name")
+        .eq("id", id)
+        .single();
+      if (currentRes && currentRes.customer_name) {
+        const match = currentRes.customer_name.match(/\[Game:\s*([^\]]+)\]/i);
+        if (match && match[1]) {
+          await GameModel.incrementStock(match[1].trim());
+        }
+      }
+    } catch (e) {
+      // Abaikan
+    }
+
     const { error } = await supabase
       .from("reservations")
       .delete()

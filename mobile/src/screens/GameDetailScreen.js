@@ -54,22 +54,22 @@ export default function GameDetailScreen({ route, navigation }) {
   }
 
   const stockCount =
-    route.params?.stock !== undefined ? route.params.stock : (game.stock || 2);
-
-  const getRackCode = (id) => {
-    const num = typeof id === "number" ? id : (parseInt(String(id).replace(/\D/g, ""), 10) || 1);
-    const letters = ["A", "B", "C", "D"];
-    const section = letters[(num - 1) % letters.length];
-    const shelfNum = Math.floor(((num - 1) % 12) / letters.length) + 1;
-    return `Rak ${section}-0${shelfNum}`;
-  };
+    game.stock !== undefined
+      ? Number(game.stock)
+      : (route.params?.stock !== undefined ? Number(route.params.stock) : 2);
 
   const rackCode =
-    route.params?.rackCode || game.rack_code || getRackCode(game.id);
+    game.shelf_location || game.rack_code || route.params?.rackCode || "Rak A-01";
+
+  const isAvailable = stockCount > 0 && game.is_available !== false;
 
   const handleSelectGameAndChooseTable = () => {
     if (!user) {
       setLoginPromptVisible(true);
+      return;
+    }
+
+    if (!isAvailable) {
       return;
     }
 
@@ -84,6 +84,7 @@ export default function GameDetailScreen({ route, navigation }) {
           max_players: game.max_players,
           difficulty: game.difficulty,
           stock: stockCount,
+          shelf_location: rackCode,
           category: game.game_categories?.name || "General"
         }
       }
@@ -99,6 +100,16 @@ export default function GameDetailScreen({ route, navigation }) {
         {/* Floating Header Card */}
         <View style={styles.detailCard}>
           <Text style={styles.title}>{game.title}</Text>
+
+          {/* Banner Peringatan Stok Habis */}
+          {!isAvailable && (
+            <View style={styles.outOfStockAlert}>
+              <Ionicons name="alert-circle" size={18} color="#DC2626" style={{ marginRight: 8 }} />
+              <Text style={styles.outOfStockAlertText}>
+                Stok board game ini sedang habis (0 Box) atau sedang dimainkan pelanggan lain di kafe.
+              </Text>
+            </View>
+          )}
 
           {/* Kotakan Ringkasan Spesifikasi Game (Grid 3x2 Seimbang & Elegan) */}
           <View style={styles.specsCard}>
@@ -145,13 +156,13 @@ export default function GameDetailScreen({ route, navigation }) {
             <View style={styles.specsRow}>
               {/* 4. Stok Box */}
               <View style={styles.specCell}>
-                <View style={styles.iconCircle}>
-                  <Ionicons name="cube-outline" size={17} color={colors.primary} />
+                <View style={[styles.iconCircle, !isAvailable && { backgroundColor: "#FEF2F2" }]}>
+                  <Ionicons name="cube-outline" size={17} color={isAvailable ? colors.primary : "#DC2626"} />
                 </View>
-                <Text style={styles.specValue} numberOfLines={1}>
+                <Text style={[styles.specValue, !isAvailable && { color: "#DC2626" }]} numberOfLines={1}>
                   {stockCount} Box
                 </Text>
-                <Text style={styles.specLabel}>Stok Kafe</Text>
+                <Text style={styles.specLabel}>{isAvailable ? "Stok Kafe" : "Stok Habis"}</Text>
               </View>
 
               {/* 5. Posisi Rak */}
@@ -205,18 +216,21 @@ export default function GameDetailScreen({ route, navigation }) {
       {/* Bottom Floating CTA Button */}
       <View style={styles.bottomBar}>
         <TouchableOpacity
-          style={styles.ctaButton}
-          activeOpacity={0.88}
+          style={[styles.ctaButton, !isAvailable && styles.ctaButtonDisabled]}
+          activeOpacity={isAvailable ? 0.88 : 1}
+          disabled={!isAvailable}
           onPress={handleSelectGameAndChooseTable}
         >
           <Ionicons
-            name={user ? "calendar-outline" : "play-circle-outline"}
+            name={!isAvailable ? "alert-circle" : (user ? "calendar-outline" : "play-circle-outline")}
             size={20}
             color="#FFFFFF"
             style={{ marginRight: 8 }}
           />
           <Text style={styles.ctaText}>
-            {user ? "Pilih Game Ini & Lanjut Reservasi Meja" : "Main Game Ini (Perlu Masuk Akun)"}
+            {!isAvailable
+              ? "Stok Game Habis / Sedang Dipinjam"
+              : (user ? "Pilih Game Ini & Lanjut Reservasi Meja" : "Main Game Ini (Perlu Masuk Akun)")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -364,6 +378,23 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: colors.border
   },
+  outOfStockAlert: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 14
+  },
+  outOfStockAlertText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: "#B91C1C",
+    lineHeight: 18,
+    fontWeight: "600"
+  },
   ctaButton: {
     backgroundColor: colors.primary,
     flexDirection: "row",
@@ -371,6 +402,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 14,
     borderRadius: 12
+  },
+  ctaButtonDisabled: {
+    backgroundColor: "#94A3B8"
   },
   ctaText: {
     color: "#FFFFFF",

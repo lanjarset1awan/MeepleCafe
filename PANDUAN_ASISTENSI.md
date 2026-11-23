@@ -140,6 +140,13 @@ Jika ditemukan jadwal yang beririsan untuk meja yang sama, sistem menolak pemesa
 - **Spesifikasi & Gameplay Rapi:** Penataan input jumlah pemain, durasi main, dan pilihan tingkat kesulitan (*Mudah, Menengah, Sulit*) yang simetris dan responsif.
 - **Delete:** Menghapus data board game dengan dialog konfirmasi aman untuk mencegah penghapusan yang tidak disengaja.
 
+### 7. Manajemen Inventaris Kafe & Integrasi Stok Game Otomatis (Dynamic Stock & Shelf Tracking)
+- **Atribut Baru Inventaris:** Setiap board game memiliki atribut `stock` (jumlah box fisik yang dimiliki kafe) dan `shelf_location` (posisi rak etalase fisik kafe, contoh: 'Rak A-01', 'Rak B-02').
+- **Integrasi Pengurangan Stok Otomatis:** Ketika pelanggan memesan meja dengan memilih board game, backend secara otomatis memotong stok game tersebut sebesar 1 box (`stock - 1`).
+- **Otomasi Status Ketersediaan Real-Time:** Jika seluruh box game sedang dipinjam (`stock = 0`), status game di katalog dan halaman detail otomatis berubah menjadi *"Stok Habis / Sedang Dipinjam"*, dan tombol reservasi game tersebut otomatis dinonaktifkan untuk mencegah peminjaman melebihi stok fisik kafe.
+- **Pengembalian Stok saat Dibatalkan:** Jika reservasi dibatalkan atau dihapus oleh pengguna/admin, sistem otomatis mengembalikan stok game tersebut ke inventaris (`stock + 1`).
+- **Skrip Migrasi SQL Supabase:** Skrip DDL `backend/supabase_schema_board_games_stock.sql` disediakan untuk menambahkan kolom `stock` dan `shelf_location` ke tabel `board_games` di Supabase Dashboard.
+
 ---
 
 ## 6. Daftar Pertanyaan Kunci Asistensi & Cara Menjawabnya

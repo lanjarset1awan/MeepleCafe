@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS public.board_games (
   image_url TEXT,
   description TEXT,
   rules_summary TEXT,
+  stock INT DEFAULT 2,
+  shelf_location TEXT DEFAULT 'Rak A-01',
   is_available BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

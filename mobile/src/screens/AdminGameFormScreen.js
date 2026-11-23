@@ -56,6 +56,12 @@ export default function AdminGameFormScreen({ navigation, route }) {
     existingGame?.duration_minutes ? String(existingGame.duration_minutes) : "45"
   );
   const [difficulty, setDifficulty] = useState(existingGame?.difficulty || "Menengah");
+  const [stock, setStock] = useState(
+    existingGame?.stock !== undefined ? String(existingGame.stock) : "2"
+  );
+  const [shelfLocation, setShelfLocation] = useState(
+    existingGame?.shelf_location || existingGame?.rack_code || "Rak A-01"
+  );
   const [imageUrl, setImageUrl] = useState(existingGame?.image_url || "");
   const [description, setDescription] = useState(existingGame?.description || "");
   const [rulesSummary, setRulesSummary] = useState(existingGame?.rules_summary || "");
@@ -239,6 +245,17 @@ export default function AdminGameFormScreen({ navigation, route }) {
       return false;
     }
 
+    const stk = parseInt(stock, 10);
+    if (isNaN(stk) || stk < 0) {
+      setDialogState({
+        visible: true,
+        type: "danger",
+        title: "Stok Tidak Valid",
+        message: "Stok box kafe harus berupa angka 0 atau lebih."
+      });
+      return false;
+    }
+
     return true;
   };
 
@@ -247,6 +264,7 @@ export default function AdminGameFormScreen({ navigation, route }) {
 
     setIsSubmitting(true);
     try {
+      const parsedStock = Math.max(0, parseInt(stock, 10) || 0);
       const payload = {
         title: title.trim(),
         category_id: categoryId || null,
@@ -254,10 +272,12 @@ export default function AdminGameFormScreen({ navigation, route }) {
         max_players: parseInt(maxPlayers, 10),
         duration_minutes: parseInt(durationMinutes, 10),
         difficulty,
+        stock: parsedStock,
+        shelf_location: shelfLocation.trim() || "Rak A-01",
         image_url: imageUrl.trim() || null,
         description: description.trim() || null,
         rules_summary: rulesSummary.trim() || null,
-        is_available: isAvailable
+        is_available: isAvailable && parsedStock > 0
       };
 
       if (isEditMode) {
@@ -481,6 +501,42 @@ export default function AdminGameFormScreen({ navigation, route }) {
                   </TouchableOpacity>
                 );
               })}
+            </View>
+          </View>
+
+          {/* Row Stok Kafe & Posisi Rak (Inventaris Fisik) */}
+          <View style={[styles.twoColumnRow, { marginTop: 14 }]}>
+            <View style={styles.columnHalf}>
+              <Text style={styles.fieldLabel}>
+                Stok Kafe (Box) <Text style={styles.requiredAsterisk}>*</Text>
+              </Text>
+              <View style={styles.inputWithIcon}>
+                <Ionicons name="cube-outline" size={17} color={colors.primary} />
+                <TextInput
+                  style={styles.colInput}
+                  keyboardType="numeric"
+                  placeholder="2"
+                  value={stock}
+                  onChangeText={setStock}
+                />
+              </View>
+              <Text style={styles.fieldHint}>Jumlah box fisik</Text>
+            </View>
+
+            <View style={styles.columnHalf}>
+              <Text style={styles.fieldLabel}>
+                Posisi Rak Kafe <Text style={styles.requiredAsterisk}>*</Text>
+              </Text>
+              <View style={styles.inputWithIcon}>
+                <Ionicons name="grid-outline" size={17} color={colors.primary} />
+                <TextInput
+                  style={styles.colInput}
+                  placeholder="Rak A-01"
+                  value={shelfLocation}
+                  onChangeText={setShelfLocation}
+                />
+              </View>
+              <Text style={styles.fieldHint}>Lokasi etalase kafe</Text>
             </View>
           </View>
         </View>

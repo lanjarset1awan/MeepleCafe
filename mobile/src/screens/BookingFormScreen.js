@@ -641,7 +641,7 @@ export default function BookingFormScreen({ route, navigation }) {
             </Text>
             <Text style={styles.packageStock}>
               {chosenGame
-                ? `Stok Kafe: ${chosenGame.stock || 2} Box Original`
+                ? `Stok: ${chosenGame.stock !== undefined ? chosenGame.stock : 2} Box • ${chosenGame.shelf_location || chosenGame.rack_code || "Rak A-01"}`
                 : "Silakan pilih game yang ingin dimainkan"}
             </Text>
           </View>
@@ -1348,29 +1348,47 @@ export default function BookingFormScreen({ route, navigation }) {
             <FlatList
               data={allGames}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.gamePickerRow,
-                    chosenGame?.id === item.id && styles.gamePickerRowActive
-                  ]}
-                  onPress={() => {
-                    setChosenGame(item);
-                    setGamePickerVisible(false);
-                  }}
-                >
-                  <GameImage uri={item.image_url} style={styles.pickerGameThumb} />
-                  <View style={{ marginLeft: 12, flex: 1 }}>
-                    <Text style={styles.gamePickerName}>{item.title}</Text>
-                    <Text style={styles.gamePickerDesc}>
-                      {item.min_players}-{item.max_players} Pemain • Stok: {item.stock || 2} Box
-                    </Text>
-                  </View>
-                  {chosenGame?.id === item.id && (
-                    <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
-                  )}
-                </TouchableOpacity>
-              )}
+              renderItem={({ item }) => {
+                const stockNum = item.stock !== undefined ? Number(item.stock) : 2;
+                const shelfLoc = item.shelf_location || item.rack_code || "Rak A-01";
+                const isAvail = stockNum > 0 && item.is_available !== false;
+
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.gamePickerRow,
+                      chosenGame?.id === item.id && styles.gamePickerRowActive,
+                      !isAvail && { opacity: 0.5 }
+                    ]}
+                    disabled={!isAvail}
+                    onPress={() => {
+                      setChosenGame(item);
+                      setGamePickerVisible(false);
+                    }}
+                  >
+                    <GameImage uri={item.image_url} style={styles.pickerGameThumb} />
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <Text style={styles.gamePickerName}>{item.title}</Text>
+                      <Text style={styles.gamePickerDesc}>
+                        {item.min_players}-{item.max_players} Pemain • {shelfLoc}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: "600",
+                          marginTop: 2,
+                          color: isAvail ? colors.primary : "#DC2626"
+                        }}
+                      >
+                        {isAvail ? `Stok: ${stockNum} Box Tersedia` : "Stok Habis / Sedang Dipinjam"}
+                      </Text>
+                    </View>
+                    {chosenGame?.id === item.id && (
+                      <Ionicons name="checkmark-circle" size={22} color={colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
             />
           </View>
         </View>
