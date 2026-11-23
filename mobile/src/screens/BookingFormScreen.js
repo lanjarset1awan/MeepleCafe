@@ -651,7 +651,7 @@ export default function BookingFormScreen({ route, navigation }) {
 
   // Konfirmasi Pembayaran dan Buat Tiket Reservasi (Status: Pending / Menunggu Konfirmasi)
   const handleConfirmPaymentAndCreateTicket = async () => {
-    if (selectedPaymentMethod !== "cash" && !paymentProofUri) {
+    if (!paymentProofUri) {
       showDialog({
         type: "warning",
         title: "Bukti Transfer Diperlukan",
@@ -669,7 +669,6 @@ export default function BookingFormScreen({ route, navigation }) {
       let paymentMethodName = "Transfer BCA";
       if (selectedPaymentMethod === "mandiri") paymentMethodName = "Transfer Mandiri";
       else if (selectedPaymentMethod === "qris") paymentMethodName = "QRIS Instant";
-      else if (selectedPaymentMethod === "cash") paymentMethodName = "Bayar di Kasir";
 
       // Format metadata
       const bookingUsername = (user?.username || "").trim().toLowerCase();
@@ -1271,111 +1270,85 @@ export default function BookingFormScreen({ route, navigation }) {
                 </View>
               )}
 
-              {/* Opsi 4: Bayar di Kasir (Cash) */}
-              <TouchableOpacity
-                style={[
-                  styles.paymentMethodCard,
-                  selectedPaymentMethod === "cash" && styles.paymentMethodCardActive
-                ]}
-                onPress={() => setSelectedPaymentMethod("cash")}
-              >
-                <View style={styles.paymentMethodLeft}>
-                  <View style={[styles.bankLogoBox, styles.bankLogoBoxCash]}>
-                    <Ionicons name="cash-outline" size={20} color={colors.primaryDark} />
-                  </View>
-                  <View style={{ marginLeft: 12, flex: 1 }}>
-                    <Text style={styles.bankName}>Bayar di Kasir (Cash / Tunai)</Text>
-                    <Text style={styles.bankHolder}>Bayar langsung di kasir kafe saat kedatangan</Text>
+              {/* FORM UPLOAD BUKTI TRANSFER */}
+              <View style={styles.proofUploadSection}>
+                <View style={styles.proofHeaderRow}>
+                  <Ionicons name="receipt-outline" size={17} color={colors.primary} />
+                  <Text style={styles.proofTitle}>Upload Bukti Transfer</Text>
+                  <View style={styles.proofRequiredBadge}>
+                    <Text style={styles.proofRequiredText}>Wajib Dilampirkan</Text>
                   </View>
                 </View>
-                {selectedPaymentMethod === "cash" && (
-                  <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
-                )}
-              </TouchableOpacity>
+                <Text style={styles.proofDesc}>
+                  Lampirkan screenshot m-banking, struk ATM, atau bukti bayar QRIS Anda.
+                </Text>
 
-              {/* FORM UPLOAD BUKTI TRANSFER */}
-              {selectedPaymentMethod !== "cash" && (
-                <View style={styles.proofUploadSection}>
-                  <View style={styles.proofHeaderRow}>
-                    <Ionicons name="receipt-outline" size={17} color={colors.primary} />
-                    <Text style={styles.proofTitle}>Upload Bukti Transfer</Text>
-                    <View style={styles.proofRequiredBadge}>
-                      <Text style={styles.proofRequiredText}>Wajib Dilampirkan</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.proofDesc}>
-                    Lampirkan screenshot m-banking, struk ATM, atau bukti bayar QRIS Anda.
-                  </Text>
-
-                  {paymentProofUri ? (
-                    <View style={styles.proofPreviewCard}>
-                      <Image source={{ uri: paymentProofUri }} style={styles.proofImageThumb} resizeMode="cover" />
-                      <View style={{ flex: 1, marginLeft: 12 }}>
-                        <View style={styles.proofSuccessPill}>
-                          <Ionicons name="checkmark-circle" size={13} color="#047857" style={{ marginRight: 4 }} />
-                          <Text style={styles.proofSuccessPillText}>Bukti Terlampir</Text>
-                        </View>
-                        <TouchableOpacity
-                          style={styles.btnProofChange}
-                          activeOpacity={0.8}
-                          onPress={handlePickProofGallery}
-                        >
-                          <Text style={styles.btnProofChangeText}>Ganti Foto</Text>
-                        </TouchableOpacity>
+                {paymentProofUri ? (
+                  <View style={styles.proofPreviewCard}>
+                    <Image source={{ uri: paymentProofUri }} style={styles.proofImageThumb} resizeMode="cover" />
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <View style={styles.proofSuccessPill}>
+                        <Ionicons name="checkmark-circle" size={13} color="#047857" style={{ marginRight: 4 }} />
+                        <Text style={styles.proofSuccessPillText}>Bukti Terlampir</Text>
                       </View>
                       <TouchableOpacity
-                        style={styles.btnProofDelete}
-                        activeOpacity={0.8}
-                        onPress={() => setPaymentProofUri(null)}
-                      >
-                        <Ionicons name="trash-outline" size={18} color="#DC2626" />
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <View style={styles.proofActionRow}>
-                      <TouchableOpacity
-                        style={styles.proofActionBtn}
+                        style={styles.btnProofChange}
                         activeOpacity={0.8}
                         onPress={handlePickProofGallery}
-                        disabled={uploadingProof}
                       >
-                        {uploadingProof ? (
-                          <ActivityIndicator size="small" color={colors.primary} />
-                        ) : (
-                          <>
-                            <Ionicons name="images-outline" size={17} color={colors.primary} style={{ marginRight: 6 }} />
-                            <Text style={styles.proofActionBtnText}>Buka Galeri</Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={styles.proofActionBtn}
-                        activeOpacity={0.8}
-                        onPress={handleTakeProofCamera}
-                        disabled={uploadingProof}
-                      >
-                        {uploadingProof ? (
-                          <ActivityIndicator size="small" color={colors.primary} />
-                        ) : (
-                          <>
-                            <Ionicons name="camera-outline" size={17} color={colors.primary} style={{ marginRight: 6 }} />
-                            <Text style={styles.proofActionBtnText}>Buka Kamera</Text>
-                          </>
-                        )}
+                        <Text style={styles.btnProofChangeText}>Ganti Foto</Text>
                       </TouchableOpacity>
                     </View>
-                  )}
-                </View>
-              )}
+                    <TouchableOpacity
+                      style={styles.btnProofDelete}
+                      activeOpacity={0.8}
+                      onPress={() => setPaymentProofUri(null)}
+                    >
+                      <Ionicons name="trash-outline" size={18} color="#DC2626" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <View style={styles.proofActionRow}>
+                    <TouchableOpacity
+                      style={styles.proofActionBtn}
+                      activeOpacity={0.8}
+                      onPress={handlePickProofGallery}
+                      disabled={uploadingProof}
+                    >
+                      {uploadingProof ? (
+                        <ActivityIndicator size="small" color={colors.primary} />
+                      ) : (
+                        <>
+                          <Ionicons name="images-outline" size={17} color={colors.primary} style={{ marginRight: 6 }} />
+                          <Text style={styles.proofActionBtnText}>Buka Galeri</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.proofActionBtn}
+                      activeOpacity={0.8}
+                      onPress={handleTakeProofCamera}
+                      disabled={uploadingProof}
+                    >
+                      {uploadingProof ? (
+                        <ActivityIndicator size="small" color={colors.primary} />
+                      ) : (
+                        <>
+                          <Ionicons name="camera-outline" size={17} color={colors.primary} style={{ marginRight: 6 }} />
+                          <Text style={styles.proofActionBtnText}>Buka Kamera</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
 
               {/* Petunjuk Konfirmasi */}
               <View style={styles.transferGuideBox}>
                 <Ionicons name="shield-checkmark" size={18} color={colors.secondary} />
                 <Text style={styles.transferGuideText}>
-                  {selectedPaymentMethod === "cash"
-                    ? "Reservasi akan diajukan ke admin dan Anda dapat melakukan pembayaran di kasir saat tiba di kafe."
-                    : "Setelah mengunggah bukti transfer, tekan tombol di bawah untuk mengajukan tiket reservasi ke admin."}
+                  Setelah mengunggah bukti transfer, tekan tombol di bawah untuk mengajukan tiket reservasi ke admin.
                 </Text>
               </View>
 
@@ -1392,9 +1365,7 @@ export default function BookingFormScreen({ route, navigation }) {
                   <>
                     <Ionicons name="send" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
                     <Text style={styles.confirmPaymentBtnText}>
-                      {selectedPaymentMethod === "cash"
-                        ? "Ajukan Reservasi (Bayar di Kasir)"
-                        : "Kirim Bukti & Ajukan Tiket"}
+                      Kirim Bukti & Ajukan Tiket
                     </Text>
                   </>
                 )}

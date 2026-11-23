@@ -450,7 +450,7 @@ export default function MyTicketsScreen({ navigation }) {
           </View>
 
           {/* Pratinjau Bukti Transfer jika ada */}
-          {displayProof && (
+          {displayProof ? (
             <View style={styles.proofPreviewRow}>
               <TouchableOpacity
                 style={styles.proofThumbWrapper}
@@ -471,6 +471,11 @@ export default function MyTicketsScreen({ navigation }) {
                   <Text style={styles.proofActionLink}>Ketuk untuk lihat foto bukti transfer</Text>
                 </TouchableOpacity>
               </View>
+            </View>
+          ) : (
+            <View style={styles.noProofInfoBox}>
+              <Ionicons name="information-circle-outline" size={15} color="#64748B" style={{ marginRight: 6 }} />
+              <Text style={styles.noProofInfoText}>Tanpa Bukti Transfer</Text>
             </View>
           )}
 
@@ -649,7 +654,7 @@ export default function MyTicketsScreen({ navigation }) {
         <View style={styles.imageModalOverlay}>
           <View style={styles.imageModalHeader}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name="receipt-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Ionicons name="ticket-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
               <Text style={styles.imageModalTitle}>Bukti Transfer Pelanggan</Text>
             </View>
             <TouchableOpacity
@@ -1143,6 +1148,21 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: "600",
     marginTop: 2
+  },
+  noProofInfoBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderRadius: 8,
+    padding: 8,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#E2E8F0"
+  },
+  noProofInfoText: {
+    fontSize: 11,
+    color: "#64748B",
+    fontStyle: "italic"
   },
   paymentTagPending: {
     flexDirection: "row",

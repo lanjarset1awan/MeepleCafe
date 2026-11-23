@@ -418,7 +418,7 @@ export default function AdminPaymentListScreen({ navigation }) {
           ) : (
             <View style={styles.noProofInfoBox}>
               <Ionicons name="information-circle-outline" size={15} color="#64748B" style={{ marginRight: 6 }} />
-              <Text style={styles.noProofInfoText}>Tanpa Bukti Transfer (Bayar di Kasir / Tunai)</Text>
+              <Text style={styles.noProofInfoText}>Tanpa Bukti Transfer</Text>
             </View>
           )}
 
