@@ -119,14 +119,24 @@ export default function GameListScreen({ navigation }) {
             />
             <Text style={styles.headerTitle}>Katalog Koleksi Game</Text>
           </View>
-          <TouchableOpacity
-            style={styles.headerInfoBtn}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("About")}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <TouchableOpacity
+              style={styles.headerAdminBtn}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("AdminGameList")}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerInfoBtn}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("About")}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -240,6 +250,9 @@ const styles = StyleSheet.create({
     color: "#FFFFFF"
   },
   headerInfoBtn: {
+    padding: 4
+  },
+  headerAdminBtn: {
     padding: 4
   },
   searchContainer: {

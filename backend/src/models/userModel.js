@@ -1,7 +1,18 @@
 import { supabase } from "../config/supabaseClient.js";
 
-// Akun bawaan (Admin / Mahasiswa Utama)
+// Akun bawaan (Admin & Mahasiswa Utama)
 export const DEFAULT_USERS = [
+  {
+    id: "3f59f153-84b9-4862-a1cc-a159b94d6c8a",
+    name: "Admin MeepleCafe",
+    username: "admin",
+    email: "admin@meeplecafe.com",
+    phone: "081299998888",
+    password: "Admin@123",
+    avatar: null,
+    role: "Admin",
+    created_at: "2026-11-23T11:53:26.000Z"
+  },
   {
     id: "2d688ca5-1dbf-4e9a-bd4c-84d3f0527d2c",
     name: "Lanjar Setiawan",

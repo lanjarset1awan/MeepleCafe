@@ -44,7 +44,9 @@ async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
     "Authorization": `Bearer ${SUPABASE_KEY}`
   };
 
-  if (options.method === "POST") {
+  const supabaseMethod = options.supabaseMethod || (options.method === "PUT" ? "PATCH" : (options.method || "GET"));
+
+  if (options.method === "POST" || supabaseMethod === "PATCH") {
     supabaseHeaders["Prefer"] = "return=representation";
   }
 
@@ -57,7 +59,7 @@ async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
   }
 
   const supabaseOptions = {
-    method: options.method || "GET",
+    method: supabaseMethod,
     headers: supabaseHeaders
   };
   if (options.body) {
@@ -81,7 +83,7 @@ async function fetchWithFallback(endpoint, supabaseTable, options = {}) {
 
   // Jika hasil berupa array dan yang diminta adalah single item
   if (Array.isArray(result)) {
-    if (options.method === "POST") {
+    if (options.method === "POST" || supabaseMethod === "PATCH") {
       return result[0];
     }
     if (options.single) {
@@ -107,6 +109,31 @@ export const ApiService = {
       `board_games?id=eq.${id}&select=*,game_categories(id,name)`,
       { single: true }
     );
+  },
+
+  async createGame(payload) {
+    return fetchWithFallback("/api/games", "board_games", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async updateGame(id, payload) {
+    return fetchWithFallback(`/api/games/${id}`, `board_games?id=eq.${id}`, {
+      method: "PUT",
+      supabaseMethod: "PATCH",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async deleteGame(id) {
+    return fetchWithFallback(`/api/games/${id}`, `board_games?id=eq.${id}`, {
+      method: "DELETE"
+    });
+  },
+
+  async getCategories() {
+    return fetchWithFallback("/api/categories", "game_categories?select=*&order=name.asc");
   },
 
   // 2. Meja Kafe (List Utama 2 & Detail)

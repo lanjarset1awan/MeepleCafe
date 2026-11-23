@@ -136,6 +136,27 @@ export default function ProfileScreen({ navigation }) {
 
         {/* Action Buttons di Bagian Bawah */}
         <View style={styles.actionButtonsWrapper}>
+          {/* Tombol Akses Kelola Katalog Game (Admin) */}
+          <TouchableOpacity
+            style={styles.btnAdminPanel}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate("AdminGameList")}
+          >
+            <View style={styles.adminBtnLeft}>
+              <View style={styles.adminIconBox}>
+                <Ionicons name="cube-outline" size={19} color={colors.primary} />
+              </View>
+              <View>
+                <Text style={styles.btnAdminPanelTitle}>Kelola Katalog Game</Text>
+                <Text style={styles.btnAdminPanelSubtitle}>Tambah, edit & hapus data board game</Text>
+              </View>
+            </View>
+            <View style={styles.adminPillBadge}>
+              <Ionicons name="shield-checkmark" size={11} color="#FFFFFF" style={{ marginRight: 4 }} />
+              <Text style={styles.adminPillBadgeText}>ADMIN</Text>
+            </View>
+          </TouchableOpacity>
+
           {/* Tombol Besar Edit Profil di Atas Tombol Keluar */}
           <TouchableOpacity
             style={styles.btnEditProfile}
@@ -411,6 +432,61 @@ const styles = StyleSheet.create({
   },
   actionButtonsWrapper: {
     width: "100%"
+  },
+  btnAdminPanel: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 14,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4
+  },
+  adminBtnLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1
+  },
+  adminIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#EFF6FF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10
+  },
+  btnAdminPanelTitle: {
+    fontSize: 13.5,
+    fontWeight: "700",
+    color: colors.text
+  },
+  btnAdminPanelSubtitle: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2
+  },
+  adminPillBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12
+  },
+  adminPillBadgeText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    letterSpacing: 0.5
   },
   btnEditProfile: {
     flexDirection: "row",

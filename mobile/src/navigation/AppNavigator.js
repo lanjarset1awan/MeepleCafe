@@ -19,6 +19,8 @@ import MyTicketsScreen from "../screens/MyTicketsScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
 import AboutScreen from "../screens/AboutScreen";
+import AdminGameListScreen from "../screens/AdminGameListScreen";
+import AdminGameFormScreen from "../screens/AdminGameFormScreen";
 
 import { colors } from "../theme/colors";
 
@@ -259,18 +261,6 @@ export default function AppNavigator() {
         // Pengguna sudah login -> Masuk ke 5 Tab Utama & Screen Full (tanpa bottom navbar)
         <RootStack.Group>
           <RootStack.Screen name="MainApp" component={MainTabNavigator} />
-          <RootStack.Screen
-            name="About"
-            component={AboutScreen}
-            options={{
-              headerShown: true,
-              animation: "slide_from_right",
-              title: "Tentang MeepleCafe",
-              headerStyle: { backgroundColor: colors.darkBg },
-              headerTintColor: "#FFFFFF",
-              headerTitleStyle: { fontWeight: "bold" }
-            }}
-          />
         </RootStack.Group>
       ) : (
         // Pengguna belum login -> Katalog Game (Landing) & Autentikasi
@@ -290,20 +280,34 @@ export default function AppNavigator() {
           />
           <RootStack.Screen name="Login" component={LoginScreen} />
           <RootStack.Screen name="Register" component={RegisterScreen} />
-          <RootStack.Screen
-            name="About"
-            component={AboutScreen}
-            options={{
-              headerShown: true,
-              animation: "slide_from_right",
-              title: "Tentang MeepleCafe",
-              headerStyle: { backgroundColor: colors.darkBg },
-              headerTintColor: "#FFFFFF",
-              headerTitleStyle: { fontWeight: "bold" }
-            }}
-          />
         </RootStack.Group>
       )}
+
+      {/* Screen Bersama (Dapat diakses oleh user login maupun tamu/asistensi) */}
+      <RootStack.Group>
+        <RootStack.Screen
+          name="AdminGameList"
+          component={AdminGameListScreen}
+          options={{ headerShown: false, animation: "slide_from_right" }}
+        />
+        <RootStack.Screen
+          name="AdminGameForm"
+          component={AdminGameFormScreen}
+          options={{ headerShown: false, animation: "slide_from_right" }}
+        />
+        <RootStack.Screen
+          name="About"
+          component={AboutScreen}
+          options={{
+            headerShown: true,
+            animation: "slide_from_right",
+            title: "Tentang MeepleCafe",
+            headerStyle: { backgroundColor: colors.darkBg },
+            headerTintColor: "#FFFFFF",
+            headerTitleStyle: { fontWeight: "bold" }
+          }}
+        />
+      </RootStack.Group>
     </RootStack.Navigator>
   );
 }

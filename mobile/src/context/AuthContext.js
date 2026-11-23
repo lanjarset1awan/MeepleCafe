@@ -5,8 +5,19 @@ import { ApiService } from "../api/apiService";
 const ACTIVE_USER_STORAGE_KEY = "@meeple_active_user";
 const REGISTERED_USERS_STORAGE_KEY = "@meeple_registered_users";
 
-// Akun bawaan (Admin / Mahasiswa Utama)
+// Akun bawaan (Admin & Mahasiswa Utama)
 export const DEFAULT_USERS = [
+  {
+    id: "3f59f153-84b9-4862-a1cc-a159b94d6c8a",
+    name: "Admin MeepleCafe",
+    username: "admin",
+    email: "admin@meeplecafe.com",
+    phone: "081299998888",
+    password: "Admin@123",
+    avatar: null,
+    role: "Admin",
+    createdAt: "2026-11-23T11:53:26.000Z"
+  },
   {
     id: "usr-lanjar-01",
     name: "Lanjar Setiawan",
