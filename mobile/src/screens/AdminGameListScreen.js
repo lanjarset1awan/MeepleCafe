@@ -401,7 +401,7 @@ export default function AdminGameListScreen({ navigation }) {
           activeOpacity={0.8}
           onPress={() => navigation.replace("AdminPaymentList")}
         >
-          <Ionicons name="receipt-outline" size={20} color={colors.textMuted} />
+          <Ionicons name="ticket-outline" size={20} color={colors.textMuted} />
           <Text style={styles.adminBottomNavLabel}>Verifikasi Tiket</Text>
         </TouchableOpacity>
       </View>

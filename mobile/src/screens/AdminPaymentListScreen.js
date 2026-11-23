@@ -15,10 +15,12 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
+import GameImage from "../components/GameImage";
 import CustomDialog from "../components/CustomDialog";
 
 export default function AdminPaymentListScreen({ navigation }) {
   const [reservations, setReservations] = useState([]);
+  const [gamesLookup, setGamesLookup] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,6 +59,23 @@ export default function AdminPaymentListScreen({ navigation }) {
     setDialogConfig((prev) => ({ ...prev, visible: false }));
   };
 
+  const loadGamesLookup = async () => {
+    try {
+      const all = await ApiService.getGames();
+      if (all && Array.isArray(all)) {
+        const map = {};
+        all.forEach((g) => {
+          if (g.title) {
+            map[g.title.trim().toLowerCase()] = g.image_url;
+          }
+        });
+        setGamesLookup(map);
+      }
+    } catch (err) {
+      console.warn("Gagal memuat lookup gambar game di admin:", err);
+    }
+  };
+
   const loadReservations = async () => {
     try {
       setLoading(true);
@@ -78,12 +97,14 @@ export default function AdminPaymentListScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       loadReservations();
+      loadGamesLookup();
     }, [])
   );
 
   const onRefresh = () => {
     setRefreshing(true);
     loadReservations();
+    loadGamesLookup();
   };
 
   const handleBack = () => {
@@ -112,7 +133,7 @@ export default function AdminPaymentListScreen({ navigation }) {
         try {
           setUpdatingId(reservation.id);
           await ApiService.updateReservationStatus(reservation.id, newStatus);
-          
+
           showDialog({
             type: "success",
             title: isApprove ? "Tiket Diterima!" : "Tiket Ditolak",
@@ -175,25 +196,42 @@ export default function AdminPaymentListScreen({ navigation }) {
         normalizedStatus = "Rejected";
       }
 
+      // Ambil gambar board game sesuai judul di katalog
+      let gameImage =
+        (item.board_games && item.board_games.image_url) ||
+        (displayGame && gamesLookup[displayGame.trim().toLowerCase()]) ||
+        null;
+
+      if (!gameImage && displayGame) {
+        const lower = displayGame.trim().toLowerCase();
+        const foundKey = Object.keys(gamesLookup).find(
+          (k) => lower.includes(k) || k.includes(lower)
+        );
+        if (foundKey) {
+          gameImage = gamesLookup[foundKey];
+        }
+      }
+
       return {
         ...item,
         cleanName,
         displayGame,
+        gameImage,
         displayTotal: displayTotal || "Rp 30.000",
         displayMethod,
         displayProof,
         normalizedStatus
       };
     });
-  }, [reservations]);
+  }, [reservations, gamesLookup]);
 
-  // Hitung jumlah tiap kategori
+  // Hitung jumlah tiap status
   const pendingCount = parsedReservations.filter((r) => r.normalizedStatus === "Pending").length;
   const confirmedCount = parsedReservations.filter((r) => r.normalizedStatus === "Confirmed").length;
   const rejectedCount = parsedReservations.filter((r) => r.normalizedStatus === "Rejected").length;
   const allCount = parsedReservations.length;
 
-  // Filter & Search Logic
+  // Filter & Search
   const filteredList = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
 
@@ -211,11 +249,11 @@ export default function AdminPaymentListScreen({ navigation }) {
       if (filterStatus === "pending") return item.normalizedStatus === "Pending";
       if (filterStatus === "confirmed") return item.normalizedStatus === "Confirmed";
       if (filterStatus === "rejected") return item.normalizedStatus === "Rejected";
-      return true; // 'all'
+      return true;
     });
   }, [parsedReservations, searchQuery, filterStatus]);
 
-  // Render Kartu Tiket Pembayaran
+  // Render Kartu Tiket (Desain Sama Persis dengan Halaman Tiket Saya)
   const renderItem = ({ item }) => {
     const tableInfo = item.cafe_tables || {};
     const isPending = item.normalizedStatus === "Pending";
@@ -226,145 +264,207 @@ export default function AdminPaymentListScreen({ navigation }) {
     return (
       <View
         style={[
-          styles.card,
-          isPending && styles.cardPending,
-          isRejected && styles.cardRejected
+          styles.ticketCard,
+          isPending && styles.ticketCardPending,
+          isRejected && styles.ticketCardRejected
         ]}
       >
-        {/* Card Header: Kode Reservasi & Status Badge */}
-        <View style={styles.cardHeader}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={styles.codeIconBox}>
-              <Ionicons name="receipt" size={15} color={colors.primary} />
-            </View>
-            <View style={{ marginLeft: 8 }}>
-              <Text style={styles.bookingCodeText}>{item.booking_code}</Text>
-              <Text style={styles.dateSubText}>
-                {item.reservation_date} • {item.session_time}
-              </Text>
-            </View>
+        {/* Ticket Header */}
+        <View style={styles.ticketHeader}>
+          <View>
+            <Text style={styles.ticketBrand}>
+              {isPending
+                ? "MEEPLECAFE (PENGAJUAN TIKET)"
+                : isRejected
+                ? "MEEPLECAFE (TIKET DITOLAK)"
+                : "MEEPLECAFE PASS"}
+            </Text>
+            <Text style={[styles.bookingCode, isRejected && styles.bookingCodeRejected]}>
+              {item.booking_code}
+            </Text>
           </View>
 
-          {isPending ? (
-            <View style={styles.statusBadgePending}>
-              <Ionicons name="time" size={12} color="#D97706" style={{ marginRight: 4 }} />
-              <Text style={styles.statusBadgeTextPending}>Menunggu</Text>
-            </View>
-          ) : isConfirmed ? (
-            <View style={styles.statusBadgeConfirmed}>
-              <Ionicons name="checkmark-circle" size={12} color="#166534" style={{ marginRight: 4 }} />
-              <Text style={styles.statusBadgeTextConfirmed}>Diterima</Text>
-            </View>
-          ) : (
-            <View style={styles.statusBadgeRejected}>
-              <Ionicons name="close-circle" size={12} color="#DC2626" style={{ marginRight: 4 }} />
-              <Text style={styles.statusBadgeTextRejected}>Ditolak</Text>
-            </View>
-          )}
+          <View style={styles.headerRightActions}>
+            {isPending ? (
+              <View style={styles.statusBadgePending}>
+                <Ionicons name="time" size={13} color="#D97706" style={{ marginRight: 4 }} />
+                <Text style={styles.statusTextPending}>Menunggu Konfirmasi</Text>
+              </View>
+            ) : isConfirmed ? (
+              <View style={styles.statusBadgeActive}>
+                <Ionicons name="checkmark-circle" size={13} color="#166534" style={{ marginRight: 4 }} />
+                <Text style={styles.statusTextActive}>Aktif</Text>
+              </View>
+            ) : (
+              <View style={styles.statusBadgeRejected}>
+                <Ionicons name="close-circle" size={13} color="#DC2626" style={{ marginRight: 4 }} />
+                <Text style={styles.statusTextRejected}>Ditolak</Text>
+              </View>
+            )}
+          </View>
         </View>
 
-        {/* Card Body: Info Pemesan & Meja */}
-        <View style={styles.cardBody}>
-          <View style={styles.infoGridRow}>
-            <View style={styles.infoCol}>
-              <Text style={styles.infoLabel}>Nama Pemesan</Text>
-              <Text style={styles.infoValue} numberOfLines={1}>
-                {item.cleanName || "-"}
-              </Text>
+        {/* Perforated Divider Simulation */}
+        <View style={styles.dividerRow}>
+          <View style={styles.cutoutLeft} />
+          <View style={styles.dashedLine} />
+          <View style={styles.cutoutRight} />
+        </View>
+
+        {/* Ticket Body */}
+        <View style={styles.ticketBody}>
+          {/* Status Alert Banner */}
+          {isPending && (
+            <View style={styles.pendingNoticeBox}>
+              <Ionicons name="hourglass" size={18} color="#D97706" />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.pendingNoticeTitle}>Menunggu Verifikasi Admin</Text>
+                <Text style={styles.pendingNoticeDesc}>
+                  Pelanggan telah mengirim bukti pembayaran. Periksa bukti transfer di bawah sebelum menyetujui tiket.
+                </Text>
+              </View>
             </View>
-            <View style={styles.infoCol}>
-              <Text style={styles.infoLabel}>Nomor WhatsApp</Text>
-              <Text style={styles.infoValue} numberOfLines={1}>
-                {item.customer_phone || "-"}
-              </Text>
+          )}
+
+          {isRejected && (
+            <View style={styles.rejectedNoticeBox}>
+              <Ionicons name="alert-circle" size={18} color="#DC2626" />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.rejectedNoticeTitle}>Reservasi Ditolak</Text>
+                <Text style={styles.rejectedNoticeDesc}>
+                  Tiket tidak valid/ditolak. Jadwal meja kafe telah dibatalkan dan game dikembalikan ke stok kafe.
+                </Text>
+              </View>
             </View>
+          )}
+
+          {/* Section Game Dipesan */}
+          <Text style={styles.gameSectionLabel}>Board Game Dipesan</Text>
+          <View style={styles.gameBanner}>
+            <GameImage
+              uri={item.gameImage}
+              style={styles.ticketGameThumb}
+            />
+            <Text style={styles.gameBannerTitle} numberOfLines={2}>
+              {item.displayGame}
+            </Text>
           </View>
 
-          <View style={styles.infoGridRow}>
+          {/* Info Rows */}
+          <View style={styles.infoRow}>
             <View style={styles.infoCol}>
-              <Text style={styles.infoLabel}>Meja Kafe</Text>
-              <Text style={styles.infoValue}>
-                {tableInfo.table_type || "Meja Kafe"} ({tableInfo.table_number || "T-01"})
-              </Text>
+              <Text style={styles.infoLabel}>Nama Pemesan</Text>
+              <Text style={styles.infoValue}>{item.cleanName || "-"}</Text>
             </View>
-            <View style={styles.infoCol}>
-              <Text style={styles.infoLabel}>Kapasitas Pemain</Text>
+            <View style={styles.infoColRight}>
+              <Text style={styles.infoLabel}>Pemain</Text>
               <Text style={styles.infoValue}>{item.guest_count} Orang</Text>
             </View>
           </View>
 
-          <View style={styles.infoGridRow}>
-            <View style={styles.infoColFull}>
-              <Text style={styles.infoLabel}>Board Game Dipesan</Text>
-              <Text style={styles.infoValueGame} numberOfLines={1}>
-                {item.displayGame}
+          <View style={styles.infoRow}>
+            <View style={styles.infoCol}>
+              <Text style={styles.infoLabel}>Meja Bermain</Text>
+              <Text style={styles.infoValue}>
+                {tableInfo.table_type || "Meja Kafe"} ({tableInfo.table_number || "T-01"})
               </Text>
+            </View>
+            <View style={styles.infoColRight}>
+              <Text style={styles.infoLabel}>Tanggal</Text>
+              <Text style={styles.infoValue}>{item.reservation_date}</Text>
             </View>
           </View>
 
-          {/* Box Bukti Transfer & Tag Pembayaran */}
-          <View style={styles.paymentSectionBox}>
-            <View style={styles.paymentMetaRow}>
-              <View style={styles.totalBadge}>
-                <Ionicons name="wallet-outline" size={13} color={colors.primaryDark} style={{ marginRight: 4 }} />
-                <Text style={styles.totalBadgeText}>Total: {item.displayTotal}</Text>
-              </View>
-              <View style={styles.methodBadge}>
-                <Ionicons name="card-outline" size={13} color="#475569" style={{ marginRight: 4 }} />
-                <Text style={styles.methodBadgeText}>{item.displayMethod}</Text>
-              </View>
+          {/* Nomor WhatsApp Pemesan */}
+          {item.customer_phone ? (
+            <View style={styles.phoneMetaRow}>
+              <Ionicons name="logo-whatsapp" size={14} color="#166534" />
+              <Text style={styles.phoneMetaText}>WhatsApp: {item.customer_phone}</Text>
             </View>
+          ) : null}
 
-            {/* Bukti Foto Transfer */}
-            {item.displayProof ? (
+          {/* Session Banner */}
+          <View style={styles.sessionBanner}>
+            <Ionicons name="time-outline" size={16} color={colors.text} />
+            <Text style={styles.sessionBannerText}>{item.session_time}</Text>
+          </View>
+
+          {/* Bukti Transfer Terlampir */}
+          {item.displayProof ? (
+            <View style={styles.proofPreviewRow}>
               <TouchableOpacity
-                style={styles.proofBox}
-                activeOpacity={0.82}
+                style={styles.proofThumbWrapper}
+                activeOpacity={0.8}
                 onPress={() => setPreviewImageUri(item.displayProof)}
               >
                 <Image
                   source={{ uri: item.displayProof }}
-                  style={styles.proofThumbnail}
+                  style={styles.proofThumbImage}
                   resizeMode="cover"
                 />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <View style={styles.proofPillAttached}>
-                    <Ionicons name="image" size={12} color="#047857" style={{ marginRight: 4 }} />
-                    <Text style={styles.proofPillAttachedText}>Bukti Transfer Terlampir</Text>
-                  </View>
-                  <Text style={styles.proofActionHint}>
-                    Ketuk untuk periksa foto fullscreen
-                  </Text>
+                <View style={styles.proofZoomBadge}>
+                  <Ionicons name="scan-outline" size={11} color="#FFFFFF" />
                 </View>
-                <Ionicons name="search" size={18} color={colors.primary} />
               </TouchableOpacity>
+              <View style={{ flex: 1, marginLeft: 10, justifyContent: "center" }}>
+                <Text style={styles.proofLabelText}>Bukti Pembayaran Terlampir</Text>
+                <TouchableOpacity
+                  onPress={() => setPreviewImageUri(item.displayProof)}
+                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                >
+                  <Text style={styles.proofActionLink}>Ketuk untuk periksa bukti transfer fullscreen</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.noProofInfoBox}>
+              <Ionicons name="information-circle-outline" size={15} color="#64748B" style={{ marginRight: 6 }} />
+              <Text style={styles.noProofInfoText}>Tanpa Bukti Transfer (Bayar di Kasir / Tunai)</Text>
+            </View>
+          )}
+
+          {/* Payment & Total Info Row */}
+          <View style={styles.paymentInfoRow}>
+            <View style={styles.paymentTagTotal}>
+              <Ionicons name="wallet-outline" size={14} color={colors.primaryDark} />
+              <Text style={styles.paymentTagTotalText}>Total: {item.displayTotal}</Text>
+            </View>
+
+            {isPending ? (
+              <View style={styles.paymentTagPending}>
+                <Ionicons name="hourglass-outline" size={14} color="#D97706" />
+                <Text style={styles.paymentTagPendingText}>{item.displayMethod} (Verifikasi)</Text>
+              </View>
+            ) : isConfirmed ? (
+              <View style={styles.paymentTagMethod}>
+                <Ionicons name="checkmark-circle" size={14} color="#166534" />
+                <Text style={styles.paymentTagMethodText}>{item.displayMethod} (Lunas)</Text>
+              </View>
             ) : (
-              <View style={styles.noProofBox}>
-                <Ionicons name="information-circle-outline" size={15} color="#64748B" style={{ marginRight: 6 }} />
-                <Text style={styles.noProofText}>
-                  Tidak ada file bukti (Pembayaran di Kasir / Tunai)
-                </Text>
+              <View style={styles.paymentTagRejected}>
+                <Ionicons name="close-circle" size={14} color="#DC2626" />
+                <Text style={styles.paymentTagRejectedText}>{item.displayMethod} (Ditolak)</Text>
               </View>
             )}
           </View>
 
-          {/* Action Buttons */}
-          <View style={styles.actionRow}>
+          {/* Action Buttons: Terima dan Tolak */}
+          <View style={styles.actionButtonsRow}>
             {isPending && (
               <>
                 <TouchableOpacity
                   style={[styles.btnActionReject, isProcessing && { opacity: 0.6 }]}
-                  activeOpacity={0.8}
+                  activeOpacity={0.82}
                   disabled={isProcessing}
                   onPress={() => handleUpdateStatus(item, "Rejected")}
                 >
-                  <Ionicons name="close-circle-outline" size={16} color="#DC2626" style={{ marginRight: 4 }} />
+                  <Ionicons name="close-circle-outline" size={17} color="#DC2626" style={{ marginRight: 6 }} />
                   <Text style={styles.btnActionRejectText}>Tolak</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[styles.btnActionApprove, isProcessing && { opacity: 0.6 }]}
-                  activeOpacity={0.8}
+                  activeOpacity={0.82}
                   disabled={isProcessing}
                   onPress={() => handleUpdateStatus(item, "Confirmed")}
                 >
@@ -372,7 +472,7 @@ export default function AdminPaymentListScreen({ navigation }) {
                     <ActivityIndicator size="small" color="#FFFFFF" />
                   ) : (
                     <>
-                      <Ionicons name="checkmark-circle-outline" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
+                      <Ionicons name="checkmark-circle" size={17} color="#FFFFFF" style={{ marginRight: 6 }} />
                       <Text style={styles.btnActionApproveText}>Terima & Aktifkan</Text>
                     </>
                   )}
@@ -383,11 +483,11 @@ export default function AdminPaymentListScreen({ navigation }) {
             {isConfirmed && (
               <TouchableOpacity
                 style={[styles.btnActionSecondary, isProcessing && { opacity: 0.6 }]}
-                activeOpacity={0.8}
+                activeOpacity={0.82}
                 disabled={isProcessing}
                 onPress={() => handleUpdateStatus(item, "Rejected")}
               >
-                <Ionicons name="close-circle-outline" size={15} color="#DC2626" style={{ marginRight: 4 }} />
+                <Ionicons name="close-circle-outline" size={16} color="#DC2626" style={{ marginRight: 6 }} />
                 <Text style={styles.btnActionSecondaryText}>Ubah Menjadi Ditolak</Text>
               </TouchableOpacity>
             )}
@@ -395,11 +495,11 @@ export default function AdminPaymentListScreen({ navigation }) {
             {isRejected && (
               <TouchableOpacity
                 style={[styles.btnActionSecondaryAccept, isProcessing && { opacity: 0.6 }]}
-                activeOpacity={0.8}
+                activeOpacity={0.82}
                 disabled={isProcessing}
                 onPress={() => handleUpdateStatus(item, "Confirmed")}
               >
-                <Ionicons name="checkmark-circle-outline" size={15} color="#166534" style={{ marginRight: 4 }} />
+                <Ionicons name="checkmark-circle-outline" size={16} color="#166534" style={{ marginRight: 6 }} />
                 <Text style={styles.btnActionSecondaryAcceptText}>Terima Ulang Tiket</Text>
               </TouchableOpacity>
             )}
@@ -549,15 +649,15 @@ export default function AdminPaymentListScreen({ navigation }) {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons
-                name="receipt-outline"
+                name="ticket-outline"
                 size={54}
                 color={colors.textMuted}
               />
               <Text style={styles.emptyTitle}>Tidak Ada Tiket Pembayaran</Text>
               <Text style={styles.emptySubText}>
                 {filterStatus === "pending"
-                  ? "Semua pembayaran tiket telah diproses. Tidak ada pengajuan yang menunggu konfirmasi."
-                  : "Belum ada data tiket reservasi yang cocok dengan filter atau pencarian Anda."}
+                  ? "Semua pembayaran tiket telah diverifikasi. Tidak ada pengajuan yang menunggu konfirmasi saat ini."
+                  : "Belum ada tiket reservasi yang cocok dengan filter atau pencarian Anda."}
               </Text>
             </View>
           }
@@ -569,7 +669,7 @@ export default function AdminPaymentListScreen({ navigation }) {
         <View style={styles.imageModalOverlay}>
           <View style={styles.imageModalHeader}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name="receipt-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Ionicons name="ticket-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
               <Text style={styles.imageModalTitle}>Bukti Transfer Pelanggan</Text>
             </View>
             <TouchableOpacity
@@ -605,7 +705,7 @@ export default function AdminPaymentListScreen({ navigation }) {
         onClose={hideDialog}
       />
 
-      {/* NAVBAR BAWAH ADMIN: 3 TAB LENGKAP */}
+      {/* NAVBAR BAWAH ADMIN: ICON TIKET PERSIS SEPERTI TIKET SAYA */}
       <View style={styles.adminBottomNav}>
         <TouchableOpacity
           style={styles.adminBottomNavItem}
@@ -629,7 +729,7 @@ export default function AdminPaymentListScreen({ navigation }) {
           style={styles.adminBottomNavItem}
           activeOpacity={0.8}
         >
-          <Ionicons name="receipt" size={20} color={colors.primary} />
+          <Ionicons name="ticket" size={20} color={colors.primary} />
           <Text style={[styles.adminBottomNavLabel, styles.adminBottomNavLabelActive]}>
             Verifikasi Tiket
           </Text>
@@ -747,230 +847,399 @@ const styles = StyleSheet.create({
     paddingBottom: 100
   },
 
-  // CARD DESIGN
-  card: {
+  // CARD DESIGN: SAMA PERSIS DENGAN TIKET SAYA (PERFORATED PASS)
+  ticketCard: {
     backgroundColor: colors.card,
-    borderRadius: 14,
-    marginBottom: 14,
+    borderRadius: 16,
+    marginBottom: 18,
     borderWidth: 1,
     borderColor: colors.border,
-    elevation: 2,
+    elevation: 3,
     shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    overflow: "hidden"
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 }
   },
-  cardPending: {
+  ticketCardPending: {
     borderColor: "#FCD34D",
     borderWidth: 1.5
   },
-  cardRejected: {
+  ticketCardRejected: {
     borderColor: "#FECACA",
-    opacity: 0.9
+    borderWidth: 1.5,
+    opacity: 0.94
   },
-  cardHeader: {
+  ticketHeader: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#F8FAFC",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderColor: "#F1F5F9"
-  },
-  codeIconBox: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    backgroundColor: colors.primaryLight,
     alignItems: "center",
-    justifyContent: "center"
+    padding: 16,
+    backgroundColor: "#F8FAFC",
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16
   },
-  bookingCodeText: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: colors.primaryDark,
-    letterSpacing: 0.5
+  ticketBrand: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.primary,
+    letterSpacing: 1.5
   },
-  dateSubText: {
-    fontSize: 10.5,
+  bookingCode: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.text,
+    marginTop: 2
+  },
+  bookingCodeRejected: {
     color: colors.textMuted,
-    marginTop: 1
+    textDecorationLine: "line-through"
+  },
+  headerRightActions: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  statusBadgeActive: {
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  statusTextActive: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "bold"
   },
   statusBadgePending: {
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  statusTextPending: {
+    color: "#B45309",
+    fontSize: 11,
+    fontWeight: "bold"
+  },
+  statusBadgeRejected: {
+    backgroundColor: "#FEE2E2",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  statusTextRejected: {
+    color: "#DC2626",
+    fontSize: 11,
+    fontWeight: "bold"
+  },
+
+  // Perforated Divider
+  dividerRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FEF3C7",
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 12
+    height: 20,
+    overflow: "hidden"
   },
-  statusBadgeTextPending: {
-    fontSize: 11,
+  cutoutLeft: {
+    width: 14,
+    height: 20,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: colors.background,
+    borderRightWidth: 1,
+    borderColor: colors.border
+  },
+  dashedLine: {
+    flex: 1,
+    height: 1,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    borderStyle: "dashed"
+  },
+  cutoutRight: {
+    width: 14,
+    height: 20,
+    borderTopLeftRadius: 10,
+    borderBottomLeftRadius: 10,
+    backgroundColor: colors.background,
+    borderLeftWidth: 1,
+    borderColor: colors.border
+  },
+
+  // Ticket Body
+  ticketBody: {
+    padding: 16
+  },
+  pendingNoticeBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFBEB",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12
+  },
+  pendingNoticeTitle: {
+    fontSize: 12,
     fontWeight: "700",
     color: "#B45309"
   },
-  statusBadgeConfirmed: {
+  pendingNoticeDesc: {
+    fontSize: 11,
+    color: "#92400E",
+    marginTop: 2,
+    lineHeight: 15
+  },
+  rejectedNoticeBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#DCFCE7",
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 12
+    backgroundColor: "#FEF2F2",
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12
   },
-  statusBadgeTextConfirmed: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#166534"
-  },
-  statusBadgeRejected: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FEE2E2",
-    paddingHorizontal: 8,
-    paddingVertical: 3.5,
-    borderRadius: 12
-  },
-  statusBadgeTextRejected: {
-    fontSize: 11,
+  rejectedNoticeTitle: {
+    fontSize: 12,
     fontWeight: "700",
     color: "#DC2626"
   },
+  rejectedNoticeDesc: {
+    fontSize: 11,
+    color: "#991B1B",
+    marginTop: 2,
+    lineHeight: 15
+  },
 
-  cardBody: {
-    padding: 14
-  },
-  infoGridRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8
-  },
-  infoCol: {
-    flex: 1,
-    marginRight: 8
-  },
-  infoColFull: {
-    flex: 1
-  },
-  infoLabel: {
-    fontSize: 10.5,
-    color: colors.textMuted,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.3
-  },
-  infoValue: {
-    fontSize: 12.5,
-    color: colors.text,
-    fontWeight: "600",
-    marginTop: 2
-  },
-  infoValueGame: {
-    fontSize: 13,
-    color: colors.primaryDark,
+  // Game Section Banner
+  gameSectionLabel: {
+    fontSize: 11,
     fontWeight: "700",
-    marginTop: 2
+    color: colors.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+    marginBottom: 6
   },
-
-  // Payment Section Inside Card
-  paymentSectionBox: {
-    marginTop: 8,
-    padding: 10,
-    backgroundColor: "#F8FAFC",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#E2E8F0"
-  },
-  paymentMetaRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8
-  },
-  totalBadge: {
+  gameBanner: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginBottom: 16
   },
-  totalBadgeText: {
-    fontSize: 11.5,
+  ticketGameThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    marginRight: 12
+  },
+  gameBannerTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.text,
+    flex: 1
+  },
+
+  // Info Rows
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12
+  },
+  infoCol: {
+    flex: 1
+  },
+  infoColRight: {
+    alignItems: "flex-end"
+  },
+  infoLabel: {
+    fontSize: 11,
+    color: colors.textMuted,
+    fontWeight: "600"
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.text,
+    marginTop: 2
+  },
+  phoneMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F0FDF4",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#DCFCE7"
+  },
+  phoneMetaText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#166534",
+    marginLeft: 6
+  },
+  sessionBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginBottom: 12
+  },
+  sessionBannerText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.text,
+    marginLeft: 8
+  },
+
+  // Bukti Transfer
+  proofPreviewRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 10,
+    padding: 8,
+    marginBottom: 12
+  },
+  proofThumbWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 6,
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#E2E8F0"
+  },
+  proofThumbImage: {
+    width: "100%",
+    height: "100%"
+  },
+  proofZoomBadge: {
+    position: "absolute",
+    bottom: 2,
+    right: 2,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 4,
+    padding: 2
+  },
+  proofLabelText: {
+    fontSize: 11,
     fontWeight: "700",
     color: colors.primaryDark
   },
-  methodBadge: {
+  proofActionLink: {
+    fontSize: 11,
+    color: colors.primary,
+    fontWeight: "600",
+    marginTop: 2
+  },
+  noProofInfoBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: "#E2E8F0"
   },
-  methodBadgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#475569"
-  },
-
-  proofBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    padding: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#CBD5E1"
-  },
-  proofThumbnail: {
-    width: 48,
-    height: 48,
-    borderRadius: 6,
-    backgroundColor: "#F1F5F9"
-  },
-  proofPillAttached: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#DCFCE7",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-    marginBottom: 2
-  },
-  proofPillAttachedText: {
-    fontSize: 10.5,
-    fontWeight: "700",
-    color: "#047857"
-  },
-  proofActionHint: {
-    fontSize: 10.5,
-    color: colors.primary,
-    fontWeight: "600"
-  },
-  noProofBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 4
-  },
-  noProofText: {
+  noProofInfoText: {
     fontSize: 11,
     color: "#64748B",
     fontStyle: "italic"
   },
 
-  // Action Buttons
-  actionRow: {
+  // Payment Tags
+  paymentInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderColor: colors.border
+  },
+  paymentTagTotal: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  paymentTagTotalText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: colors.primaryDark,
+    marginLeft: 5
+  },
+  paymentTagMethod: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  paymentTagMethodText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#166534",
+    marginLeft: 5
+  },
+  paymentTagPending: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  paymentTagPendingText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#B45309",
+    marginLeft: 5
+  },
+  paymentTagRejected: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEE2E2",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8
+  },
+  paymentTagRejectedText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#DC2626",
+    marginLeft: 5
+  },
+
+  // Action Buttons: Terima dan Tolak
+  actionButtonsRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
     gap: 8,
-    marginTop: 12,
-    paddingTop: 10,
+    marginTop: 14,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderColor: "#F1F5F9"
   },
@@ -983,11 +1252,11 @@ const styles = StyleSheet.create({
     borderColor: "#FECACA",
     paddingVertical: 9,
     paddingHorizontal: 16,
-    borderRadius: 8
+    borderRadius: 10
   },
   btnActionRejectText: {
     color: "#DC2626",
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: "700"
   },
   btnActionApprove: {
@@ -998,11 +1267,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     paddingVertical: 9,
     paddingHorizontal: 16,
-    borderRadius: 8
+    borderRadius: 10
   },
   btnActionApproveText: {
     color: "#FFFFFF",
-    fontSize: 12.5,
+    fontSize: 13,
     fontWeight: "700"
   },
   btnActionSecondary: {
@@ -1014,11 +1283,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#FECACA",
     paddingVertical: 9,
-    borderRadius: 8
+    borderRadius: 10
   },
   btnActionSecondaryText: {
     color: "#DC2626",
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: "700"
   },
   btnActionSecondaryAccept: {
@@ -1030,11 +1299,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#BBF7D0",
     paddingVertical: 9,
-    borderRadius: 8
+    borderRadius: 10
   },
   btnActionSecondaryAcceptText: {
     color: "#166534",
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: "700"
   },
 
@@ -1101,7 +1370,7 @@ const styles = StyleSheet.create({
     height: "85%"
   },
 
-  // NAVBAR BAWAH ADMIN
+  // NAVBAR BAWAH ADMIN: Samain persis
   adminBottomNav: {
     flexDirection: "row",
     backgroundColor: colors.card,
