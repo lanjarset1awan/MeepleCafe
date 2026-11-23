@@ -65,6 +65,9 @@ export default function AdminGameFormScreen({ navigation, route }) {
   const [imageUrl, setImageUrl] = useState(existingGame?.image_url || "");
   const [description, setDescription] = useState(existingGame?.description || "");
   const [rulesSummary, setRulesSummary] = useState(existingGame?.rules_summary || "");
+  const [isAvailable, setIsAvailable] = useState(
+    existingGame?.is_available !== false && (existingGame?.stock === undefined || Number(existingGame.stock) > 0)
+  );
 
   // Mode Pilihan Gambar: 'upload' (dari HP/kamera) atau 'url' (input link)
   const [imageInputMode, setImageInputMode] = useState("upload");
@@ -274,7 +277,7 @@ export default function AdminGameFormScreen({ navigation, route }) {
         image_url: imageUrl.trim() || null,
         description: description.trim() || null,
         rules_summary: rulesSummary.trim() || null,
-        is_available: parsedStock > 0
+        is_available: isAvailable
       };
 
       if (isEditMode) {
@@ -689,6 +692,44 @@ export default function AdminGameFormScreen({ navigation, route }) {
           />
         </View>
 
+        {/* Card 5: Status Ketersediaan Game (Modelan Meja Kafe) */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconBadge}>
+              <Ionicons name="toggle-outline" size={18} color={colors.primary} />
+            </View>
+            <Text style={styles.sectionTitle}>Status Ketersediaan</Text>
+          </View>
+
+          <View style={styles.switchRow}>
+            <View style={{ flex: 1, paddingRight: 10 }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View
+                  style={[
+                    styles.statusDot,
+                    { backgroundColor: isAvailable ? "#10B981" : "#EF4444" }
+                  ]}
+                />
+                <Text style={styles.switchLabel}>
+                  {isAvailable ? "Game Aktif (Tersedia)" : "Game Tidak Tersedia"}
+                </Text>
+              </View>
+              <Text style={styles.switchSublabel}>
+                {isAvailable
+                  ? "Game siap dimainkan dan dapat dipesan oleh pelanggan saat reservasi."
+                  : "Game bertanda 'Tidak Tersedia' di katalog dan tombol pemesanan akan dinonaktifkan."}
+              </Text>
+            </View>
+
+            <Switch
+              value={isAvailable}
+              onValueChange={setIsAvailable}
+              trackColor={{ false: "#FECACA", true: colors.primaryLight }}
+              thumbColor={isAvailable ? colors.primary : "#DC2626"}
+            />
+          </View>
+        </View>
+
         {/* Action Button Simpan */}
         <TouchableOpacity
           style={[styles.btnSubmit, isSubmitting && styles.btnSubmitDisabled]}
@@ -891,6 +932,12 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: colors.border
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6
   },
   switchLabel: {
     fontSize: 13,

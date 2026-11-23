@@ -1,9 +1,10 @@
 import { supabase } from "../config/supabaseClient.js";
 
-// Penyimpanan in-memory runtime untuk tracking stok & posisi rak
+// Penyimpanan in-memory runtime untuk tracking stok & posisi rak & ketersediaan
 // Menjamin data tetap live & dinamis bahkan sebelum migrasi SQL dijalankan di Supabase Dashboard
 const runtimeStockTracker = new Map();
 const runtimeShelfTracker = new Map();
+const runtimeAvailabilityTracker = new Map();
 const softDeletedIds = new Set();
 
 function computeDefaultStock(game) {
@@ -25,6 +26,7 @@ function enhanceGameData(game) {
   if (!game) return null;
   const storedStock = runtimeStockTracker.get(game.id);
   const storedShelf = runtimeShelfTracker.get(game.id);
+  const storedAvail = runtimeAvailabilityTracker.get(game.id);
 
   const stock =
     game.stock !== null && game.stock !== undefined
@@ -36,7 +38,8 @@ function enhanceGameData(game) {
       ? game.shelf_location
       : (storedShelf || computeDefaultShelf(game));
 
-  const is_available = stock > 0 && game.is_available !== false;
+  const isExplicitAvail = storedAvail !== undefined ? storedAvail : (game.is_available !== false);
+  const is_available = stock > 0 && isExplicitAvail;
 
   return {
     ...game,
@@ -152,6 +155,9 @@ export const GameModel = {
       if (!error && data && data[0]) {
         runtimeStockTracker.set(data[0].id, desiredStock);
         runtimeShelfTracker.set(data[0].id, desiredShelf);
+        if (payload.is_available !== undefined) {
+          runtimeAvailabilityTracker.set(data[0].id, Boolean(payload.is_available));
+        }
         return enhanceGameData(data[0]);
       }
     } catch (e) {
@@ -172,6 +178,9 @@ export const GameModel = {
     const created = data[0];
     runtimeStockTracker.set(created.id, desiredStock);
     runtimeShelfTracker.set(created.id, desiredShelf);
+    if (payload.is_available !== undefined) {
+      runtimeAvailabilityTracker.set(created.id, Boolean(payload.is_available));
+    }
     return enhanceGameData(created);
   },
 
@@ -189,6 +198,9 @@ export const GameModel = {
       desiredShelf = payload.shelf_location.trim();
       updatePayload.shelf_location = desiredShelf;
       runtimeShelfTracker.set(id, desiredShelf);
+    }
+    if (payload.is_available !== undefined) {
+      runtimeAvailabilityTracker.set(id, Boolean(payload.is_available));
     }
 
     try {

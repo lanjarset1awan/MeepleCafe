@@ -25,6 +25,7 @@ export default function AdminGameListScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'available', 'unavailable'
 
   // State untuk dialog konfirmasi hapus & notifikasi
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -36,6 +37,13 @@ export default function AdminGameListScreen({ navigation }) {
     title: "",
     message: ""
   });
+
+  const activeCount = games.filter(
+    (g) => g.is_available !== false && (g.stock === undefined || Number(g.stock) > 0)
+  ).length;
+  const inactiveCount = games.filter(
+    (g) => g.is_available === false || Number(g.stock) === 0
+  ).length;
 
   const loadData = async () => {
     try {
@@ -81,7 +89,7 @@ export default function AdminGameListScreen({ navigation }) {
     }
   };
 
-  // Filter game berdasarkan search & category
+  // Filter game berdasarkan search, category, dan ketersediaan
   const filteredGames = games.filter((item) => {
     const categoryName = item.game_categories?.name || "";
     const matchesCategory =
@@ -90,8 +98,42 @@ export default function AdminGameListScreen({ navigation }) {
     const matchesSearch = item.title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    if (!matchesCategory || !matchesSearch) return false;
+
+    const isAvail = item.is_available !== false && (item.stock === undefined || Number(item.stock) > 0);
+    if (filterStatus === "available") return isAvail;
+    if (filterStatus === "unavailable") return !isAvail;
+    return true;
   });
+
+  // Toggle ketersediaan game (Modelan Meja Kafe: Tersedia / Tidak Tersedia)
+  const handleToggleAvailability = async (item) => {
+    const currentAvail = item.is_available !== false && (item.stock === undefined || Number(item.stock) > 0);
+    const nextAvail = !currentAvail;
+    try {
+      // Update optimistik di UI
+      setGames((prev) =>
+        prev.map((g) => (g.id === item.id ? { ...g, is_available: nextAvail } : g))
+      );
+      await ApiService.updateGame(item.id, { is_available: nextAvail });
+      setFeedbackDialog({
+        visible: true,
+        type: "success",
+        title: nextAvail ? "Status Game: Tersedia" : "Status Game: Tidak Tersedia",
+        message: `Status ketersediaan board game "${item.title}" berhasil diubah menjadi ${
+          nextAvail ? "Tersedia" : "Tidak Tersedia"
+        }.`
+      });
+    } catch (err) {
+      loadData();
+      setFeedbackDialog({
+        visible: true,
+        type: "danger",
+        title: "Gagal Mengubah Status",
+        message: err.message || "Terjadi kesalahan saat memperbarui status ketersediaan game."
+      });
+    }
+  };
 
   // Konfirmasi sebelum hapus
   const handlePromptDelete = (game) => {
@@ -141,11 +183,30 @@ export default function AdminGameListScreen({ navigation }) {
         <GameImage uri={item.image_url} style={styles.cardImage} />
 
         <View style={styles.cardContent}>
-          {/* Header Row: Title */}
+          {/* Header Row: Title & Tombol Ketersediaan (Modelan Meja Kafe) */}
           <View style={styles.cardHeaderRow}>
             <Text style={styles.gameTitle} numberOfLines={1}>
               {item.title}
             </Text>
+
+            {isAvail ? (
+              <TouchableOpacity
+                style={styles.statusPill}
+                activeOpacity={0.8}
+                onPress={() => handleToggleAvailability(item)}
+              >
+                <Text style={styles.statusPillText}>Tersedia</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.statusPillMaintenance}
+                activeOpacity={0.8}
+                onPress={() => handleToggleAvailability(item)}
+              >
+                <Ionicons name="alert-circle" size={11} color="#B45309" style={{ marginRight: 4 }} />
+                <Text style={styles.statusPillTextMaintenance}>Tidak Tersedia</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Meta Info Row */}
@@ -261,6 +322,36 @@ export default function AdminGameListScreen({ navigation }) {
             <Ionicons name="close-circle" size={18} color={colors.textMuted} />
           </TouchableOpacity>
         )}
+      </View>
+
+      {/* 3 Status Filter Chips: Semua, Tersedia, Tidak Tersedia (Modelan Meja Kafe) */}
+      <View style={styles.statusFilterWrapper}>
+        <TouchableOpacity
+          onPress={() => setFilterStatus("all")}
+          style={[styles.statusFilterChip, filterStatus === "all" && styles.statusFilterChipActive]}
+        >
+          <Text style={[styles.statusFilterChipText, filterStatus === "all" && styles.statusFilterChipTextActive]}>
+            Semua ({games.length})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setFilterStatus("available")}
+          style={[styles.statusFilterChip, filterStatus === "available" && styles.statusFilterChipActive]}
+        >
+          <Text style={[styles.statusFilterChipText, filterStatus === "available" && styles.statusFilterChipTextActive]}>
+            Tersedia ({activeCount})
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setFilterStatus("unavailable")}
+          style={[styles.statusFilterChip, filterStatus === "unavailable" && styles.statusFilterChipActive]}
+        >
+          <Text style={[styles.statusFilterChipText, filterStatus === "unavailable" && styles.statusFilterChipTextActive]}>
+            Tidak Tersedia ({inactiveCount})
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Category Filter Pills */}
@@ -552,6 +643,62 @@ const styles = StyleSheet.create({
   filterChipTextActive: {
     color: "#FFFFFF",
     fontWeight: "700"
+  },
+  statusFilterWrapper: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 4
+  },
+  statusFilterChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 6.5,
+    borderRadius: 20,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginHorizontal: 4
+  },
+  statusFilterChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
+  },
+  statusFilterChipText: {
+    fontSize: 11.5,
+    fontWeight: "600",
+    color: colors.textMuted
+  },
+  statusFilterChipTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "700"
+  },
+  statusPill: {
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12
+  },
+  statusPillText: {
+    color: "#166534",
+    fontSize: 11,
+    fontWeight: "bold"
+  },
+  statusPillMaintenance: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 12
+  },
+  statusPillTextMaintenance: {
+    color: "#B45309",
+    fontSize: 11,
+    fontWeight: "bold"
   },
   infoSummaryRow: {
     flexDirection: "row",

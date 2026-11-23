@@ -119,12 +119,14 @@ export default function GameDetailScreen({ route, navigation }) {
         <View style={styles.detailCard}>
           <Text style={styles.title}>{game.title}</Text>
 
-          {/* Banner Peringatan Stok Habis */}
+          {/* Banner Peringatan Ketersediaan / Stok */}
           {!isAvailable && (
             <View style={styles.outOfStockAlert}>
               <Ionicons name="alert-circle" size={18} color="#DC2626" style={{ marginRight: 8 }} />
               <Text style={styles.outOfStockAlertText}>
-                Stok board game ini sedang habis (0 Box) atau sedang dimainkan pelanggan lain di kafe.
+                {game.is_available === false
+                  ? "Board game ini sedang tidak tersedia untuk dipesan di kafe."
+                  : "Stok board game ini sedang habis (0 Box) atau sedang dimainkan pelanggan lain di kafe."}
               </Text>
             </View>
           )}
@@ -180,7 +182,9 @@ export default function GameDetailScreen({ route, navigation }) {
                 <Text style={[styles.specValue, !isAvailable && { color: "#DC2626" }]} numberOfLines={1}>
                   {stockCount} Box
                 </Text>
-                <Text style={styles.specLabel}>{isAvailable ? "Stok Kafe" : "Stok Habis"}</Text>
+                <Text style={styles.specLabel}>
+                  {isAvailable ? "Stok Kafe" : (game.is_available === false ? "Tidak Tersedia" : "Stok Habis")}
+                </Text>
               </View>
 
               {/* 5. Posisi Rak (Icon kotak-kotak konsisten grid-outline) */}
@@ -247,7 +251,7 @@ export default function GameDetailScreen({ route, navigation }) {
           />
           <Text style={styles.ctaText}>
             {!isAvailable
-              ? "Stok Game Habis / Sedang Dipinjam"
+              ? (game.is_available === false ? "Game Tidak Tersedia (Tidak Dapat Dipesan)" : "Stok Game Habis / Sedang Dipinjam")
               : (user ? "Pilih Game Ini & Lanjut Reservasi Meja" : "Main Game Ini (Perlu Masuk Akun)")}
           </Text>
         </TouchableOpacity>

@@ -525,6 +525,17 @@ export default function BookingFormScreen({ route, navigation }) {
       return;
     }
 
+    if (chosenGame.is_available === false) {
+      showDialog({
+        type: "warning",
+        title: "Game Tidak Tersedia",
+        message: `Board game "${chosenGame.title}" sedang tidak tersedia untuk dipesan. Silakan pilih game lain.`,
+        confirmText: "Ganti Game",
+        onConfirm: () => setGamePickerVisible(true)
+      });
+      return;
+    }
+
     if (!customerName.trim()) {
       showDialog({
         type: "warning",
@@ -1529,7 +1540,9 @@ export default function BookingFormScreen({ route, navigation }) {
                           color: isAvail ? colors.primary : "#DC2626"
                         }}
                       >
-                        {isAvail ? `Stok: ${stockNum} Box Tersedia` : "Stok Habis / Sedang Dipinjam"}
+                        {isAvail
+                          ? `Stok: ${stockNum} Box Tersedia`
+                          : (item.is_available === false ? "Game Tidak Tersedia" : "Stok Habis / Sedang Dipinjam")}
                       </Text>
                     </View>
                     {chosenGame?.id === item.id && (

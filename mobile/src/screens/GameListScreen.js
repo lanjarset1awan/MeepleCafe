@@ -85,6 +85,12 @@ export default function GameListScreen({ navigation }) {
             <Text style={styles.gameTitle} numberOfLines={1}>
               {item.title}
             </Text>
+            {item.is_available === false && (
+              <View style={styles.unavailBadge}>
+                <Ionicons name="alert-circle" size={11} color="#B45309" style={{ marginRight: 3 }} />
+                <Text style={styles.unavailBadgeText}>Tidak Tersedia</Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.metaRow}>
@@ -121,18 +127,22 @@ export default function GameListScreen({ navigation }) {
               style={[styles.actionFooterText, !isAvail && { color: colors.textMuted }]}
               numberOfLines={1}
             >
-              {isAvail ? "Pelajari Aturan & Pilih Game" : "Stok Sedang Habis / Dipinjam"}
+              {isAvail
+                ? "Pelajari Aturan & Pilih Game"
+                : (item.is_available === false ? "Game Tidak Tersedia" : "Stok Sedang Habis / Dipinjam")}
             </Text>
             <View style={styles.actionFooterRight}>
               <View style={[styles.stockPill, !isAvail && styles.stockPillEmpty]}>
                 <Ionicons
-                  name="cube-outline"
+                  name={isAvail ? "cube-outline" : "alert-circle-outline"}
                   size={12}
                   color={isAvail ? colors.primaryDark : "#DC2626"}
                   style={{ marginRight: 3 }}
                 />
                 <Text style={[styles.stockPillText, !isAvail && styles.stockPillEmptyText]}>
-                  {isAvail ? `Tersedia ${stockCount} Box` : "Stok Habis"}
+                  {isAvail
+                    ? `Tersedia ${stockCount} Box`
+                    : (item.is_available === false ? "Tidak Tersedia" : "Stok Habis")}
                 </Text>
               </View>
               <Ionicons
@@ -389,6 +399,21 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.text,
     marginRight: 8
+  },
+  unavailBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FEF3C7",
+    borderWidth: 1,
+    borderColor: "#FDE68A",
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 8
+  },
+  unavailBadgeText: {
+    fontSize: 10.5,
+    fontWeight: "700",
+    color: "#B45309"
   },
   badgeStockAvail: {
     flexDirection: "row",
