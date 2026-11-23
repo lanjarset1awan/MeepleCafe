@@ -17,6 +17,7 @@ import CustomDialog from "../components/CustomDialog";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.is_admin === true;
   const [isPhotoModalVisible, setIsPhotoModalVisible] = useState(false);
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
 
@@ -58,15 +59,27 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.headerTitle}>Profil Pengguna</Text>
           </View>
 
-          {/* Tombol Info / About di Kanan Atas */}
-          <TouchableOpacity
-            style={styles.headerInfoBtn}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("About")}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
+          {/* Tombol Info / About & Admin di Kanan Atas */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {isAdmin && (
+              <TouchableOpacity
+                style={styles.headerAdminBtn}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate("AdminGameList")}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={styles.headerInfoBtn}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("About")}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -297,6 +310,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#FFFFFF"
+  },
+  headerAdminBtn: {
+    padding: 4
   },
   headerInfoBtn: {
     padding: 4

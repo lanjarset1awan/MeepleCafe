@@ -14,8 +14,11 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
+import { useAuth } from "../context/AuthContext";
 
 export default function TableListScreen({ route, navigation }) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.is_admin === true;
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -154,14 +157,26 @@ export default function TableListScreen({ route, navigation }) {
             />
             <Text style={styles.headerTitle}>Daftar Meja Bermain</Text>
           </View>
-          <TouchableOpacity
-            style={styles.headerInfoBtn}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("About")}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            {isAdmin && (
+              <TouchableOpacity
+                style={styles.headerAdminBtn}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate("AdminGameList")}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={styles.headerInfoBtn}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("About")}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="information-circle-outline" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -300,6 +315,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#FFFFFF"
+  },
+  headerAdminBtn: {
+    padding: 4
   },
   headerInfoBtn: {
     padding: 4

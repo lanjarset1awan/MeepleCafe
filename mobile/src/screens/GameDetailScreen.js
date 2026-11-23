@@ -17,9 +17,27 @@ import CustomDialog from "../components/CustomDialog";
 export default function GameDetailScreen({ route, navigation }) {
   const { gameId } = route.params;
   const { user } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.is_admin === true;
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loginPromptVisible, setLoginPromptVisible] = useState(false);
+
+  useEffect(() => {
+    if (isAdmin) {
+      navigation.setOptions({
+        headerRight: () => (
+          <TouchableOpacity
+            style={{ padding: 6, marginRight: 4 }}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate("AdminGameList")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        )
+      });
+    }
+  }, [isAdmin, navigation]);
 
   useEffect(() => {
     async function fetchDetail() {
