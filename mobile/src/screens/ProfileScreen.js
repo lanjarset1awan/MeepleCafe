@@ -136,26 +136,28 @@ export default function ProfileScreen({ navigation }) {
 
         {/* Action Buttons di Bagian Bawah */}
         <View style={styles.actionButtonsWrapper}>
-          {/* Tombol Akses Kelola Katalog Game (Admin) */}
-          <TouchableOpacity
-            style={styles.btnAdminPanel}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate("AdminGameList")}
-          >
-            <View style={styles.adminBtnLeft}>
-              <View style={styles.adminIconBox}>
-                <Ionicons name="cube-outline" size={19} color={colors.primary} />
+          {/* Tombol Akses Kelola Katalog Game (Khusus Role Admin) */}
+          {userRole.toLowerCase() === "admin" && (
+            <TouchableOpacity
+              style={styles.btnAdminPanel}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate("AdminGameList")}
+            >
+              <View style={styles.adminBtnLeft}>
+                <View style={styles.adminIconBox}>
+                  <Ionicons name="cube-outline" size={19} color={colors.primary} />
+                </View>
+                <View>
+                  <Text style={styles.btnAdminPanelTitle}>Kelola Katalog Game</Text>
+                  <Text style={styles.btnAdminPanelSubtitle}>Tambah, edit & hapus data board game</Text>
+                </View>
               </View>
-              <View>
-                <Text style={styles.btnAdminPanelTitle}>Kelola Katalog Game</Text>
-                <Text style={styles.btnAdminPanelSubtitle}>Tambah, edit & hapus data board game</Text>
+              <View style={styles.adminPillBadge}>
+                <Ionicons name="shield-checkmark" size={11} color="#FFFFFF" style={{ marginRight: 4 }} />
+                <Text style={styles.adminPillBadgeText}>ADMIN</Text>
               </View>
-            </View>
-            <View style={styles.adminPillBadge}>
-              <Ionicons name="shield-checkmark" size={11} color="#FFFFFF" style={{ marginRight: 4 }} />
-              <Text style={styles.adminPillBadgeText}>ADMIN</Text>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )}
 
           {/* Tombol Besar Edit Profil di Atas Tombol Keluar */}
           <TouchableOpacity

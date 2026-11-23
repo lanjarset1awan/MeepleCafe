@@ -130,12 +130,15 @@ Jika ditemukan jadwal yang beririsan untuk meja yang sama, sistem menolak pemesa
 ### 5. Resilient Networking & Offline Fallback
 - Aplikasi mobile dilengkapi mekanisme *resilience*: jika koneksi internet terputus atau server Supabase sedang *cold start / down*, backend dan aplikasi memiliki *in-memory mock store* yang menjaga aplikasi tetap responsif dan tidak pernah *force close* (crash) di tangan pengguna saat demo pengujian.
 
-### 6. Panel Admin & Manajemen Katalog Game (CRUD Lengkap)
-- Menyediakan antarmuka khusus bagi pengelola kafe untuk melakukan operasi **CRUD (Create, Read, Update, Delete)** koleksi board game secara langsung dari aplikasi mobile.
+### 6. Panel Admin & Manajemen Katalog Game (CRUD Lengkap & Dual-Input Media)
+- **Role-Based Access Control (RBAC):** Tombol kelola game di Profil dan ikon pengaturan di katalog **hanya muncul** jika pengguna login dengan role `Admin`. Pengguna biasa (`Member`) tidak akan melihat fitur ini.
+- **Manajemen Sesi Admin:** Halaman admin dilengkapi tombol keluar akun (*logout button*) di bagian header dengan modal konfirmasi aman (`CustomDialog`).
 - **Read:** Menampilkan seluruh koleksi dengan pencarian langsung dan filter kategori, dilengkapi status ketersediaan (*Tersedia / Dipinjam*).
-- **Create:** Menambahkan board game baru dengan validasi jumlah pemain, durasi main, tingkat kesulitan, serta opsi *preset cover image*.
-- **Update:** Mengubah data game yang sudah ada secara instan dengan form terisi otomatis.
-- **Delete:** Menghapus data board game dengan dialog konfirmasi aman (`CustomDialog`) untuk mencegah penghapusan yang tidak disengaja.
+- **Create & Update dengan Dual-Metode Cover:**
+  1. **Upload Langsung dari HP:** Mengambil foto dari galeri atau kamera menggunakan `expo-image-picker` yang diunggah ke Supabase Storage (skrip SQL: `backend/supabase_schema_games_storage.sql`).
+  2. **Gunakan Link URL / Template Cepat:** Input manual link gambar dari internet atau memilih preset foto board game siap pakai.
+- **Spesifikasi & Gameplay Rapi:** Penataan input jumlah pemain, durasi main, dan pilihan tingkat kesulitan (*Mudah, Menengah, Sulit*) yang simetris dan responsif.
+- **Delete:** Menghapus data board game dengan dialog konfirmasi aman untuk mencegah penghapusan yang tidak disengaja.
 
 ---
 

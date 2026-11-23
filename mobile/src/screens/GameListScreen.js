@@ -12,10 +12,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ApiService } from "../api/apiService";
+import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
 
 export default function GameListScreen({ navigation }) {
+  const { user } = useAuth();
+  const isAdmin = user?.role?.toLowerCase() === "admin";
+
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -120,14 +124,16 @@ export default function GameListScreen({ navigation }) {
             <Text style={styles.headerTitle}>Katalog Koleksi Game</Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <TouchableOpacity
-              style={styles.headerAdminBtn}
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate("AdminGameList")}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
-            </TouchableOpacity>
+            {isAdmin && (
+              <TouchableOpacity
+                style={styles.headerAdminBtn}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate("AdminGameList")}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="settings-outline" size={22} color="#FFFFFF" />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.headerInfoBtn}
               activeOpacity={0.8}

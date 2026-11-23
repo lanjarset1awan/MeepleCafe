@@ -13,12 +13,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "../context/AuthContext";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
 import CustomDialog from "../components/CustomDialog";
 
 export default function AdminGameListScreen({ navigation }) {
+  const { logout } = useAuth();
   const [games, setGames] = useState([]);
   const [categories, setCategories] = useState(["All"]);
   const [loading, setLoading] = useState(true);
@@ -26,8 +28,9 @@ export default function AdminGameListScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("All");
 
-  // State untuk dialog konfirmasi hapus & notifikasi
+  // State untuk dialog konfirmasi hapus, logout & notifikasi
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
   const [selectedGameForDelete, setSelectedGameForDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [feedbackDialog, setFeedbackDialog] = useState({
@@ -218,13 +221,24 @@ export default function AdminGameListScreen({ navigation }) {
             </View>
           </View>
 
-          <TouchableOpacity
-            style={styles.headerAddBtn}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate("AdminGameForm")}
-          >
-            <Ionicons name="add" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
+          <View style={styles.headerRightActions}>
+            <TouchableOpacity
+              style={styles.headerAddBtn}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate("AdminGameForm")}
+            >
+              <Ionicons name="add" size={22} color="#FFFFFF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.headerLogoutBtn}
+              activeOpacity={0.8}
+              onPress={() => setLogoutDialogVisible(true)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="log-out-outline" size={20} color="#F87171" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -359,6 +373,23 @@ export default function AdminGameListScreen({ navigation }) {
         onConfirm={() => setFeedbackDialog({ ...feedbackDialog, visible: false })}
         onClose={() => setFeedbackDialog({ ...feedbackDialog, visible: false })}
       />
+
+      {/* Dialog Konfirmasi Keluar Akun Admin */}
+      <CustomDialog
+        visible={logoutDialogVisible}
+        type="danger"
+        iconName="log-out-outline"
+        title="Keluar Akun Admin"
+        message="Apakah Anda yakin ingin keluar dari sesi Admin MeepleCafe?"
+        confirmText="Ya, Keluar"
+        cancelText="Batal"
+        onConfirm={async () => {
+          setLogoutDialogVisible(false);
+          await logout();
+        }}
+        onCancel={() => setLogoutDialogVisible(false)}
+        onClose={() => setLogoutDialogVisible(false)}
+      />
     </View>
   );
 }
@@ -412,11 +443,26 @@ const styles = StyleSheet.create({
     color: "#38BDF8",
     letterSpacing: 0.6
   },
+  headerRightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8
+  },
   headerAddBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  headerLogoutBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(239, 68, 68, 0.16)",
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.35)",
     alignItems: "center",
     justifyContent: "center"
   },

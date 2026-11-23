@@ -13,12 +13,13 @@ import {
   Platform
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
 import GameImage from "../components/GameImage";
 import CustomDialog from "../components/CustomDialog";
 
-// Template gambar siap pakai untuk kemudahan input admin
+// Template gambar siap pakai untuk opsi URL cepat
 const IMAGE_TEMPLATES = [
   {
     name: "Strategy",
@@ -33,7 +34,7 @@ const IMAGE_TEMPLATES = [
     url: "https://images.unsplash.com/photo-1563941402622-4e7a488bcc57?auto=format&fit=crop&w=600&q=80"
   },
   {
-    name: "Catan",
+    name: "Catan Classic",
     url: "https://cf.geekdo-images.com/W3Bsga_uLP9kO91gZ7H8yw__imagepage/img/M_9m571w-N4b1tI2o0bJgq_6v24=/fit-in/900x600/filters:no_upscale():strip_icc()/pic2419375.jpg"
   }
 ];
@@ -61,6 +62,10 @@ export default function AdminGameFormScreen({ navigation, route }) {
   const [isAvailable, setIsAvailable] = useState(
     existingGame?.is_available !== undefined ? existingGame.is_available : true
   );
+
+  // Mode Pilihan Gambar: 'upload' (dari HP/kamera) atau 'url' (input link)
+  const [imageInputMode, setImageInputMode] = useState("upload");
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Categories dari API / Supabase
   const [categories, setCategories] = useState([]);
@@ -92,6 +97,103 @@ export default function AdminGameFormScreen({ navigation, route }) {
     }
     fetchCategories();
   }, []);
+
+  // 1. Pilih Gambar dari Galeri HP
+  const handlePickFromGallery = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        setDialogState({
+          visible: true,
+          type: "warning",
+          title: "Izin Diperlukan",
+          message: "Aplikasi membutuhkan izin akses galeri untuk memilih foto sampul game."
+        });
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [16, 10],
+        quality: 0.8,
+        base64: true
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        setUploadingImage(true);
+        const uploadRes = await ApiService.uploadGameImage(
+          asset.base64,
+          asset.mimeType || "image/jpeg"
+        );
+        setImageUrl(uploadRes.imageUrl);
+        setDialogState({
+          visible: true,
+          type: "success",
+          title: "Foto Berhasil Diunggah",
+          message: "Gambar sampul berhasil diunggah ke cloud storage Supabase!"
+        });
+      }
+    } catch (err) {
+      setDialogState({
+        visible: true,
+        type: "danger",
+        title: "Gagal Mengunggah",
+        message: err.message || "Terjadi kesalahan saat mengunggah gambar."
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // 2. Ambil Foto Langsung dari Kamera HP
+  const handleTakeFromCamera = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== "granted") {
+        setDialogState({
+          visible: true,
+          type: "warning",
+          title: "Izin Kamera Diperlukan",
+          message: "Aplikasi membutuhkan izin kamera untuk memotret fisik board game."
+        });
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [16, 10],
+        quality: 0.8,
+        base64: true
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        setUploadingImage(true);
+        const uploadRes = await ApiService.uploadGameImage(
+          asset.base64,
+          asset.mimeType || "image/jpeg"
+        );
+        setImageUrl(uploadRes.imageUrl);
+        setDialogState({
+          visible: true,
+          type: "success",
+          title: "Foto Berhasil Diunggah",
+          message: "Foto board game dari kamera berhasil diunggah ke cloud storage!"
+        });
+      }
+    } catch (err) {
+      setDialogState({
+        visible: true,
+        type: "danger",
+        title: "Gagal Mengunggah",
+        message: err.message || "Terjadi kesalahan saat mengambil foto."
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const validateForm = () => {
     if (!title.trim()) {
@@ -288,7 +390,7 @@ export default function AdminGameFormScreen({ navigation, route }) {
           </View>
         </View>
 
-        {/* Card 2: Aturan & Spesifikasi Main */}
+        {/* Card 2: Spesifikasi & Gameplay (Layout Rapi, Tingkat Kesulitan Luas) */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionIconBadge}>
@@ -297,14 +399,14 @@ export default function AdminGameFormScreen({ navigation, route }) {
             <Text style={styles.sectionTitle}>Spesifikasi & Gameplay</Text>
           </View>
 
-          {/* Row Pemain & Durasi */}
+          {/* Row Pemain: Min & Max berdampingan */}
           <View style={styles.twoColumnRow}>
             <View style={styles.columnHalf}>
               <Text style={styles.fieldLabel}>
                 Min Pemain <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
               <View style={styles.inputWithIcon}>
-                <Ionicons name="people-outline" size={17} color={colors.textMuted} />
+                <Ionicons name="people-outline" size={17} color={colors.primary} />
                 <TextInput
                   style={styles.colInput}
                   keyboardType="numeric"
@@ -320,7 +422,7 @@ export default function AdminGameFormScreen({ navigation, route }) {
                 Max Pemain <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
               <View style={styles.inputWithIcon}>
-                <Ionicons name="people-outline" size={17} color={colors.textMuted} />
+                <Ionicons name="people-outline" size={17} color={colors.primary} />
                 <TextInput
                   style={styles.colInput}
                   keyboardType="numeric"
@@ -332,46 +434,69 @@ export default function AdminGameFormScreen({ navigation, route }) {
             </View>
           </View>
 
-          <View style={[styles.twoColumnRow, { marginTop: 12 }]}>
-            <View style={styles.columnHalf}>
-              <Text style={styles.fieldLabel}>
-                Durasi (Menit) <Text style={styles.requiredAsterisk}>*</Text>
-              </Text>
-              <View style={styles.inputWithIcon}>
-                <Ionicons name="time-outline" size={17} color={colors.textMuted} />
-                <TextInput
-                  style={styles.colInput}
-                  keyboardType="numeric"
-                  placeholder="45"
-                  value={durationMinutes}
-                  onChangeText={setDurationMinutes}
-                />
-              </View>
+          {/* Row Durasi: Full Width */}
+          <View style={{ marginTop: 12 }}>
+            <Text style={styles.fieldLabel}>
+              Estimasi Durasi (Menit) <Text style={styles.requiredAsterisk}>*</Text>
+            </Text>
+            <View style={styles.inputWithIcon}>
+              <Ionicons name="time-outline" size={17} color={colors.primary} />
+              <TextInput
+                style={styles.colInput}
+                keyboardType="numeric"
+                placeholder="45 (menit)"
+                value={durationMinutes}
+                onChangeText={setDurationMinutes}
+              />
             </View>
+          </View>
 
-            <View style={styles.columnHalf}>
-              <Text style={styles.fieldLabel}>Tingkat Kesulitan</Text>
-              <View style={styles.difficultyPicker}>
-                {["Mudah", "Menengah", "Sulit"].map((lvl) => {
-                  const active = difficulty === lvl;
-                  return (
-                    <TouchableOpacity
-                      key={lvl}
-                      style={[styles.diffChip, active && styles.diffChipActive]}
-                      onPress={() => setDifficulty(lvl)}
+          {/* Row Tingkat Kesulitan: Full Width & Lapang */}
+          <View style={{ marginTop: 14 }}>
+            <Text style={styles.fieldLabel}>Tingkat Kesulitan Permainan</Text>
+            <View style={styles.difficultyContainer}>
+              {[
+                { label: "Mudah", icon: "leaf-outline", color: "#059669", bgActive: "#ECFDF5", borderActive: "#A7F3D0" },
+                { label: "Menengah", icon: "flash-outline", color: "#D97706", bgActive: "#FFFBEB", borderActive: "#FDE68A" },
+                { label: "Sulit", icon: "flame-outline", color: "#DC2626", bgActive: "#FEF2F2", borderActive: "#FECACA" }
+              ].map((lvl) => {
+                const active = difficulty === lvl.label;
+                return (
+                  <TouchableOpacity
+                    key={lvl.label}
+                    style={[
+                      styles.diffPill,
+                      active && {
+                        backgroundColor: lvl.bgActive,
+                        borderColor: lvl.borderActive,
+                        borderWidth: 1.5
+                      }
+                    ]}
+                    onPress={() => setDifficulty(lvl.label)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons
+                      name={lvl.icon}
+                      size={16}
+                      color={active ? lvl.color : colors.textMuted}
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text
+                      style={[
+                        styles.diffPillText,
+                        active ? { color: lvl.color, fontWeight: "700" } : { color: colors.textSecondary }
+                      ]}
                     >
-                      <Text style={[styles.diffChipText, active && styles.diffChipTextActive]}>
-                        {lvl}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+                      {lvl.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         </View>
 
-        {/* Card 3: Media & Gambar */}
+        {/* Card 3: Media & Gambar Cover (2 Pilihan: Upload dari HP / Gunakan Link URL) */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionIconBadge}>
@@ -380,36 +505,130 @@ export default function AdminGameFormScreen({ navigation, route }) {
             <Text style={styles.sectionTitle}>Cover & Media Visual</Text>
           </View>
 
-          <Text style={styles.fieldLabel}>URL Gambar Sampul (Image URL)</Text>
-          <TextInput
-            style={styles.textInput}
-            placeholder="https://images.unsplash.com/..."
-            placeholderTextColor={colors.textMuted}
-            value={imageUrl}
-            onChangeText={setImageUrl}
-            autoCapitalize="none"
-          />
-
-          {/* Quick Preset Buttons */}
-          <Text style={[styles.fieldHint, { marginTop: 8 }]}>Gunakan template foto jika belum memiliki URL:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.templateRow}>
-            {IMAGE_TEMPLATES.map((tpl, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={styles.templatePill}
-                onPress={() => setImageUrl(tpl.url)}
+          {/* Tab Selector: Upload dari HP vs Gunakan Link URL */}
+          <Text style={styles.fieldLabel}>Pilih Metode Input Foto:</Text>
+          <View style={styles.imageSourceToggle}>
+            <TouchableOpacity
+              style={[styles.sourceToggleBtn, imageInputMode === "upload" && styles.sourceToggleBtnActive]}
+              activeOpacity={0.85}
+              onPress={() => setImageInputMode("upload")}
+            >
+              <Ionicons
+                name="cloud-upload-outline"
+                size={16}
+                color={imageInputMode === "upload" ? "#FFFFFF" : colors.primary}
+                style={{ marginRight: 6 }}
+              />
+              <Text
+                style={[styles.sourceToggleText, imageInputMode === "upload" && styles.sourceToggleTextActive]}
               >
-                <Ionicons name="image" size={13} color={colors.primary} style={{ marginRight: 4 }} />
-                <Text style={styles.templatePillText}>{tpl.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+                Upload dari HP
+              </Text>
+            </TouchableOpacity>
 
-          {/* Live Preview Image */}
-          {imageUrl.length > 5 && (
+            <TouchableOpacity
+              style={[styles.sourceToggleBtn, imageInputMode === "url" && styles.sourceToggleBtnActive]}
+              activeOpacity={0.85}
+              onPress={() => setImageInputMode("url")}
+            >
+              <Ionicons
+                name="link-outline"
+                size={16}
+                color={imageInputMode === "url" ? "#FFFFFF" : colors.primary}
+                style={{ marginRight: 6 }}
+              />
+              <Text
+                style={[styles.sourceToggleText, imageInputMode === "url" && styles.sourceToggleTextActive]}
+              >
+                Gunakan Link URL
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Opsi 1: Upload dari HP (Galeri / Kamera) */}
+          {imageInputMode === "upload" ? (
+            <View style={styles.uploadAreaWrapper}>
+              <View style={styles.uploadButtonsRow}>
+                <TouchableOpacity
+                  style={styles.btnUploadAction}
+                  activeOpacity={0.85}
+                  onPress={handlePickFromGallery}
+                  disabled={uploadingImage}
+                >
+                  <Ionicons name="images-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                  <Text style={styles.btnUploadActionText}>Pilih dari Galeri</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.btnUploadAction}
+                  activeOpacity={0.85}
+                  onPress={handleTakeFromCamera}
+                  disabled={uploadingImage}
+                >
+                  <Ionicons name="camera-outline" size={18} color={colors.primary} style={{ marginRight: 6 }} />
+                  <Text style={styles.btnUploadActionText}>Ambil Foto Kamera</Text>
+                </TouchableOpacity>
+              </View>
+
+              {uploadingImage && (
+                <View style={styles.uploadProgressBox}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text style={styles.uploadProgressText}>Mengunggah gambar ke cloud storage Supabase...</Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            /* Opsi 2: Input Link URL Manual & Preset Template */
+            <View style={{ marginTop: 6 }}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Masukkan link gambar (https://...)"
+                placeholderTextColor={colors.textMuted}
+                value={imageUrl}
+                onChangeText={setImageUrl}
+                autoCapitalize="none"
+              />
+
+              <Text style={[styles.fieldHint, { marginTop: 10 }]}>Pilih template foto siap pakai:</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.templateRow}>
+                {IMAGE_TEMPLATES.map((tpl, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={styles.templatePill}
+                    onPress={() => setImageUrl(tpl.url)}
+                  >
+                    <Ionicons name="image" size={13} color={colors.primary} style={{ marginRight: 4 }} />
+                    <Text style={styles.templatePillText}>{tpl.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Pratinjau Gambar Cover (Live Preview) */}
+          {imageUrl.length > 5 ? (
             <View style={styles.previewContainer}>
-              <Text style={styles.previewLabel}>Pratinjau Cover:</Text>
+              <View style={styles.previewHeaderRow}>
+                <View style={styles.previewTag}>
+                  <Ionicons name="checkmark-circle" size={13} color="#10B981" style={{ marginRight: 4 }} />
+                  <Text style={styles.previewTagText}>Pratinjau Cover Aktif</Text>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.btnClearImage}
+                  onPress={() => setImageUrl("")}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons name="trash-outline" size={14} color="#EF4444" style={{ marginRight: 4 }} />
+                  <Text style={styles.btnClearImageText}>Hapus Foto</Text>
+                </TouchableOpacity>
+              </View>
               <GameImage uri={imageUrl} style={styles.previewImage} />
+            </View>
+          ) : (
+            <View style={styles.noImagePlaceholder}>
+              <Ionicons name="image-outline" size={32} color={colors.textMuted} />
+              <Text style={styles.noImageText}>Belum ada foto sampul dipilih</Text>
             </View>
           )}
         </View>
@@ -673,8 +892,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 10,
-    paddingHorizontal: 10,
-    height: 42
+    paddingHorizontal: 12,
+    height: 44
   },
   colInput: {
     flex: 1,
@@ -682,34 +901,99 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
     color: colors.text
   },
-  difficultyPicker: {
+  // Tingkat Kesulitan Luas & Serasi
+  difficultyContainer: {
     flexDirection: "row",
-    height: 42,
-    alignItems: "center",
-    gap: 4
+    gap: 8,
+    marginTop: 4
   },
-  diffChip: {
+  diffPill: {
     flex: 1,
-    height: 40,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: 10,
     backgroundColor: "#F1F5F9",
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border
   },
-  diffChipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary
-  },
-  diffChipText: {
-    fontSize: 11,
-    color: colors.textSecondary,
+  diffPillText: {
+    fontSize: 12.5,
     fontWeight: "600"
   },
-  diffChipTextActive: {
+  // Tab Selector: Upload vs Link URL
+  imageSourceToggle: {
+    flexDirection: "row",
+    backgroundColor: "#F1F5F9",
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  sourceToggleBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    borderRadius: 10
+  },
+  sourceToggleBtnActive: {
+    backgroundColor: colors.primary,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2
+  },
+  sourceToggleText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.textSecondary
+  },
+  sourceToggleTextActive: {
     color: "#FFFFFF",
     fontWeight: "700"
+  },
+  uploadAreaWrapper: {
+    marginTop: 4
+  },
+  uploadButtonsRow: {
+    flexDirection: "row",
+    gap: 10
+  },
+  btnUploadAction: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    paddingVertical: 11,
+    borderRadius: 12
+  },
+  btnUploadActionText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.primary
+  },
+  uploadProgressBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+  uploadProgressText: {
+    fontSize: 11.5,
+    color: colors.textSecondary,
+    marginLeft: 8
   },
   templateRow: {
     flexDirection: "row",
@@ -732,21 +1016,59 @@ const styles = StyleSheet.create({
     fontWeight: "600"
   },
   previewContainer: {
-    marginTop: 10,
+    marginTop: 12,
     borderRadius: 12,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: colors.border
-  },
-  previewLabel: {
-    fontSize: 11,
-    color: colors.textMuted,
-    padding: 6,
+    borderColor: colors.border,
     backgroundColor: "#F8FAFC"
+  },
+  previewHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border
+  },
+  previewTag: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  previewTagText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#059669"
+  },
+  btnClearImage: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  btnClearImageText: {
+    fontSize: 11,
+    color: "#EF4444",
+    fontWeight: "600"
   },
   previewImage: {
     width: "100%",
-    height: 140
+    height: 150
+  },
+  noImagePlaceholder: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 20,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderStyle: "dashed",
+    marginTop: 10
+  },
+  noImageText: {
+    fontSize: 11.5,
+    color: colors.textMuted,
+    marginTop: 4
   },
   btnSubmit: {
     flexDirection: "row",

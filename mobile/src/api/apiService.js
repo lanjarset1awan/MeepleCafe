@@ -474,5 +474,75 @@ export const ApiService = {
   // Hapus Foto Profil Pengguna
   async deleteAvatar(userId) {
     return this.updateProfile(userId, { avatar: null });
+  },
+
+  // Upload Foto Cover Board Game (Admin)
+  async uploadGameImage(base64, mimeType = "image/jpeg") {
+    // 1. Coba upload via Express Backend API
+    try {
+      const backendRes = await fetch(`${DEFAULT_BACKEND_URL}/api/games/upload-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ base64, mimeType })
+      });
+      if (backendRes.ok) {
+        return await backendRes.json();
+      }
+    } catch (e) {
+      // Backend offline, lanjut direct ke Supabase
+    }
+
+    // 2. Direct Fallback ke Supabase Storage
+    const cleanBase64 = base64.replace(/^data:image\/\w+;base64,/, "");
+    const ext = (mimeType.split("/")[1] || "jpg").replace("jpeg", "jpg");
+    const fileName = `game-${Date.now()}.${ext}`;
+
+    try {
+      const binaryString = atob(cleanBase64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Coba upload ke games bucket
+      let storageRes = await fetch(`${SUPABASE_URL}/storage/v1/object/games/covers/${fileName}`, {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "Content-Type": mimeType
+        },
+        body: bytes
+      });
+
+      let bucketName = "games";
+      let objectPath = `covers/${fileName}`;
+
+      if (!storageRes.ok) {
+        // Fallback ke bucket avatars/games yang terbukti aktif
+        storageRes = await fetch(`${SUPABASE_URL}/storage/v1/object/avatars/games/${fileName}`, {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": mimeType
+          },
+          body: bytes
+        });
+        bucketName = "avatars";
+        objectPath = `games/${fileName}`;
+      }
+
+      if (storageRes.ok) {
+        return {
+          imageUrl: `${SUPABASE_URL}/storage/v1/object/public/${bucketName}/${objectPath}`
+        };
+      }
+    } catch (e) {}
+
+    // Fallback data URI jika offline
+    return {
+      imageUrl: `data:${mimeType};base64,${cleanBase64}`
+    };
   }
 };
