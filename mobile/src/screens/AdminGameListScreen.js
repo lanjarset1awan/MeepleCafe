@@ -133,17 +133,11 @@ export default function AdminGameListScreen({ navigation }) {
         <GameImage uri={item.image_url} style={styles.cardImage} />
 
         <View style={styles.cardContent}>
-          {/* Header Row: Title & Status Badge */}
+          {/* Header Row: Title */}
           <View style={styles.cardHeaderRow}>
             <Text style={styles.gameTitle} numberOfLines={1}>
               {item.title}
             </Text>
-            <View style={[styles.statusBadge, isAvail ? styles.statusBadgeAvail : styles.statusBadgeUnavail]}>
-              <View style={[styles.statusDot, { backgroundColor: isAvail ? "#10B981" : "#EF4444" }]} />
-              <Text style={[styles.statusBadgeText, { color: isAvail ? "#047857" : "#B91C1C" }]}>
-                {isAvail ? "Tersedia" : "Stok Habis"}
-              </Text>
-            </View>
           </View>
 
           {/* Meta Info Row */}
@@ -617,8 +611,8 @@ const styles = StyleSheet.create({
     marginLeft: 4
   },
   description: {
-    fontSize: 12.5,
-    color: colors.textSecondary,
+    fontSize: 13,
+    color: colors.textMuted,
     lineHeight: 18
   },
   cardDivider: {
