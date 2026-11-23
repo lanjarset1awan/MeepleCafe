@@ -808,13 +808,13 @@ export default function BookingFormScreen({ route, navigation }) {
         >
           <View style={styles.calendarTriggerLeft}>
             <Text style={styles.calendarTriggerSubLabel}>Tanggal Reservasi</Text>
-            <Text style={styles.calendarTriggerValueText} numberOfLines={1}>
+            <Text style={styles.calendarTriggerValueText}>
               {formatIndonesianDate(reservationDate)}
             </Text>
           </View>
           <View style={styles.calendarTriggerActionBadge}>
-            <Ionicons name="calendar-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-            <Text style={styles.calendarTriggerActionText}>Pilih Kalender</Text>
+            <Ionicons name="calendar-outline" size={13} color={colors.primary} style={{ marginRight: 4 }} />
+            <Text style={styles.calendarTriggerActionText}>Ubah</Text>
           </View>
         </TouchableOpacity>
 
@@ -2596,8 +2596,8 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#E2E8F0",
     borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     marginTop: 8,
     marginBottom: 16,
     shadowColor: colors.primary,
@@ -2623,7 +2623,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5
   },
   calendarTriggerValueText: {
-    fontSize: 14.5,
+    fontSize: 13.5,
     fontWeight: "700",
     color: colors.primaryDark,
     marginTop: 2
@@ -2632,12 +2632,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 16
   },
   calendarTriggerActionText: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: "700",
     color: colors.primaryDark
   },
