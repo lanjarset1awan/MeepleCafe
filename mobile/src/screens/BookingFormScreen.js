@@ -807,15 +807,10 @@ export default function BookingFormScreen({ route, navigation }) {
           activeOpacity={0.82}
         >
           <View style={styles.calendarTriggerLeft}>
-            <View style={styles.calendarTriggerIconCircle}>
-              <Ionicons name="calendar" size={20} color={colors.primary} />
-            </View>
-            <View style={{ marginLeft: 12, flex: 1 }}>
-              <Text style={styles.calendarTriggerSubLabel}>Tanggal Reservasi</Text>
-              <Text style={styles.calendarTriggerValueText} numberOfLines={1}>
-                {formatIndonesianDate(reservationDate)}
-              </Text>
-            </View>
+            <Text style={styles.calendarTriggerSubLabel}>Tanggal Reservasi</Text>
+            <Text style={styles.calendarTriggerValueText} numberOfLines={1}>
+              {formatIndonesianDate(reservationDate)}
+            </Text>
           </View>
           <View style={styles.calendarTriggerActionBadge}>
             <Ionicons name="calendar-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
@@ -2616,18 +2611,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FEF2F2"
   },
   calendarTriggerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
     flex: 1,
-    marginRight: 8
-  },
-  calendarTriggerIconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.primaryLight,
-    alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    marginRight: 10
   },
   calendarTriggerSubLabel: {
     fontSize: 11,
@@ -2637,9 +2623,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5
   },
   calendarTriggerValueText: {
-    fontSize: 14,
+    fontSize: 14.5,
     fontWeight: "700",
-    color: colors.text,
+    color: colors.primaryDark,
     marginTop: 2
   },
   calendarTriggerActionBadge: {
