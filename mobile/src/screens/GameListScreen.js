@@ -430,8 +430,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#64748B"
   },
-    marginBottom: 6
-  },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
