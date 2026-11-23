@@ -743,8 +743,8 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.darkBg,
-    paddingTop: 52,
-    paddingBottom: 32,
+    paddingTop: 58,
+    paddingBottom: 34,
     paddingHorizontal: 16,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20
@@ -756,14 +756,14 @@ const styles = StyleSheet.create({
   },
   adminPillWrapper: {
     alignItems: "center",
-    marginBottom: 10
+    marginBottom: 12
   },
   backBtn: {
     padding: 6,
     width: 36,
     alignItems: "flex-start",
     justifyContent: "center",
-    marginTop: 2
+    marginTop: 3.5
   },
   headerTitle: {
     fontSize: 20.5,
