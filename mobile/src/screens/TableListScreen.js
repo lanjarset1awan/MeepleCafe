@@ -163,7 +163,7 @@ export default function TableListScreen({ route, navigation }) {
               <TouchableOpacity
                 style={styles.headerAdminBtn}
                 activeOpacity={0.8}
-                onPress={() => navigation.navigate("AdminGameList")}
+                onPress={() => navigation.navigate("AdminTableList")}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons name="settings-outline" size={22} color="#FFFFFF" />

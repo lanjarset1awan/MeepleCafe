@@ -11,7 +11,7 @@ import {
   Image,
   Alert
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { ApiService } from "../api/apiService";
 import { colors } from "../theme/colors";
@@ -236,6 +236,26 @@ export default function AdminGameListScreen({ navigation }) {
             <Ionicons name="add" size={22} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
+
+        {/* Switcher Tab Admin: Katalog Game vs Meja Kafe */}
+        <View style={styles.adminNavSwitcher}>
+          <TouchableOpacity
+            style={[styles.adminNavTab, styles.adminNavTabActive]}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="game-controller-outline" size={15} color="#FFFFFF" style={{ marginRight: 6 }} />
+            <Text style={[styles.adminNavTabText, styles.adminNavTabTextActive]}>Katalog Game</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.adminNavTab}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate("AdminTableList")}
+          >
+            <MaterialCommunityIcons name="table-chair" size={16} color="rgba(255,255,255,0.7)" style={{ marginRight: 6 }} />
+            <Text style={styles.adminNavTabText}>Meja Kafe</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search Input Bar */}
@@ -428,6 +448,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center"
+  },
+  adminNavSwitcher: {
+    flexDirection: "row",
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
+    borderRadius: 12,
+    padding: 4,
+    marginTop: 14
+  },
+  adminNavTab: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  adminNavTabActive: {
+    backgroundColor: colors.primary
+  },
+  adminNavTabText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "rgba(255, 255, 255, 0.7)"
+  },
+  adminNavTabTextActive: {
+    color: "#FFFFFF",
+    fontWeight: "700"
   },
   searchContainer: {
     flexDirection: "row",

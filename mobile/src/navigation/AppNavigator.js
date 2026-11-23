@@ -21,6 +21,8 @@ import EditProfileScreen from "../screens/EditProfileScreen";
 import AboutScreen from "../screens/AboutScreen";
 import AdminGameListScreen from "../screens/AdminGameListScreen";
 import AdminGameFormScreen from "../screens/AdminGameFormScreen";
+import AdminTableListScreen from "../screens/AdminTableListScreen";
+import AdminTableFormScreen from "../screens/AdminTableFormScreen";
 
 import { colors } from "../theme/colors";
 
@@ -293,6 +295,16 @@ export default function AppNavigator() {
         <RootStack.Screen
           name="AdminGameForm"
           component={AdminGameFormScreen}
+          options={{ headerShown: false, animation: "slide_from_right" }}
+        />
+        <RootStack.Screen
+          name="AdminTableList"
+          component={AdminTableListScreen}
+          options={{ headerShown: false, animation: "slide_from_right" }}
+        />
+        <RootStack.Screen
+          name="AdminTableForm"
+          component={AdminTableFormScreen}
           options={{ headerShown: false, animation: "slide_from_right" }}
         />
         <RootStack.Screen

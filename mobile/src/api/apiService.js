@@ -181,13 +181,34 @@ export const ApiService = {
     return fetchWithFallback("/api/categories", "game_categories?select=*&order=name.asc");
   },
 
-  // 2. Meja Kafe (List Utama 2 & Detail)
+  // 2. Meja Kafe (List Utama 2, Detail & CRUD Admin)
   async getTables() {
     return fetchWithFallback("/api/tables", "cafe_tables?order=table_number.asc");
   },
 
   async getTableById(id) {
     return fetchWithFallback(`/api/tables/${id}`, `cafe_tables?id=eq.${id}`, { single: true });
+  },
+
+  async createTable(payload) {
+    return fetchWithFallback("/api/tables", "cafe_tables", {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async updateTable(id, payload) {
+    return fetchWithFallback(`/api/tables/${id}`, `cafe_tables?id=eq.${id}`, {
+      method: "PUT",
+      supabaseMethod: "PATCH",
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async deleteTable(id) {
+    return fetchWithFallback(`/api/tables/${id}`, `cafe_tables?id=eq.${id}`, {
+      method: "DELETE"
+    });
   },
 
   // 3. Reservasi / Booking Meja

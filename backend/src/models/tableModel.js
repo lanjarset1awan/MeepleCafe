@@ -40,6 +40,20 @@ export const TableModel = {
   },
 
   async remove(id) {
+    // Coba soft delete: tandai is_active = false agar reservasi lama yang memiliki foreign key ke table_id tidak error
+    try {
+      const { data, error } = await supabase
+        .from("cafe_tables")
+        .update({ is_active: false })
+        .eq("id", id)
+        .select();
+      if (!error && data && data.length > 0) {
+        return { message: "Table deleted successfully (soft-deleted)", id, softDeleted: true };
+      }
+    } catch (e) {
+      // Fallback ke hard delete jika update gagal
+    }
+
     const { error } = await supabase
       .from("cafe_tables")
       .delete()
