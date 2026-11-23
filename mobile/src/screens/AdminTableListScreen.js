@@ -450,20 +450,23 @@ const styles = StyleSheet.create({
   },
   filterWrapper: {
     flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 16,
-    marginTop: 10,
-    gap: 8
+    marginTop: 12,
+    marginBottom: 4
   },
   filterChip: {
     paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingVertical: 6.5,
     borderRadius: 20,
     backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: colors.border
+    borderColor: colors.border,
+    marginHorizontal: 4
   },
   filterChipActive: {
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.primary,
     borderColor: colors.primary
   },
   filterChipText: {
@@ -472,12 +475,12 @@ const styles = StyleSheet.create({
     color: colors.textMuted
   },
   filterChipTextActive: {
-    color: colors.primaryDark,
+    color: "#FFFFFF",
     fontWeight: "700"
   },
   infoSummaryRow: {
     paddingHorizontal: 16,
-    marginTop: 10,
+    marginTop: 6,
     marginBottom: 4
   },
   infoSummaryText: {
