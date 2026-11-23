@@ -417,8 +417,10 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.darkBg,
     paddingTop: 48,
-    paddingBottom: 18,
-    paddingHorizontal: 16
+    paddingBottom: 22,
+    paddingHorizontal: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20
   },
   headerTopRow: {
     flexDirection: "row",
@@ -426,19 +428,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.12)",
-    alignItems: "center",
-    justifyContent: "center"
+    padding: 6
   },
   headerTitleBox: {
     alignItems: "center"
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "bold",
     color: "#FFFFFF"
   },
   adminRolePill: {
@@ -447,24 +444,29 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(56, 189, 248, 0.15)",
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 10,
+    borderRadius: 12,
     marginTop: 4,
     borderWidth: 1,
     borderColor: "rgba(56, 189, 248, 0.3)"
   },
   adminRolePillText: {
-    fontSize: 9.5,
-    fontWeight: "800",
     color: "#38BDF8",
-    letterSpacing: 0.6
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.5
   },
   headerAddBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     backgroundColor: colors.primary,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3
   },
   adminBottomNav: {
     flexDirection: "row",
@@ -504,21 +506,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.card,
     marginHorizontal: 16,
-    marginTop: 14,
+    marginTop: -14,
     paddingHorizontal: 14,
     height: 44,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.border
+    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 3
   },
   searchInput: {
     flex: 1,
-    marginLeft: 10,
-    fontSize: 14,
+    marginLeft: 8,
+    fontSize: 13,
     color: colors.text
   },
   filterWrapper: {
-    marginTop: 10,
+    marginTop: 12,
     marginBottom: 4
   },
   filterList: {
