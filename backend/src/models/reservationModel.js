@@ -21,6 +21,24 @@ function doOverlap(s1, s2) {
   return h1.start < h2.end && h2.start < h1.end;
 }
 
+// Helper untuk memeriksa apakah reservasi meminjam board game tertentu secara tepat (bukan loose substring)
+function isReservationForGame(reservation, targetGameTitle) {
+  if (!targetGameTitle || !reservation) return false;
+  const target = targetGameTitle.trim().toLowerCase();
+
+  if (reservation.game_title && reservation.game_title.trim().toLowerCase() === target) {
+    return true;
+  }
+
+  const rawName = reservation.customer_name || "";
+  const match = rawName.match(/\[Game:\s*(.+?)\]/i);
+  if (match) {
+    return match[1].trim().toLowerCase() === target;
+  }
+
+  return false;
+}
+
 export const ReservationModel = {
   async getAll(filter = {}) {
     // Select standard columns first to guarantee compatibility with or without new columns
@@ -98,13 +116,9 @@ export const ReservationModel = {
       if (table_id && b.table_id === table_id) {
         bookedSessionsForTable.push(b.session_time);
       }
-      // Game sudah dibooking pada sesi ini
-      if (game_title) {
-        const titleMatch =
-          b.customer_name && b.customer_name.toLowerCase().includes(game_title.toLowerCase());
-        if (titleMatch) {
-          bookedSessionsForGame.push(b.session_time);
-        }
+      // Game sudah dibooking pada sesi ini (dicek secara spesifik, bukan loose substring)
+      if (game_title && isReservationForGame(b, game_title)) {
+        bookedSessionsForGame.push(b.session_time);
       }
     });
 
@@ -171,9 +185,7 @@ export const ReservationModel = {
       // Cek apakah game ini sudah dipinjam di meja lain pada rentang jam yang sama (stok habis)
       if (payload.game_title) {
         const gameConflict = activeBookings.filter((b) => {
-          const isSameGame =
-            b.customer_name && b.customer_name.toLowerCase().includes(payload.game_title.toLowerCase());
-          return isSameGame && doOverlap(b.session_time, payload.session_time);
+          return isReservationForGame(b, payload.game_title) && doOverlap(b.session_time, payload.session_time);
         });
 
         if (gameConflict.length >= 1) {

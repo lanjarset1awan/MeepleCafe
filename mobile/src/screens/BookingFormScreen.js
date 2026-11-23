@@ -408,13 +408,15 @@ export default function BookingFormScreen({ route, navigation }) {
   // Cek ketersediaan untuk setiap slot jam individu (untuk indikator grid)
   const isHourBusyForTable = (hour) => {
     const slotString = `${String(hour).padStart(2, "0")}.00 - ${String(hour + 1).padStart(2, "0")}.00 (1 Jam)`;
-    return activeReservations.some(
-      (r) =>
+    return activeReservations.some((r) => {
+      const s = (r.status || "").trim().toLowerCase();
+      if (s === "cancelled" || s === "rejected" || s === "ditolak") return false;
+      return (
         r.reservation_date === reservationDate &&
-        r.status !== "Cancelled" &&
         r.table_id === tableId &&
         doOverlap(r.session_time, slotString)
-    );
+      );
+    });
   };
 
   // Cek ketersediaan slot untuk rentang jam yang dipilih
@@ -437,9 +439,12 @@ export default function BookingFormScreen({ route, navigation }) {
       };
     }
 
-    const matchingDateReservations = activeReservations.filter(
-      (r) => r.reservation_date === reservationDate && r.status !== "Cancelled"
-    );
+    // Filter reservasi aktif pada tanggal yang sama (abaikan yang ditolak/dibatalkan)
+    const matchingDateReservations = activeReservations.filter((r) => {
+      if (r.reservation_date !== reservationDate) return false;
+      const s = (r.status || "").trim().toLowerCase();
+      return s !== "cancelled" && s !== "rejected" && s !== "ditolak";
+    });
 
     // Validasi 2: Cek bentrok meja pada rentang jam ini
     const tableConflict = matchingDateReservations.find(
@@ -454,16 +459,23 @@ export default function BookingFormScreen({ route, navigation }) {
       };
     }
 
-    // Validasi 3: Cek stok game pada rentang jam yang sama
+    // Validasi 3: Cek stok game pada rentang jam yang sama (pencocokan judul spesifik, bukan loose substring)
     if (chosenGame) {
+      const targetTitle = (chosenGame.title || "").trim().toLowerCase();
       const gameBookedCount = matchingDateReservations.filter((r) => {
-        const matchGame =
-          (r.game_title && r.game_title.toLowerCase() === chosenGame.title.toLowerCase()) ||
-          (r.customer_name && r.customer_name.toLowerCase().includes(chosenGame.title.toLowerCase()));
+        let matchGame = false;
+        if (r.game_title && r.game_title.trim().toLowerCase() === targetTitle) {
+          matchGame = true;
+        } else if (r.customer_name && r.customer_name.includes("[Game:")) {
+          const m = r.customer_name.match(/\[Game:\s*(.+?)\]/i);
+          if (m && m[1].trim().toLowerCase() === targetTitle) {
+            matchGame = true;
+          }
+        }
         return matchGame && doOverlap(r.session_time, currentSessionTime);
       }).length;
 
-      const gameStock = chosenGame.stock || 2;
+      const gameStock = parseInt(chosenGame.stock !== undefined ? chosenGame.stock : 2, 10);
       if (gameBookedCount >= gameStock) {
         return {
           available: false,
