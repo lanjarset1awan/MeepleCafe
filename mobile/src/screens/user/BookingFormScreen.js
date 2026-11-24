@@ -962,12 +962,12 @@ export default function BookingFormScreen({ route, navigation }) {
         >
           <View style={styles.calendarTriggerLeft}>
             <Text style={styles.calendarTriggerSubLabel}>Tanggal Reservasi</Text>
-            <Text style={styles.calendarTriggerValueText}>
+            <Text style={styles.calendarTriggerValueText} numberOfLines={1} adjustsFontSizeToFit>
               {formatIndonesianDate(reservationDate)}
             </Text>
           </View>
           <View style={styles.calendarTriggerActionBadge}>
-            <Ionicons name="calendar-outline" size={15} color={colors.primary} style={{ marginRight: 5 }} />
+            <Ionicons name="calendar-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
             <Text style={styles.calendarTriggerActionText}>Ubah</Text>
           </View>
         </TouchableOpacity>
@@ -1966,35 +1966,36 @@ const styles = StyleSheet.create({
   datePill: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 10,
-    backgroundColor: colors.background,
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    backgroundColor: colors.card,
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: colors.border,
     marginHorizontal: 3
   },
   datePillActive: {
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.primary,
     borderColor: colors.primary
   },
   datePillText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: colors.text
+    fontSize: 15,
+    fontWeight: "bold",
+    color: colors.text,
+    textAlign: "center"
   },
   datePillTextActive: {
-    color: colors.primaryDark,
-    fontWeight: "bold"
+    color: "#FFFFFF"
   },
   datePillSub: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
     color: colors.textMuted,
-    marginTop: 3
+    marginTop: 4
   },
   datePillSubActive: {
-    color: colors.primaryDark,
-    fontWeight: "700"
+    color: "#FFFFFF"
   },
   todayClosedNotice: {
     flexDirection: "row",
@@ -2710,16 +2711,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
-    borderColor: "#CBD5E1",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderColor: colors.border,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
     marginTop: 8,
     marginBottom: 16,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     elevation: 2
   },
   calendarTriggerCardError: {
@@ -2729,35 +2730,35 @@ const styles = StyleSheet.create({
   calendarTriggerLeft: {
     flex: 1,
     justifyContent: "center",
-    marginRight: 12
+    marginRight: 10
   },
   calendarTriggerSubLabel: {
-    fontSize: 11.5,
+    fontSize: 10.5,
     fontWeight: "700",
     color: colors.textMuted,
     textTransform: "uppercase",
-    letterSpacing: 0.6
+    letterSpacing: 0.5
   },
   calendarTriggerValueText: {
-    fontSize: 16.5,
-    fontWeight: "800",
+    fontSize: 14.5,
+    fontWeight: "700",
     color: colors.primaryDark,
-    marginTop: 3,
+    marginTop: 2,
     flexShrink: 1
   },
   calendarTriggerActionBadge: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(14, 116, 144, 0.15)"
   },
   calendarTriggerActionText: {
-    fontSize: 13,
-    fontWeight: "800",
+    fontSize: 12,
+    fontWeight: "700",
     color: colors.primaryDark
   },
 
@@ -2790,25 +2791,25 @@ const styles = StyleSheet.create({
   calendarQuickPill: {
     flex: 1,
     alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 9,
     borderRadius: 10,
-    backgroundColor: "#F8FAFC",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
+    backgroundColor: colors.card,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     marginHorizontal: 3
   },
   calendarQuickPillActive: {
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.primary,
     borderColor: colors.primary
   },
   calendarQuickPillText: {
-    fontSize: 13.5,
-    fontWeight: "700",
+    fontSize: 13,
+    fontWeight: "bold",
     color: colors.text
   },
   calendarQuickPillTextActive: {
-    color: colors.primaryDark,
-    fontWeight: "bold"
+    color: "#FFFFFF"
   },
   calendarNavRow: {
     flexDirection: "row",
