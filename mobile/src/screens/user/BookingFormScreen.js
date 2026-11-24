@@ -1557,8 +1557,18 @@ export default function BookingFormScreen({ route, navigation }) {
       </Modal>
 
       {/* Modal Kalender Interaktif MeepleCafe */}
-      <Modal visible={calendarModalVisible} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
+      <Modal
+        visible={calendarModalVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setCalendarModalVisible(false)}
+      >
+        <View style={styles.calendarModalOverlay}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFillObject}
+            activeOpacity={1}
+            onPress={() => setCalendarModalVisible(false)}
+          />
           <View style={styles.calendarModalCard}>
             {/* Modal Header */}
             <View style={styles.modalHeader}>
@@ -2748,17 +2758,25 @@ const styles = StyleSheet.create({
   },
 
   // Calendar Interactive Modal
+  calendarModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.65)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16
+  },
   calendarModalCard: {
-    width: "92%",
-    maxWidth: 390,
+    width: "100%",
+    maxWidth: 370,
     backgroundColor: "#FFFFFF",
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 18,
+    alignSelf: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 10
+    shadowRadius: 18,
+    elevation: 12
   },
   calendarQuickPillsRow: {
     flexDirection: "row",
