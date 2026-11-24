@@ -967,7 +967,7 @@ export default function BookingFormScreen({ route, navigation }) {
             </Text>
           </View>
           <View style={styles.calendarTriggerActionBadge}>
-            <Ionicons name="calendar-outline" size={13} color={colors.primary} style={{ marginRight: 4 }} />
+            <Ionicons name="calendar-outline" size={15} color={colors.primary} style={{ marginRight: 5 }} />
             <Text style={styles.calendarTriggerActionText}>Ubah</Text>
           </View>
         </TouchableOpacity>
@@ -1966,20 +1966,20 @@ const styles = StyleSheet.create({
   datePill: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 8,
+    paddingVertical: 10,
     backgroundColor: colors.background,
-    borderRadius: 10,
-    borderWidth: 1,
+    borderRadius: 12,
+    borderWidth: 1.5,
     borderColor: colors.border,
     marginHorizontal: 3
   },
   datePillActive: {
     backgroundColor: colors.primaryLight,
-    borderColor: colors.primaryLight
+    borderColor: colors.primary
   },
   datePillText: {
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "700",
     color: colors.text
   },
   datePillTextActive: {
@@ -1987,12 +1987,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   datePillSub: {
-    fontSize: 10,
+    fontSize: 12,
+    fontWeight: "600",
     color: colors.textMuted,
-    marginTop: 2
+    marginTop: 3
   },
   datePillSubActive: {
-    color: colors.primaryDark
+    color: colors.primaryDark,
+    fontWeight: "700"
   },
   todayClosedNotice: {
     flexDirection: "row",
@@ -2708,15 +2710,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "#FFFFFF",
     borderWidth: 1.5,
-    borderColor: "#E2E8F0",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderColor: "#CBD5E1",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     marginTop: 8,
     marginBottom: 16,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 2
   },
@@ -2727,33 +2729,35 @@ const styles = StyleSheet.create({
   calendarTriggerLeft: {
     flex: 1,
     justifyContent: "center",
-    marginRight: 10
+    marginRight: 12
   },
   calendarTriggerSubLabel: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: 11.5,
+    fontWeight: "700",
     color: colors.textMuted,
     textTransform: "uppercase",
-    letterSpacing: 0.5
+    letterSpacing: 0.6
   },
   calendarTriggerValueText: {
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: 16.5,
+    fontWeight: "800",
     color: colors.primaryDark,
-    marginTop: 2,
+    marginTop: 3,
     flexShrink: 1
   },
   calendarTriggerActionBadge: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.primaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 16
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(14, 116, 144, 0.15)"
   },
   calendarTriggerActionText: {
-    fontSize: 11.5,
-    fontWeight: "700",
+    fontSize: 13,
+    fontWeight: "800",
     color: colors.primaryDark
   },
 
@@ -2767,10 +2771,10 @@ const styles = StyleSheet.create({
   },
   calendarModalCard: {
     width: "100%",
-    maxWidth: 370,
+    maxWidth: 380,
     backgroundColor: "#FFFFFF",
     borderRadius: 24,
-    padding: 18,
+    padding: 20,
     alignSelf: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
@@ -2786,8 +2790,8 @@ const styles = StyleSheet.create({
   calendarQuickPill: {
     flex: 1,
     alignItems: "center",
-    paddingVertical: 7,
-    borderRadius: 8,
+    paddingVertical: 9,
+    borderRadius: 10,
     backgroundColor: "#F8FAFC",
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -2798,8 +2802,8 @@ const styles = StyleSheet.create({
     borderColor: colors.primary
   },
   calendarQuickPillText: {
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 13.5,
+    fontWeight: "700",
     color: colors.text
   },
   calendarQuickPillTextActive: {
@@ -2817,9 +2821,9 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   calendarNavBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: "#F8FAFC",
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -2830,8 +2834,8 @@ const styles = StyleSheet.create({
     opacity: 0.3
   },
   calendarNavTitle: {
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: 17,
+    fontWeight: "800",
     color: colors.text
   },
   calendarWeekdayRow: {
@@ -2844,8 +2848,8 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
   calendarWeekdayText: {
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 13,
+    fontWeight: "700",
     color: colors.textMuted
   },
   calendarWeekdaySunday: {
@@ -2857,18 +2861,18 @@ const styles = StyleSheet.create({
   },
   calendarGridCellEmpty: {
     width: "14.28%",
-    height: 40
+    height: 42
   },
   calendarGridCellWrapper: {
     width: "14.28%",
-    height: 40,
+    height: 42,
     alignItems: "center",
     justifyContent: "center"
   },
   calendarDayBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center"
   },
@@ -2889,8 +2893,8 @@ const styles = StyleSheet.create({
     opacity: 0.35
   },
   calendarDayText: {
-    fontSize: 13,
-    fontWeight: "600",
+    fontSize: 14.5,
+    fontWeight: "700",
     color: colors.text
   },
   calendarDayTextSunday: {
@@ -2898,7 +2902,7 @@ const styles = StyleSheet.create({
   },
   calendarDayTextToday: {
     color: colors.primaryDark,
-    fontWeight: "700"
+    fontWeight: "bold"
   },
   calendarDayTextSelected: {
     color: "#FFFFFF",
@@ -2928,42 +2932,43 @@ const styles = StyleSheet.create({
     marginRight: 5
   },
   legendText: {
-    fontSize: 11,
+    fontSize: 11.5,
     color: colors.textMuted,
-    fontWeight: "500"
+    fontWeight: "600"
   },
   calendarFooterBanner: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     backgroundColor: "#F8FAFC",
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 14,
+    padding: 13,
     marginTop: 12,
     borderWidth: 1,
     borderColor: "#E2E8F0"
   },
   calendarFooterLabel: {
-    fontSize: 10,
-    fontWeight: "600",
+    fontSize: 10.5,
+    fontWeight: "700",
     color: colors.textMuted,
-    textTransform: "uppercase"
+    textTransform: "uppercase",
+    letterSpacing: 0.5
   },
   calendarFooterDateText: {
-    fontSize: 13,
-    fontWeight: "700",
+    fontSize: 15.5,
+    fontWeight: "800",
     color: colors.primaryDark,
-    marginTop: 1
+    marginTop: 2
   },
   calendarFooterConfirmBtn: {
     backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 10
   },
   calendarFooterConfirmText: {
     color: "#FFFFFF",
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "700"
   },
 
