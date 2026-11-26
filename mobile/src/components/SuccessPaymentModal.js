@@ -128,7 +128,7 @@ export default function SuccessPaymentModal({
           <View style={styles.noticeBox}>
             <Ionicons name="information-circle" size={16} color={colors.secondary} />
             <Text style={styles.noticeText}>
-              Tunjukkan kode booking ini kepada Game Master kafe saat tiba di lokasi.
+              Buka "Tiket Saya" untuk melihat atau mengunduh E-Tiket agar siap ditunjukkan saat offline di kasir.
             </Text>
           </View>
 

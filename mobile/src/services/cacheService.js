@@ -5,10 +5,24 @@ export const CACHE_KEYS = {
   TABLES: "@meeple_cache_tables",
   CATEGORIES: "@meeple_cache_categories",
   GAME_DETAIL: (id) => `@meeple_cache_game_detail_${id}`,
-  TABLE_DETAIL: (id) => `@meeple_cache_table_detail_${id}`
+  TABLE_DETAIL: (id) => `@meeple_cache_table_detail_${id}`,
+  RESERVATIONS: (username) => `@meeple_cache_reservations_${(username || "all").toLowerCase()}`,
+  DOWNLOADED_TICKETS: (username) => `@meeple_downloaded_tickets_${(username || "guest").toLowerCase()}`
 };
 
 export const CacheService = {
+  /**
+   * Memeriksa apakah key cache sudah pernah tersimpan di AsyncStorage
+   */
+  async hasKey(key) {
+    try {
+      const raw = await AsyncStorage.getItem(key);
+      return raw !== null;
+    } catch (err) {
+      return false;
+    }
+  },
+
   /**
    * Mengambil data dari cache AsyncStorage
    */
@@ -149,5 +163,135 @@ export const CacheService = {
   async getCategories() {
     const cached = await this.get(CACHE_KEYS.CATEGORIES);
     return Array.isArray(cached) ? cached : [];
+  },
+
+  /**
+   * Simpan daftar tiket/reservasi ke cache lokal per pengguna
+   */
+  async saveReservations(username, reservations) {
+    if (!Array.isArray(reservations)) return;
+    await this.set(CACHE_KEYS.RESERVATIONS(username), reservations);
+  },
+
+  /**
+   * Cek apakah sudah ada cache reservasi tersimpan (untuk membedakan kosong vs belum pernah sync)
+   */
+  async hasReservationsCache(username) {
+    const hasUser = await this.hasKey(CACHE_KEYS.RESERVATIONS(username));
+    if (hasUser) return true;
+    if (username) {
+      return await this.hasKey(CACHE_KEYS.RESERVATIONS("all"));
+    }
+    return false;
+  },
+
+  /**
+   * Ambil daftar tiket/reservasi dari cache (fallback ke cache 'all' atau snapshot tiket terunduh)
+   */
+  async getReservations(username) {
+    const directCached = await this.get(CACHE_KEYS.RESERVATIONS(username));
+    let baseList = Array.isArray(directCached) ? directCached : null;
+
+    if (!baseList && username) {
+      const allCached = await this.get(CACHE_KEYS.RESERVATIONS("all"));
+      if (Array.isArray(allCached)) {
+        baseList = allCached;
+      }
+    }
+
+    const list = baseList ? [...baseList] : [];
+
+    // Pastikan tiket yang sudah pernah didownload tetap muncul walaupun list utama belum ter-refresh
+    if (username) {
+      const downloadedMap = await this.getDownloadedTickets(username);
+      const existingKeys = new Set(
+        list.map((t) => String(t?.booking_code || t?.id || ""))
+      );
+      Object.values(downloadedMap).forEach((entry) => {
+        if (entry?.snapshot) {
+          const snapKey = String(entry.snapshot.booking_code || entry.snapshot.id || "");
+          if (snapKey && !existingKeys.has(snapKey)) {
+            list.push(entry.snapshot);
+            existingKeys.add(snapKey);
+          }
+        }
+      });
+    }
+
+    return list;
+  },
+
+  /**
+   * Tambahkan tiket yang baru dibuat ke cache lokal agar langsung terlihat saat offline
+   */
+  async prependReservation(username, reservation) {
+    if (!reservation) return;
+    const keysToUpdate = [CACHE_KEYS.RESERVATIONS(username)];
+    if (username) {
+      keysToUpdate.push(CACHE_KEYS.RESERVATIONS("all"));
+    }
+
+    const matchSame = (a, b) =>
+      (a?.id && b?.id && String(a.id) === String(b.id)) ||
+      (a?.booking_code && b?.booking_code && a.booking_code === b.booking_code);
+
+    for (const key of keysToUpdate) {
+      const existing = await this.get(key);
+      if (Array.isArray(existing)) {
+        const filtered = existing.filter((item) => !matchSame(item, reservation));
+        await this.set(key, [reservation, ...filtered]);
+      } else if (key === CACHE_KEYS.RESERVATIONS(username)) {
+        await this.set(key, [reservation]);
+      }
+    }
+  },
+
+  /**
+   * Hapus tiket yang dihapus dari cache lokal
+   */
+  async removeReservationFromCache(username, ticketId) {
+    if (!ticketId) return;
+    const keysToUpdate = [CACHE_KEYS.RESERVATIONS(username)];
+    if (username) {
+      keysToUpdate.push(CACHE_KEYS.RESERVATIONS("all"));
+    }
+
+    for (const key of keysToUpdate) {
+      const existing = await this.get(key);
+      if (Array.isArray(existing)) {
+        const filtered = existing.filter((item) => String(item.id) !== String(ticketId));
+        await this.set(key, filtered);
+      }
+    }
+  },
+
+  /**
+   * Ambil metadata seluruh E-Tiket yang sudah didownload / disimpan offline oleh pengguna
+   */
+  async getDownloadedTickets(username) {
+    const map = await this.get(CACHE_KEYS.DOWNLOADED_TICKETS(username));
+    return map && typeof map === "object" && !Array.isArray(map) ? map : {};
+  },
+
+  /**
+   * Tandai tiket sudah diunduh & simpan snapshot offline beserta path PNG lokalnya
+   */
+  async saveDownloadedTicket(username, ticketKey, info) {
+    if (!ticketKey || !info) return;
+    const current = await this.getDownloadedTickets(username);
+    current[String(ticketKey)] = info;
+    await this.set(CACHE_KEYS.DOWNLOADED_TICKETS(username), current);
+  },
+
+  /**
+   * Hapus status unduhan tiket tertentu
+   */
+  async removeDownloadedTicket(username, ticketKey) {
+    if (!ticketKey) return;
+    const current = await this.getDownloadedTickets(username);
+    if (current[String(ticketKey)]) {
+      delete current[String(ticketKey)];
+      await this.set(CACHE_KEYS.DOWNLOADED_TICKETS(username), current);
+    }
   }
 };

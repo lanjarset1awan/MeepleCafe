@@ -16,6 +16,9 @@ import { useAuth } from "../../context/AuthContext";
 import { colors } from "../../theme/colors";
 import CustomDialog from "../../components/CustomDialog";
 import GameImage from "../../components/GameImage";
+import OfflineNotice from "../../components/OfflineNotice";
+import TicketPassModal from "../../components/TicketPassModal";
+import { CacheService } from "../../services/cacheService";
 
 /**
  * Memeriksa apakah waktu sesi reservasi sudah lewat dibandingkan waktu saat ini.
@@ -53,6 +56,99 @@ export function isReservationExpired(reservationDateStr, sessionTimeStr) {
   return now.getTime() > sessionEndTime.getTime();
 }
 
+/**
+ * Mengekstrak dan menormalisasi metadata tiket untuk tampilan kartu & E-Tiket Kasir
+ */
+function parseTicketItem(item, gamesLookup = {}) {
+  const tableInfo = item.cafe_tables || {};
+  const isExpired = isReservationExpired(item.reservation_date, item.session_time);
+
+  let displayGame = item.game_title;
+  let displayName = item.customer_name || "";
+  let displayTotal = null;
+  let displayMethod = null;
+  let displayProof = null;
+
+  if (displayName.includes("[Game:")) {
+    const match = displayName.match(/\[Game:\s*(.+?)\]/);
+    if (match) displayGame = match[1];
+  }
+  if (displayName.includes("[Total:")) {
+    const match = displayName.match(/\[Total:\s*(.+?)\]/);
+    if (match) displayTotal = match[1];
+  }
+  if (displayName.includes("[Metode:")) {
+    const match = displayName.match(/\[Metode:\s*(.+?)\]/);
+    if (match) displayMethod = match[1];
+  }
+  if (displayName.includes("[Bukti:")) {
+    const match = displayName.match(/\[Bukti:\s*(.+?)\]/);
+    if (match) displayProof = match[1];
+  }
+
+  displayName = displayName.replace(/\[.+?\]/g, "").trim() || "Pelanggan MeepleCafe";
+
+  if (!displayGame) {
+    displayGame = "Board Game Bebas Pilih di Rak";
+  }
+  if (!displayMethod) {
+    displayMethod = "Transfer Bank";
+  }
+  if (!displayTotal) {
+    displayTotal = tableInfo.price_per_hour
+      ? `Rp ${Number(tableInfo.price_per_hour).toLocaleString("id-ID")}`
+      : "Rp 30.000";
+  }
+
+  const rawStatus = (item.status || "Confirmed").trim().toLowerCase();
+  const isPending = rawStatus === "pending" || rawStatus === "menunggu konfirmasi";
+  const isRejected = rawStatus === "rejected" || rawStatus === "ditolak" || rawStatus === "cancelled";
+  const statusType = isRejected
+    ? "rejected"
+    : isPending
+      ? "pending"
+      : isExpired
+        ? "expired"
+        : "active";
+
+  let gameImage =
+    (item.board_games && item.board_games.image_url) ||
+    (displayGame && gamesLookup[displayGame.trim().toLowerCase()]) ||
+    null;
+
+  if (!gameImage && displayGame) {
+    const lower = displayGame.trim().toLowerCase();
+    const foundKey = Object.keys(gamesLookup).find(
+      (k) => lower.includes(k) || k.includes(lower)
+    );
+    if (foundKey) {
+      gameImage = gamesLookup[foundKey];
+    }
+  }
+
+  const tableLabel = `${tableInfo.table_type || "Meja Kafe"} (${tableInfo.table_number || "T-01"})`;
+  const bookingCode = item.booking_code || `MC-${String(item.id || "0000").slice(-4)}`;
+  const ticketKey = String(bookingCode || item.id || "");
+
+  return {
+    rawItem: item,
+    ticketKey,
+    bookingCode,
+    tableInfo,
+    tableLabel,
+    displayGame,
+    displayName,
+    displayTotal,
+    displayMethod,
+    displayProof,
+    gameImage,
+    isPending,
+    isRejected,
+    isExpired,
+    statusType
+  };
+}
+
 export default function MyTicketsScreen({ navigation }) {
   const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === "admin";
@@ -62,9 +158,36 @@ export default function MyTicketsScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("active"); // 'active' atau 'expired'
   const [previewImageUri, setPreviewImageUri] = useState(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [downloadedMap, setDownloadedMap] = useState({});
+  const [ticketPassState, setTicketPassState] = useState({
+    visible: false,
+    ticket: null,
+    autoDownload: false
+  });
+
+  const loadDownloadedTickets = async () => {
+    try {
+      const map = await CacheService.getDownloadedTickets(user?.username);
+      setDownloadedMap(map || {});
+    } catch (err) {
+      // Abaikan
+    }
+  };
 
   const loadGamesLookup = async () => {
     try {
+      const cachedGames = await CacheService.getGames();
+      if (cachedGames && cachedGames.length > 0) {
+        const cachedMap = {};
+        cachedGames.forEach((g) => {
+          if (g.title) {
+            cachedMap[g.title.trim().toLowerCase()] = g.image_url;
+          }
+        });
+        setGamesLookup(cachedMap);
+      }
+
       const all = await ApiService.getGames();
       if (all && Array.isArray(all)) {
         const map = {};
@@ -76,17 +199,31 @@ export default function MyTicketsScreen({ navigation }) {
         setGamesLookup(map);
       }
     } catch (err) {
-      console.warn("Gagal memuat lookup gambar game:", err);
+      console.warn("Gagal memuat lookup gambar game (offline):", err?.message);
     }
   };
 
-  const loadTickets = async () => {
+  // Strategi Cache-First (Stale-While-Revalidate) untuk daftar tiket offline
+  const loadTickets = async (isManualRefresh = false) => {
     try {
-      setLoading(true);
+      if (!isManualRefresh) {
+        const cached = await CacheService.getReservations(user?.username);
+        if (cached && cached.length > 0) {
+          setTickets(cached);
+          setLoading(false);
+        }
+      }
+
       const data = await ApiService.getReservations({ username: user?.username });
       setTickets(data || []);
+      setIsOffline(Boolean(data?._isOffline));
     } catch (err) {
-      console.error(err);
+      console.warn("loadTickets revalidation (offline):", err?.message);
+      setIsOffline(true);
+      const fallback = await CacheService.getReservations(user?.username);
+      if (fallback && fallback.length > 0) {
+        setTickets(fallback);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -94,19 +231,21 @@ export default function MyTicketsScreen({ navigation }) {
   };
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
+    const refreshAll = () => {
       loadTickets();
       loadGamesLookup();
-    });
-    loadTickets();
-    loadGamesLookup();
+      loadDownloadedTickets();
+    };
+    const unsubscribe = navigation.addListener("focus", refreshAll);
+    refreshAll();
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, user?.username]);
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadTickets();
+    loadTickets(true);
     loadGamesLookup();
+    loadDownloadedTickets();
   };
 
   // State untuk CustomDialog
@@ -201,7 +340,46 @@ export default function MyTicketsScreen({ navigation }) {
 
   const displayedTickets = activeTab === "active" ? activeTickets : expiredTickets;
 
+  const handleDownloadComplete = async (ticketKey, info) => {
+    await CacheService.saveDownloadedTicket(user?.username, ticketKey, info);
+    setDownloadedMap((prev) => ({
+      ...prev,
+      [String(ticketKey)]: info
+    }));
+  };
+
+  const openTicketPass = (parsedTicket, autoDownload = false) => {
+    setTicketPassState({
+      visible: true,
+      autoDownload,
+      ticket: {
+        rawItem: parsedTicket.rawItem,
+        ticketKey: parsedTicket.ticketKey,
+        bookingCode: parsedTicket.bookingCode,
+        statusType: parsedTicket.statusType,
+        gameTitle: parsedTicket.displayGame,
+        customerName: parsedTicket.displayName,
+        guestCount: parsedTicket.rawItem.guest_count,
+        tableLabel: parsedTicket.tableLabel,
+        reservationDate: parsedTicket.rawItem.reservation_date,
+        sessionTime: parsedTicket.rawItem.session_time,
+        totalPrice: parsedTicket.displayTotal,
+        paymentMethod: parsedTicket.displayMethod
+      }
+    });
+  };
+
   const handleDeleteTicket = (ticketId, bookingCode) => {
+    if (isOffline) {
+      showDialog({
+        type: "warning",
+        iconName: "cloud-offline",
+        title: "Koneksi Internet Dibutuhkan",
+        message: "Anda sedang dalam mode offline. Penghapusan tiket reservasi hanya dapat dilakukan saat terhubung ke internet."
+      });
+      return;
+    }
+
     showDialog({
       type: "warning",
       title: "Hapus Tiket Reservasi?",
@@ -210,13 +388,22 @@ export default function MyTicketsScreen({ navigation }) {
       cancelText: "Batal",
       onConfirm: async () => {
         try {
-          await ApiService.deleteReservation(ticketId);
+          await ApiService.deleteReservation(ticketId, user?.username);
+          await CacheService.removeDownloadedTicket(user?.username, bookingCode || ticketId);
           setTickets((prev) => prev.filter((item) => item.id !== ticketId));
+          setDownloadedMap((prev) => {
+            const next = { ...prev };
+            delete next[String(bookingCode || ticketId)];
+            return next;
+          });
         } catch (err) {
+          const isOffErr = err.message && err.message.includes("OFFLINE_ERROR");
           showDialog({
-            type: "error",
-            title: "Gagal Menghapus",
-            message: "Tidak dapat menghapus tiket saat ini. Silakan coba kembali."
+            type: isOffErr ? "warning" : "error",
+            title: isOffErr ? "Mode Offline Terdeteksi" : "Gagal Menghapus",
+            message: isOffErr
+              ? "Anda sedang dalam mode offline. Penghapusan tiket membutuhkan koneksi internet."
+              : "Tidak dapat menghapus tiket saat ini. Silakan coba kembali."
           });
         }
       }
@@ -224,66 +411,24 @@ export default function MyTicketsScreen({ navigation }) {
   };
 
   const renderTicketCard = ({ item }) => {
-    const tableInfo = item.cafe_tables || {};
-    const isExpired = isReservationExpired(item.reservation_date, item.session_time);
+    const parsed = parseTicketItem(item, gamesLookup);
+    const {
+      tableInfo,
+      tableLabel,
+      displayGame,
+      displayName,
+      displayTotal,
+      displayMethod,
+      displayProof,
+      gameImage,
+      isPending,
+      isRejected,
+      isExpired,
+      ticketKey
+    } = parsed;
 
-    // Ambil judul game, total bayar, metode pembayaran, dan bukti transfer
-    let displayGame = item.game_title;
-    let displayName = item.customer_name || "";
-    let displayTotal = null;
-    let displayMethod = null;
-    let displayProof = null;
-
-    if (displayName.includes("[Game:")) {
-      const match = displayName.match(/\[Game:\s*(.+?)\]/);
-      if (match) displayGame = match[1];
-    }
-    if (displayName.includes("[Total:")) {
-      const match = displayName.match(/\[Total:\s*(.+?)\]/);
-      if (match) displayTotal = match[1];
-    }
-    if (displayName.includes("[Metode:")) {
-      const match = displayName.match(/\[Metode:\s*(.+?)\]/);
-      if (match) displayMethod = match[1];
-    }
-    if (displayName.includes("[Bukti:")) {
-      const match = displayName.match(/\[Bukti:\s*(.+?)\]/);
-      if (match) displayProof = match[1];
-    }
-
-    displayName = displayName.replace(/\[.+?\]/g, "").trim();
-
-    if (!displayGame) {
-      displayGame = "Board Game Bebas Pilih di Rak";
-    }
-    if (!displayMethod) {
-      displayMethod = "Transfer Bank";
-    }
-    if (!displayTotal) {
-      displayTotal = tableInfo.price_per_hour
-        ? `Rp ${Number(tableInfo.price_per_hour).toLocaleString("id-ID")}`
-        : "Rp 30.000";
-    }
-
-    const rawStatus = (item.status || "Confirmed").trim().toLowerCase();
-    const isPending = rawStatus === "pending" || rawStatus === "menunggu konfirmasi";
-    const isRejected = rawStatus === "rejected" || rawStatus === "ditolak" || rawStatus === "cancelled";
-
-    // Ambil gambar board game sesuai judul di katalog
-    let gameImage =
-      (item.board_games && item.board_games.image_url) ||
-      (displayGame && gamesLookup[displayGame.trim().toLowerCase()]) ||
-      null;
-
-    if (!gameImage && displayGame) {
-      const lower = displayGame.trim().toLowerCase();
-      const foundKey = Object.keys(gamesLookup).find(
-        (k) => lower.includes(k) || k.includes(lower)
-      );
-      if (foundKey) {
-        gameImage = gamesLookup[foundKey];
-      }
-    }
+    const dlInfo = downloadedMap[ticketKey];
+    const isDownloaded = Boolean(dlInfo?.localUri);
 
     return (
       <View
@@ -503,6 +648,49 @@ export default function MyTicketsScreen({ navigation }) {
               </View>
             )}
           </View>
+
+          {/* Aksi E-Tiket Kasir & Download Offline (untuk tiket aktif / menunggu konfirmasi) */}
+          {!isRejected && !isExpired && (
+            <View style={styles.ticketPassActionsSection}>
+              {isDownloaded && (
+                <View style={styles.offlineSavedPill}>
+                  <Ionicons name="cloud-done" size={13} color="#15803D" style={{ marginRight: 5 }} />
+                  <Text style={styles.offlineSavedText}>
+                    {dlInfo?.savedToGallery
+                      ? "Tersimpan di Galeri & Siap Offline di Kasir"
+                      : "Tersimpan Offline • Siap Ditunjukkan di Kasir"}
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.ticketActionBtnsRow}>
+                <TouchableOpacity
+                  style={styles.btnShowPass}
+                  activeOpacity={0.82}
+                  onPress={() => openTicketPass(parsed, false)}
+                >
+                  <Ionicons name="qr-code-outline" size={16} color={colors.primary} style={{ marginRight: 6 }} />
+                  <Text style={styles.btnShowPassText}>E-Tiket Kasir</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.btnDownloadPass, isDownloaded && styles.btnDownloadPassSaved]}
+                  activeOpacity={0.85}
+                  onPress={() => openTicketPass(parsed, true)}
+                >
+                  <Ionicons
+                    name={isDownloaded ? "checkmark-circle" : "download-outline"}
+                    size={16}
+                    color="#FFFFFF"
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={styles.btnDownloadPassText}>
+                    {isDownloaded ? "Unduh Lagi" : "Download Tiket"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
         </View>
       </View>
     );
@@ -587,6 +775,11 @@ export default function MyTicketsScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      {/* Banner Mode Offline */}
+      {isOffline && (
+        <OfflineNotice message="Mode Offline: Menampilkan daftar tiket tersimpan di perangkat. Unduh atau buka E-Tiket untuk ditunjukkan ke kasir." />
+      )}
+
       {/* Main List */}
       {loading && !refreshing ? (
         <View style={styles.centerContainer}>
@@ -596,7 +789,7 @@ export default function MyTicketsScreen({ navigation }) {
       ) : (
         <FlatList
           data={displayedTickets}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, idx) => String(item.id || item.booking_code || idx)}
           renderItem={renderTicketCard}
           contentContainerStyle={styles.listContainer}
           refreshControl={
@@ -676,6 +869,22 @@ export default function MyTicketsScreen({ navigation }) {
           </View>
         </View>
       </Modal>
+
+      {/* Modal E-Tiket Resmi Kasir & Download PNG ke Galeri */}
+      <TicketPassModal
+        visible={ticketPassState.visible}
+        ticket={ticketPassState.ticket}
+        downloadedInfo={
+          ticketPassState.ticket
+            ? downloadedMap[ticketPassState.ticket.ticketKey]
+            : null
+        }
+        autoDownload={ticketPassState.autoDownload}
+        onDownloadComplete={handleDownloadComplete}
+        onClose={() =>
+          setTicketPassState((prev) => ({ ...prev, visible: false, autoDownload: false }))
+        }
+      />
     </View>
   );
 }
@@ -1222,5 +1431,66 @@ const styles = StyleSheet.create({
   imageModalPreview: {
     width: "100%",
     height: "85%"
+  },
+  ticketPassActionsSection: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderColor: colors.border
+  },
+  offlineSavedPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#DCFCE7",
+    borderWidth: 1,
+    borderColor: "#BBF7D0",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 10
+  },
+  offlineSavedText: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#166534"
+  },
+  ticketActionBtnsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8
+  },
+  btnShowPass: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    paddingVertical: 10,
+    borderRadius: 10
+  },
+  btnShowPassText: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    color: colors.primary
+  },
+  btnDownloadPass: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    paddingVertical: 10.5,
+    borderRadius: 10
+  },
+  btnDownloadPassSaved: {
+    backgroundColor: "#15803D"
+  },
+  btnDownloadPassText: {
+    fontSize: 12.5,
+    fontWeight: "bold",
+    color: "#FFFFFF"
   }
 });

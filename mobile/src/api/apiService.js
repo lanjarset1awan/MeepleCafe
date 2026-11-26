@@ -326,16 +326,32 @@ export const ApiService = {
     });
   },
 
-  // 3. Reservasi / Booking Meja
+  // 3. Reservasi / Booking Meja (Cache-First SWR untuk akses offline)
   async getReservations(filter = {}) {
-    let endpoint = "/api/reservations";
-    if (filter.username) {
-      endpoint += `?username=${encodeURIComponent(filter.username)}`;
+    const cacheUser = filter.username || null;
+    try {
+      let endpoint = "/api/reservations";
+      if (filter.username) {
+        endpoint += `?username=${encodeURIComponent(filter.username)}`;
+      }
+      const data = await fetchWithFallback(
+        endpoint,
+        "reservations?select=*,cafe_tables(*)&order=created_at.desc"
+      );
+      const list = Array.isArray(data) ? data : [];
+      CacheService.saveReservations(cacheUser, list).catch(() => {});
+      return list;
+    } catch (err) {
+      // Fallback Offline: Muat daftar tiket tersimpan & snapshot tiket terunduh
+      const hasCache = await CacheService.hasReservationsCache(cacheUser);
+      const cached = await CacheService.getReservations(cacheUser);
+      if (hasCache || (cached && cached.length > 0)) {
+        const result = [...cached];
+        result._isOffline = true;
+        return result;
+      }
+      throw err;
     }
-    return fetchWithFallback(
-      endpoint,
-      "reservations?select=*,cafe_tables(*)&order=created_at.desc"
-    );
   },
 
   async createReservation(payload) {
@@ -376,6 +392,27 @@ export const ApiService = {
       }
     }
 
+    // Simpan tiket baru ke cache lokal agar langsung tersedia bila offline
+    try {
+      const userMatch = (payload.customer_name || "").match(/\[User:\s*(.+?)\]/i);
+      const targetUser = userMatch ? userMatch[1].trim() : null;
+      let cachedItem = result ? { ...result } : null;
+      if (cachedItem) {
+        if (!cachedItem.game_title && payload.game_title) {
+          cachedItem.game_title = payload.game_title;
+        }
+        if (!cachedItem.cafe_tables && payload.table_id) {
+          const tableDetail = await CacheService.getTableDetail(payload.table_id);
+          if (tableDetail) {
+            cachedItem.cafe_tables = tableDetail;
+          }
+        }
+        await CacheService.prependReservation(targetUser, cachedItem);
+      }
+    } catch (cacheErr) {
+      // Abaikan jika update cache lokal gagal
+    }
+
     // Integrasi: kurangi stok game saat reservasi berhasil dibuat
     if (payload.game_id) {
       this.decrementGameStock(payload.game_id).catch(() => {});
@@ -384,10 +421,18 @@ export const ApiService = {
     return result;
   },
 
-  async deleteReservation(id) {
-    return fetchWithFallback(`/api/reservations/${id}`, `reservations?id=eq.${id}`, {
+  async deleteReservation(id, username = null) {
+    if (!isLastKnownOnline) {
+      const isConnected = await checkConnectivity();
+      if (!isConnected) {
+        throw new Error("OFFLINE_ERROR: Pembatalan atau penghapusan tiket membutuhkan koneksi internet aktif.");
+      }
+    }
+    const res = await fetchWithFallback(`/api/reservations/${id}`, `reservations?id=eq.${id}`, {
       method: "DELETE"
     });
+    CacheService.removeReservationFromCache(username, id).catch(() => {});
+    return res;
   },
 
   async updateReservationStatus(id, status) {

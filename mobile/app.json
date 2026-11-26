@@ -41,7 +41,17 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 200
         }
-      ]
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Aplikasi MeepleCafe membutuhkan akses galeri foto untuk menyimpan E-Tiket reservasi Anda.",
+          "savePhotosPermission": "Aplikasi MeepleCafe membutuhkan izin untuk menyimpan E-Tiket ke galeri perangkat Anda.",
+          "isAccessMediaLocationEnabled": false,
+          "granularPermissions": ["photo"]
+        }
+      ],
+      "expo-sharing"
     ]
   }
 }
